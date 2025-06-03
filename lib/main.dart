@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:myapp/auth_service.dart';
+import 'package:myapp/event_detail_page.dart';
 
 void main() {
   // Sort the events by date
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -63,45 +64,53 @@ class _HomePageState extends State<HomePage> {
         itemCount: events.length,
         itemBuilder: (context, index) {
           final event = events[index];
-          return Card(
-            margin: EdgeInsets.all(8.0),
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    event['title']!,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          return GestureDetector(
+            onTap: () {
+              if (index == 0) { // Only make the first card tappable for now
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EventDetailPage(event: event),
                   ),
-                  SizedBox(height: 8),
-                  Text('Fecha: ${event['date']}'),
-                  SizedBox(height: 4),
-                  Text('Ubicación: ${event['location']}'),
-                  SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: IconButton(
-                      icon: Icon(Icons.favorite_border),
-                      onPressed: () {
-                        // TODO: Implement favorite functionality
-                        if (FirebaseAuth.instance.currentUser == null) {
-                          AuthService().signInWithGoogle().then((_) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Sesión iniciada'),
-                              ),
-                            );
-                          }).catchError((error) {
-                            // Handle potential errors during sign-in
-                            print('Error signing in: $error');
-                          });
-                        }
-                      },
-
+                );
+              }
+            },
+            child: Card(
+              margin: EdgeInsets.all(8.0),
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column( 
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event['title']!,
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 8),
+                    Text('Fecha: ${event['date']}'),
+                    SizedBox(height: 4),
+                    Text('Ubicación: ${event['location']}'),
+                    SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: IconButton(
+                        icon: Icon(Icons.favorite_border),
+                        onPressed: () {
+                          // TODO: Implement favorite functionality
+                          if (FirebaseAuth.instance.currentUser == null) {
+                            AuthService().signInWithGoogle().then((_) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Sesión iniciada')),
+                              );
+                            }).catchError((error) {
+                              print('Error signing in: $error');
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                   ],
+                 ),
               ),
             ),
           );
