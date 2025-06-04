@@ -1,32 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
-
-// Assume this mock data is accessible here, perhaps imported or defined globally
-// for demonstration purposes. In a real app, you might pass it or fetch it.
-final List<Map<String, String>> events = [
-  {'title': 'Concierto de Jazz', 'date': '2023-10-27', 'location': 'Teatro A'},
-  {'title': 'Exposición de Arte Moderno', 'date': '2023-11-05', 'location': 'Museo B'},
-  {'title': 'Festival de Cine Independiente', 'date': '2023-11-18', 'location': 'Cine C'},
-  {'title': 'Obra de Teatro', 'date': '2023-10-27', 'location': 'Teatro D'},
-];
-
-// Define the category colors (assuming consistent with HomePage)
-Color getCategoryColor(String title) {
-  if (title.contains('Teatro')) {
-    return const Color(0xFFD0F0C0); // Verde pastel
-  } else if (title.contains('Stand-up')) {
-    return const Color(0xFFFFF9C4); // Amarillo pastel
-  } else if (title.contains('Jazz')) {
-    return const Color(0xFFCCE5FF); // Celeste pastel
-  } else {
-    return const Color(0xFFE0E0E0); // Gris claro por defecto
-  }
-}
-
+import 'package:myapp/src/models/models.dart'; // Importa events
 
 class CalendarPage extends StatefulWidget {
-  const CalendarPage({Key? key}) : super(key: key);
+  const CalendarPage({super.key});
 
   @override
   _CalendarPageState createState() => _CalendarPageState();
@@ -34,7 +12,7 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime.now();
+  DateTime _focusedDay = DateTime(2025, 6, 4); // Fecha forzada
   DateTime? _selectedDay;
   List<Map<String, String>> _selectedEvents = [];
 
@@ -42,25 +20,23 @@ class _CalendarPageState extends State<CalendarPage> {
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
-    _selectedEvents = _getEventsForDay(_selectedDay!);
+    _selectedEvents = _getEventsForDay(_focusedDay);
+    print('Eventos iniciales: $_selectedEvents'); // Depuración
   }
 
   List<Map<String, String>> _getEventsForDay(DateTime day) {
-    // Filter events based on the selected day's date string
-    return events.where((event) {
-      final eventDate = DateFormat('yyyy-MM-dd').parse(event['date']!).toLocal();
-      return isSameDay(eventDate, day);
-    }).toList();
+    final dateString = DateFormat('yyyy-MM-dd').format(day);
+    return events.where((event) => event['date'] == dateString).toList();
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    if (!isSameDay(_selectedDay, selectedDay)) {
-      setState(() {
-        _selectedDay = selectedDay;
-        _focusedDay = focusedDay;
-        _selectedEvents = _getEventsForDay(selectedDay);
-      });
-    }
+    print('Día seleccionado: $selectedDay');
+    setState(() {
+      _selectedDay = selectedDay;
+      _focusedDay = focusedDay;
+      _selectedEvents = _getEventsForDay(selectedDay);
+    });
+    Navigator.pop(context, selectedDay); // Devuelve la fecha al seleccionar
   }
 
   @override
@@ -69,26 +45,23 @@ class _CalendarPageState extends State<CalendarPage> {
       appBar: AppBar(
         title: Text(_selectedDay == null
             ? 'Selecciona una fecha'
-            : 'Eventos para ${DateFormat('EEEE, MMM d', 'es').format(_selectedDay!)}'),
+            : 'Eventos para ${DateFormat('EEEE, d MMM', 'es').format(_selectedDay!)}'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context, _selectedDay); // Return the selected date
+            Navigator.pop(context, _selectedDay); // Devuelve la fecha seleccionada
           },
         ),
       ),
       body: Column(
         children: [
-            
           TableCalendar(
-            locale: 'es_ES', // Set locale for Spanish weekdays
+            locale: 'es_ES',
             firstDay: DateTime.utc(2020, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
-            selectedDayPredicate: (day) {
-              return isSameDay(_selectedDay, day);
-            },
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: _onDaySelected,
             onFormatChanged: (format) {
               if (_calendarFormat != format) {
@@ -98,7 +71,10 @@ class _CalendarPageState extends State<CalendarPage> {
               }
             },
             onPageChanged: (focusedDay) {
-              _focusedDay = focusedDay;
+              print('Mes cambiado: $focusedDay');
+              setState(() {
+                _focusedDay = focusedDay;
+              });
             },
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
@@ -109,29 +85,54 @@ class _CalendarPageState extends State<CalendarPage> {
                 color: Theme.of(context).primaryColor,
                 shape: BoxShape.circle,
               ),
-              markerDecoration: BoxDecoration(
-                color: Colors.deepPurpleAccent, // Subtle marker color
+              markerDecoration: const BoxDecoration(
+                color: Colors.deepPurpleAccent,
                 shape: BoxShape.circle,
               ),
             ),
-            headerStyle: HeaderStyle(
-              formatButtonVisible: false, // Hide format button
+            headerStyle: const HeaderStyle(
+              formatButtonVisible: false,
               titleCentered: true,
             ),
-            // You can add dots for days with events
-            eventLoader: _getEventsForDay, // You can add dots for days with events
+            eventLoader: _getEventsForDay,
           ),
           const SizedBox(height: 8.0),
           Expanded(
             child: _selectedEvents.isEmpty
-                ? Center(child: Text('No events for this date yet'))
+                ? const Center(child: Text('No hay eventos para esta fecha'))
                 : ListView.builder(
                     itemCount: _selectedEvents.length,
                     itemBuilder: (context, index) {
                       final event = _selectedEvents[index];
-                       return Card(
+                      Color cardColor;
+                      final eventType = event['type']?.toLowerCase() ?? '';
+                      switch (eventType) {
+                        case 'teatro':
+                          cardColor = const Color(0xFFB2DFDB);
+                          break;
+                        case 'stand-up':
+                          cardColor = const Color(0xFFFFF9C4);
+                          break;
+                        case 'música':
+                          cardColor = const Color(0xFFCCE5FF);
+                          break;
+                        case 'cine':
+                          cardColor = const Color(0xFFE0E0E0);
+                          break;
+                        case 'infantil':
+                          cardColor = const Color(0xFFE1BEE7);
+                          break;
+                        case 'exposición':
+                          cardColor = const Color(0xFFFFECB3);
+                          break;
+                        default:
+                          cardColor = const Color(0xFFE0E0E0);
+                          print('Color por defecto para tipo: $eventType');
+                          break;
+                      }
+                      return Card(
                         margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                        color: getCategoryColor(event['title']!), // Apply color based on category
+                        color: cardColor,
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
@@ -142,7 +143,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 8),
-                              Text('Fecha: ${event['date']}'),
+                              Text('Fecha: ${DateFormat('d MMM yyyy', 'es').format(DateFormat('yyyy-MM-dd').parse(event['date']!))}'),
                               const SizedBox(height: 4),
                               Text('Ubicación: ${event['location']}'),
                               const SizedBox(height: 8),

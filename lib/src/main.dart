@@ -5,20 +5,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/l10n/intl_messages_all.dart';
 import 'package:myapp/src/pages/pages.dart';
+import 'package:myapp/src/models/models.dart'; // Importa events
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final List<Map<String, String>> events = [
-    {'title': 'Concierto de Jazz 🎶', 'date': '2025-06-03', 'location': 'Teatro A', 'type': 'Música'},
-    {'title': 'Exposición de Arte Moderno', 'date': '2025-06-03', 'location': 'Museo B', 'type': 'Exposición'},
-    {'title': 'Obra de Teatro: Hamlet 🎭', 'date': '2025-06-04', 'location': 'Teatro Real', 'type': 'Teatro'},
-    {'title': 'Noche de Stand-up 😂', 'date': '2025-06-04', 'location': 'Club B', 'type': 'Stand-up'},
-    {'title': 'Festival de Cine Independiente 🎬', 'date': '2025-06-04', 'location': 'Cine C', 'type': 'Cine'},
-    {'title': 'Show Infantil: Cuentacuentos 👧', 'date': '2025-06-04', 'location': 'Plaza D', 'type': 'Infantil'},
-  ];
-
-  // Sort the events by date
+  // events ahora está en models.dart
   events.sort((a, b) => a['date']!.compareTo(b['date']!));
   print('Lista de eventos: $events'); // Depuración
   await initializeMessages('es_ES');
@@ -60,7 +51,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   DateTime? _selectedDate;
 
-  // Function to filter events based on a given date
   List<Map<String, String>> _getEventsForDate(DateTime date) {
     final dateString = DateFormat('yyyy-MM-dd').format(date);
     return events.where((event) => event['date'] == dateString).toList();
@@ -71,39 +61,29 @@ class _HomePageState extends State<HomePage> {
     List<Map<String, String>> displayedEvents = [];
     String listTitle = '';
 
-    // Forzar la fecha actual para pruebas (4 de junio de 2025)
     final now = DateTime(2025, 6, 4);
     print('Fecha actual para pruebas: $now');
-    print('Fecha real del sistema: ${DateTime.now()}'); // Depuración
+    print('Fecha real del sistema: ${DateTime.now()}');
 
     if (_selectedDate == null) {
-      // Mostrar hasta 20 eventos, priorizando hoy y mañana
       final today = DateFormat('yyyy-MM-dd').format(now);
       final tomorrow = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1)));
-
-      // Filtrar eventos de hoy y mañana
       final todayEvents = events.where((event) => event['date'] == today).toList();
       final tomorrowEvents = events.where((event) => event['date'] == tomorrow).toList();
-
-      // Combinar eventos: hoy, mañana, y el resto, limitando a 20
       displayedEvents = [
         ...todayEvents,
         ...tomorrowEvents,
         ...events.where((event) => event['date'] != today && event['date'] != tomorrow),
       ].take(20).toList();
-
       listTitle = 'Próximos Eventos';
     } else {
-      // Mostrar eventos para la fecha seleccionada
       final selectedDateString = DateFormat('yyyy-MM-dd').format(_selectedDate!);
       displayedEvents = events.where((event) => event['date'] == selectedDateString).toList();
       listTitle = 'Eventos para ${DateFormat('EEEE, d MMM', 'es').format(_selectedDate!)}';
     }
 
-    // Depuración: Imprimir eventos mostrados
     print('displayedEvents: $displayedEvents');
 
-    // Agrupar eventos por fecha
     final Map<String, List<Map<String, String>>> groupedEvents = {};
     for (var event in displayedEvents) {
       final date = event['date']!;
@@ -113,7 +93,6 @@ class _HomePageState extends State<HomePage> {
       groupedEvents[date]!.add(event);
     }
 
-    // Ordenar fechas
     final sortedDates = groupedEvents.keys.toList()..sort((a, b) => a.compareTo(b));
 
     return Scaffold(
@@ -129,7 +108,7 @@ class _HomePageState extends State<HomePage> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => CalendarPage()),
+            MaterialPageRoute(builder: (context) => const CalendarPage()),
           ).then((selectedDate) {
             if (selectedDate != null && selectedDate is DateTime) {
               setState(() => _selectedDate = selectedDate);
@@ -202,44 +181,40 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildEventCard(BuildContext context, Map<String, String> event, int index) {
-    // Forzar la fecha actual para pruebas
     final now = DateTime(2025, 6, 4);
-
-    // Formatear la fecha del evento
     final eventDate = DateFormat('yyyy-MM-dd').parse(event['date']!);
     final formattedDate = eventDate == DateTime(now.year, now.month, now.day)
         ? 'Hoy'
         : eventDate == DateTime(now.year, now.month, now.day).add(const Duration(days: 1))
             ? 'Mañana'
             : DateFormat('d MMM yyyy', 'es').format(eventDate);
+    print('Evento: ${event['title']}, Fecha original: ${event['date']}, Fecha formateada: $formattedDate');
+    print('Evento completo: $event');
 
-    // Depuración: Imprimir evento completo
-    print('Evento: ${event['title']}, Tipo: ${event['type']}, Fecha: ${event['date']}');
-
-    // Asignar colores según el tipo de evento
     Color cardColor;
     final eventType = event['type']?.toLowerCase() ?? '';
+    print('Tipo de evento: $eventType');
     switch (eventType) {
       case 'teatro':
-        cardColor = const Color(0xFFB2DFDB); // Verde suave
+        cardColor = const Color(0xFFB2DFDB);
         break;
       case 'stand-up':
-        cardColor = const Color(0xFFFFF9C4); // Amarillo pastel
+        cardColor = const Color(0xFFFFF9C4);
         break;
       case 'música':
-        cardColor = const Color(0xFFCCE5FF); // Celeste claro
+        cardColor = const Color(0xFFCCE5FF);
         break;
       case 'cine':
-        cardColor = const Color(0xFFE0E0E0); // Gris elegante
+        cardColor = const Color(0xFFE0E0E0);
         break;
       case 'infantil':
-        cardColor = const Color(0xFFE1BEE7); // Lila tierno
+        cardColor = const Color(0xFFE1BEE7);
         break;
       case 'exposición':
-        cardColor = const Color(0xFFFFECB3); // Amarillo claro
+        cardColor = const Color(0xFFFFECB3);
         break;
       default:
-        cardColor = const Color(0xFFE0E0E0); // Gris claro
+        cardColor = const Color(0xFFE0E0E0);
         print('Color por defecto para tipo: $eventType');
         break;
     }
