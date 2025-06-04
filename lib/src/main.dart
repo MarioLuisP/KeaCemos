@@ -5,14 +5,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/l10n/intl_messages_all.dart';
 import 'package:myapp/src/pages/pages.dart';
-import 'package:myapp/src/models/models.dart'; // Importa events
+import 'package:myapp/src/models/models.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // events ahora está en models.dart
   events.sort((a, b) => a['date']!.compareTo(b['date']!));
-  print('Lista de eventos: $events'); // Depuración
-  await initializeMessages('es_ES');
+  print('Lista de eventos: $events');
+  await initializeMessages('es');
   runApp(const MyApp());
 }
 
@@ -51,8 +50,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   DateTime? _selectedDate;
 
-  List<Map<String, String>> _getEventsForDate(DateTime date) {
-    final dateString = DateFormat('yyyy-MM-dd').format(date);
+  List<Map<String, String>> _getEventsForDay(DateTime day) {
+    final dateString = DateFormat('yyyy-MM-dd').format(day);
     return events.where((event) => event['date'] == dateString).toList();
   }
 
@@ -62,23 +61,28 @@ class _HomePageState extends State<HomePage> {
     String listTitle = '';
 
     final now = DateTime(2025, 6, 4);
+    final todayString = DateFormat('yyyy-MM-dd').format(now);
+    final tomorrowString = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1)));
     print('Fecha actual para pruebas: $now');
     print('Fecha real del sistema: ${DateTime.now()}');
 
     if (_selectedDate == null) {
-      final today = DateFormat('yyyy-MM-dd').format(now);
-      final tomorrow = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1)));
-      final todayEvents = events.where((event) => event['date'] == today).toList();
-      final tomorrowEvents = events.where((event) => event['date'] == tomorrow).toList();
+      final todayEvents = _getEventsForDay(now);
+      final tomorrowEvents = _getEventsForDay(now.add(const Duration(days: 1)));
+      final futureEvents = events.where((event) {
+        final eventDate = DateFormat('yyyy-MM-dd').parse(event['date']!);
+        return eventDate.isAfter(now.add(const Duration(days: 1)));
+      }).toList();
+
       displayedEvents = [
         ...todayEvents,
         ...tomorrowEvents,
-        ...events.where((event) => event['date'] != today && event['date'] != tomorrow),
+        ...futureEvents,
       ].take(20).toList();
       listTitle = 'Próximos Eventos';
     } else {
       final selectedDateString = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-      displayedEvents = events.where((event) => event['date'] == selectedDateString).toList();
+      displayedEvents = _getEventsForDay(_selectedDate!);
       listTitle = 'Eventos para ${DateFormat('EEEE, d MMM', 'es').format(_selectedDate!)}';
     }
 
@@ -93,7 +97,16 @@ class _HomePageState extends State<HomePage> {
       groupedEvents[date]!.add(event);
     }
 
-    final sortedDates = groupedEvents.keys.toList()..sort((a, b) => a.compareTo(b));
+    final sortedDates = groupedEvents.keys.toList()
+      ..sort((a, b) {
+        final dateA = DateFormat('yyyy-MM-dd').parse(a);
+        final dateB = DateFormat('yyyy-MM-dd').parse(b);
+        if (a == todayString) return -2;
+        if (b == todayString) return 2;
+        if (a == tomorrowString) return -1;
+        if (b == tomorrowString) return 1;
+        return dateA.compareTo(dateB); // Corregido: dateB en lugar de b
+      });
 
     return Scaffold(
       appBar: AppBar(
@@ -109,9 +122,9 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CalendarPage()),
-          ).then((selectedDate) {
-            if (selectedDate != null && selectedDate is DateTime) {
-              setState(() => _selectedDate = selectedDate);
+          ).then((selectedDay) {
+            if (selectedDay != null && selectedDay is DateTime) {
+              setState(() => _selectedDate = selectedDay);
             }
           });
         },
@@ -145,17 +158,19 @@ class _HomePageState extends State<HomePage> {
           else
             ...sortedDates.map((date) {
               final eventsOnDate = groupedEvents[date]!;
+              final dateParsed = DateFormat('yyyy-MM-dd').parse(date);
+              final sectionTitle = date == todayString
+                  ? 'Hoy'
+                  : date == tomorrowString
+                      ? 'Mañana'
+                      : 'Próximos (${DateFormat('EEEE, d MMM', 'es').format(dateParsed)})';
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Text(
-                      date == DateFormat('yyyy-MM-dd').format(now)
-                          ? 'Hoy'
-                          : date == DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1)))
-                              ? 'Mañana'
-                              : DateFormat('EEEE, d MMM', 'es').format(DateFormat('yyyy-MM-dd').parse(date)),
+                      sectionTitle,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,

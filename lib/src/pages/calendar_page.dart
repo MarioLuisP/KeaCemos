@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/src/models/models.dart'; // Importa events
+import 'package:myapp/src/models/models.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -12,7 +12,7 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime(2025, 6, 4); // Fecha forzada
+  DateTime _focusedDay = DateTime(2025, 6, 4);
   DateTime? _selectedDay;
   List<Map<String, String>> _selectedEvents = [];
 
@@ -20,8 +20,7 @@ class _CalendarPageState extends State<CalendarPage> {
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
-    _selectedEvents = _getEventsForDay(_focusedDay);
-    print('Eventos iniciales: $_selectedEvents'); // Depuración
+    print('Calendario inicializado: $_focusedDay');
   }
 
   List<Map<String, String>> _getEventsForDay(DateTime day) {
@@ -36,7 +35,7 @@ class _CalendarPageState extends State<CalendarPage> {
       _focusedDay = focusedDay;
       _selectedEvents = _getEventsForDay(selectedDay);
     });
-    Navigator.pop(context, selectedDay); // Devuelve la fecha al seleccionar
+    Navigator.pop(context, selectedDay);
   }
 
   @override
@@ -49,9 +48,20 @@ class _CalendarPageState extends State<CalendarPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context, _selectedDay); // Devuelve la fecha seleccionada
+            Navigator.pop(context, _selectedDay);
           },
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -65,16 +75,12 @@ class _CalendarPageState extends State<CalendarPage> {
             onDaySelected: _onDaySelected,
             onFormatChanged: (format) {
               if (_calendarFormat != format) {
-                setState(() {
-                  _calendarFormat = format;
-                });
+                setState(() => _calendarFormat = format);
               }
             },
             onPageChanged: (focusedDay) {
               print('Mes cambiado: $focusedDay');
-              setState(() {
-                _focusedDay = focusedDay;
-              });
+              setState(() => _focusedDay = focusedDay);
             },
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
@@ -99,7 +105,7 @@ class _CalendarPageState extends State<CalendarPage> {
           const SizedBox(height: 8.0),
           Expanded(
             child: _selectedEvents.isEmpty
-                ? const Center(child: Text('No hay eventos para esta fecha'))
+                ? const Center(child: Text('Selecciona un día para ver eventos'))
                 : ListView.builder(
                     itemCount: _selectedEvents.length,
                     itemBuilder: (context, index) {
@@ -151,9 +157,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                 alignment: Alignment.bottomRight,
                                 child: IconButton(
                                   icon: const Icon(Icons.favorite_border),
-                                  onPressed: () {
-                                    // Non-functional favorite button
-                                  },
+                                  onPressed: () {},
                                 ),
                               ),
                             ],
