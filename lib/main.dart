@@ -2,44 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:myapp/auth_service.dart';
 import 'package:myapp/event_detail_page.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
+import 'package:myapp/calendar_page.dart';
+import 'package:myapp/l10n/intl_messages_all.dart';
 
-void main() {
+void main() async {
   // Sort the events by date
   events.sort((a, b) => a['date']!.compareTo(b['date']!));
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeMessages('es_ES');
 
   runApp(const MyApp());
 }
 
 final List<Map<String, String>> events = [
-  {'title': 'Concierto de Jazz', 'date': '2023-10-27', 'location': 'Teatro A'},
-  {'title': 'Exposición de Arte Moderno', 'date': '2023-11-05', 'location': 'Museo B'},
-  {'title': 'Festival de Cine Independiente', 'date': '2023-11-18', 'location': 'Cine C'},
+  {'title': 'Concierto de Jazz 🎶', 'date': '2025-06-03', 'location': 'Teatro A', 'type': 'Música'},
+  {'title': 'Exposición de Arte Moderno', 'date': '2025-06-03', 'location': 'Museo B', 'type': 'Exposición'},
+  {'title': 'Obra de Teatro: Hamlet 🎭', 'date': '2025-06-04', 'location': 'Teatro Real', 'type': 'Teatro'},
+  {'title': 'Noche de Stand-up 😂', 'date': '2025-06-04', 'location': 'Club B', 'type': 'Stand-up'},
+  {'title': 'Festival de Cine Independiente 🎬', 'date': '2025-06-04', 'location': 'Cine C', 'type': 'Cine'},
+  {'title': 'Show Infantil: Cuentacuentos 👧', 'date': '2025-06-04', 'location': 'Plaza D', 'type': 'Infantil'},
 ];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('es', ''),
+        Locale('en', ''),
+      ],
+      title: 'KeaCMos Córdoba',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true, // Habilitar Material 3 para un diseño más moderno
       ),
       home: HomePage(),
     );
@@ -56,152 +61,159 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    // Filtrar eventos de hoy y mañana
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final tomorrow = DateFormat('yyyy-MM-dd').format(DateTime.now().add(Duration(days: 1)));
+    final todayEvents = events.where((event) => event['date'] == today).toList();
+    final tomorrowEvents = events.where((event) => event['date'] == tomorrow).toList();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Eventos Culturales'),
+        title: Text(
+          '🌟 KeaCMos Córdoba',
+          style: TextStyle(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        centerTitle: true, // Centrar el título
       ),
-      body: ListView.builder(
-        itemCount: events.length,
-        itemBuilder: (context, index) {
-          final event = events[index];
-          return GestureDetector(
-            onTap: () {
-              if (index == 0) { // Only make the first card tappable for now
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EventDetailPage(event: event),
-                  ),
-                );
-              }
-            },
-            child: Card(
-              margin: EdgeInsets.all(8.0),
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Column( 
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event['title']!,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    Text('Fecha: ${event['date']}'),
-                    SizedBox(height: 4),
-                    Text('Ubicación: ${event['location']}'),
-                    SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: IconButton(
-                        icon: Icon(Icons.favorite_border),
-                        onPressed: () {
-                          // TODO: Implement favorite functionality
-                          if (FirebaseAuth.instance.currentUser == null) {
-                            AuthService().signInWithGoogle().then((_) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Sesión iniciada')),
-                              );
-                            }).catchError((error) {
-                              print('Error signing in: $error');
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                   ],
-                 ),
-              ),
-            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CalendarPage()),
           );
         },
+        child: const Icon(Icons.calendar_today),
+      ),
+      body: ListView(
+        children: [
+          // Sección "Hoy"
+          if (todayEvents.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text(
+                'Eventos Hoy',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+              ),
+            ),
+            Divider(
+              thickness: 1,
+              indent: 16,
+              endIndent: 16,
+              color: Colors.grey[400],
+            ),
+            ...todayEvents.asMap().entries.map((entry) {
+              final index = entry.key;
+              final event = entry.value;
+              return _buildEventCard(context, event, index);
+            }).toList(),
+          ],
+          // Sección "Mañana"
+          if (tomorrowEvents.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text(
+                'Mañana',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+              ),
+            ),
+            Divider(
+              thickness: 1,
+              indent: 16,
+              endIndent: 16,
+              color: Colors.grey[400],
+            ),
+            ...tomorrowEvents.asMap().entries.map((entry) {
+              final index = entry.key + todayEvents.length; // Ajustar índice para gestos
+              final event = entry.value;
+              return _buildEventCard(context, event, index);
+            }).toList(),
+          ],
+        ],
       ),
     );
   }
-}
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  Widget _buildEventCard(BuildContext context, Map<String, String> event, int index) {
+    // Asignar colores según el tipo de evento
+    Color cardColor;
+    switch (event['type']) {
+      case 'Teatro':
+        cardColor = Color(0xFFB2DFDB); // Verde suave
+        break;
+      case 'Stand-up':
+        cardColor = Color(0xFFFFF9C4); // Amarillo pastel
+        break;
+      case 'Música':
+        cardColor = Color(0xFFCCE5FF); // Celeste claro
+        break;
+      case 'Cine':
+        cardColor = Color(0xFFE0E0E0); // Gris elegante
+        break;
+      case 'Infantil':
+        cardColor = Color(0xFFE1BEE7); // Lila tierno
+        break;
+      default:
+        cardColor = Color(0xFFE0E0E0); // Gris claro por defecto
+    }
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',              
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailPage(event: event),
+          ),
+        );
+      },
+      child: Card(
+        color: cardColor,
+        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                event['title']!,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text('Fecha: ${event['date']}'),
+              SizedBox(height: 4),
+              Text('Ubicación: ${event['location']}'),
+              SizedBox(height: 8),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: IconButton(
+                  icon: Icon(Icons.favorite_border),
+                  onPressed: () {
+                    if (FirebaseAuth.instance.currentUser == null) {
+                      AuthService().signInWithGoogle().then((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Sesión iniciada')),
+                        );
+                      }).catchError((error) {
+                        print('Error signing in: $error');
+                      });
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
