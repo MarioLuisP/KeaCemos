@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:myapp/auth_service.dart';
-import 'package:myapp/event_detail_page.dart';
+import 'package:myapp/src/services/auth_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/calendar_page.dart';
 import 'package:myapp/l10n/intl_messages_all.dart';
+import 'package:myapp/src/pages/pages.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final List<Map<String, String>> events = [
+    {'title': 'Concierto de Jazz 🎶', 'date': '2025-06-03', 'location': 'Teatro A', 'type': 'Música'},
+    {'title': 'Exposición de Arte Moderno', 'date': '2025-06-03', 'location': 'Museo B', 'type': 'Exposición'},
+    {'title': 'Obra de Teatro: Hamlet 🎭', 'date': '2025-06-04', 'location': 'Teatro Real', 'type': 'Teatro'},
+    {'title': 'Noche de Stand-up 😂', 'date': '2025-06-04', 'location': 'Club B', 'type': 'Stand-up'},
+    {'title': 'Festival de Cine Independiente 🎬', 'date': '2025-06-04', 'location': 'Cine C', 'type': 'Cine'},
+    {'title': 'Show Infantil: Cuentacuentos 👧', 'date': '2025-06-04', 'location': 'Plaza D', 'type': 'Infantil'},
+  ];
+
   // Sort the events by date
   events.sort((a, b) => a['date']!.compareTo(b['date']!));
-
-  WidgetsFlutterBinding.ensureInitialized();
+  print('Lista de eventos: $events'); // Depuración
   await initializeMessages('es_ES');
-
   runApp(const MyApp());
 }
-
-final List<Map<String, String>> events = [
-  {'title': 'Concierto de Jazz 🎶', 'date': '2025-06-03', 'location': 'Teatro A', 'type': 'Música'},
-  {'title': 'Exposición de Arte Moderno', 'date': '2025-06-03', 'location': 'Museo B', 'type': 'Exposición'},
-  {'title': 'Obra de Teatro: Hamlet 🎭', 'date': '2025-06-04', 'location': 'Teatro Real', 'type': 'Teatro'},
-  {'title': 'Noche de Stand-up 😂', 'date': '2025-06-04', 'location': 'Club B', 'type': 'Stand-up'},
-  {'title': 'Festival de Cine Independiente 🎬', 'date': '2025-06-04', 'location': 'Cine C', 'type': 'Cine'},
-  {'title': 'Show Infantil: Cuentacuentos 👧', 'date': '2025-06-04', 'location': 'Plaza D', 'type': 'Infantil'},
-];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -44,9 +43,9 @@ class MyApp extends StatelessWidget {
       title: 'KeaCMos Córdoba',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true, // Habilitar Material 3 para un diseño más moderno
+        useMaterial3: true,
       ),
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 }
@@ -59,108 +58,190 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  DateTime? _selectedDate;
+
+  // Function to filter events based on a given date
+  List<Map<String, String>> _getEventsForDate(DateTime date) {
+    final dateString = DateFormat('yyyy-MM-dd').format(date);
+    return events.where((event) => event['date'] == dateString).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Filtrar eventos de hoy y mañana
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final tomorrow = DateFormat('yyyy-MM-dd').format(DateTime.now().add(Duration(days: 1)));
-    final todayEvents = events.where((event) => event['date'] == today).toList();
-    final tomorrowEvents = events.where((event) => event['date'] == tomorrow).toList();
+    List<Map<String, String>> displayedEvents = [];
+    String listTitle = '';
+
+    // Forzar la fecha actual para pruebas (4 de junio de 2025)
+    final now = DateTime(2025, 6, 4);
+    print('Fecha actual para pruebas: $now');
+    print('Fecha real del sistema: ${DateTime.now()}'); // Depuración
+
+    if (_selectedDate == null) {
+      // Mostrar hasta 20 eventos, priorizando hoy y mañana
+      final today = DateFormat('yyyy-MM-dd').format(now);
+      final tomorrow = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1)));
+
+      // Filtrar eventos de hoy y mañana
+      final todayEvents = events.where((event) => event['date'] == today).toList();
+      final tomorrowEvents = events.where((event) => event['date'] == tomorrow).toList();
+
+      // Combinar eventos: hoy, mañana, y el resto, limitando a 20
+      displayedEvents = [
+        ...todayEvents,
+        ...tomorrowEvents,
+        ...events.where((event) => event['date'] != today && event['date'] != tomorrow),
+      ].take(20).toList();
+
+      listTitle = 'Próximos Eventos';
+    } else {
+      // Mostrar eventos para la fecha seleccionada
+      final selectedDateString = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+      displayedEvents = events.where((event) => event['date'] == selectedDateString).toList();
+      listTitle = 'Eventos para ${DateFormat('EEEE, d MMM', 'es').format(_selectedDate!)}';
+    }
+
+    // Depuración: Imprimir eventos mostrados
+    print('displayedEvents: $displayedEvents');
+
+    // Agrupar eventos por fecha
+    final Map<String, List<Map<String, String>>> groupedEvents = {};
+    for (var event in displayedEvents) {
+      final date = event['date']!;
+      if (!groupedEvents.containsKey(date)) {
+        groupedEvents[date] = [];
+      }
+      groupedEvents[date]!.add(event);
+    }
+
+    // Ordenar fechas
+    final sortedDates = groupedEvents.keys.toList()..sort((a, b) => a.compareTo(b));
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           '🌟 KeaCMos Córdoba',
           style: TextStyle(fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
-        centerTitle: true, // Centrar el título
+        centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => CalendarPage()),
-          );
+          ).then((selectedDate) {
+            if (selectedDate != null && selectedDate is DateTime) {
+              setState(() => _selectedDate = selectedDate);
+            }
+          });
         },
         child: const Icon(Icons.calendar_today),
       ),
       body: ListView(
         children: [
-          // Sección "Hoy"
-          if (todayEvents.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(
-                'Eventos Hoy',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              listTitle,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+            ),
+          ),
+          const Divider(
+            thickness: 1,
+            indent: 16,
+            endIndent: 16,
+            color: Colors.grey,
+          ),
+          if (displayedEvents.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text('No hay eventos para esta fecha.'),
               ),
-            ),
-            Divider(
-              thickness: 1,
-              indent: 16,
-              endIndent: 16,
-              color: Colors.grey[400],
-            ),
-            ...todayEvents.asMap().entries.map((entry) {
-              final index = entry.key;
-              final event = entry.value;
-              return _buildEventCard(context, event, index);
-            }).toList(),
-          ],
-          // Sección "Mañana"
-          if (tomorrowEvents.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(
-                'Mañana',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+            )
+          else
+            ...sortedDates.map((date) {
+              final eventsOnDate = groupedEvents[date]!;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Text(
+                      date == DateFormat('yyyy-MM-dd').format(now)
+                          ? 'Hoy'
+                          : date == DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1)))
+                              ? 'Mañana'
+                              : DateFormat('EEEE, d MMM', 'es').format(DateFormat('yyyy-MM-dd').parse(date)),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                     ),
-              ),
-            ),
-            Divider(
-              thickness: 1,
-              indent: 16,
-              endIndent: 16,
-              color: Colors.grey[400],
-            ),
-            ...tomorrowEvents.asMap().entries.map((entry) {
-              final index = entry.key + todayEvents.length; // Ajustar índice para gestos
-              final event = entry.value;
-              return _buildEventCard(context, event, index);
+                  ),
+                  const Divider(
+                    thickness: 1,
+                    indent: 16,
+                    endIndent: 16,
+                    color: Colors.grey,
+                  ),
+                  ...eventsOnDate.asMap().entries.map((entry) {
+                    final event = entry.value;
+                    return _buildEventCard(context, event, entry.key);
+                  }).toList(),
+                ],
+              );
             }).toList(),
-          ],
         ],
       ),
     );
   }
 
   Widget _buildEventCard(BuildContext context, Map<String, String> event, int index) {
+    // Forzar la fecha actual para pruebas
+    final now = DateTime(2025, 6, 4);
+
+    // Formatear la fecha del evento
+    final eventDate = DateFormat('yyyy-MM-dd').parse(event['date']!);
+    final formattedDate = eventDate == DateTime(now.year, now.month, now.day)
+        ? 'Hoy'
+        : eventDate == DateTime(now.year, now.month, now.day).add(const Duration(days: 1))
+            ? 'Mañana'
+            : DateFormat('d MMM yyyy', 'es').format(eventDate);
+
+    // Depuración: Imprimir evento completo
+    print('Evento: ${event['title']}, Tipo: ${event['type']}, Fecha: ${event['date']}');
+
     // Asignar colores según el tipo de evento
     Color cardColor;
-    switch (event['type']) {
-      case 'Teatro':
-        cardColor = Color(0xFFB2DFDB); // Verde suave
+    final eventType = event['type']?.toLowerCase() ?? '';
+    switch (eventType) {
+      case 'teatro':
+        cardColor = const Color(0xFFB2DFDB); // Verde suave
         break;
-      case 'Stand-up':
-        cardColor = Color(0xFFFFF9C4); // Amarillo pastel
+      case 'stand-up':
+        cardColor = const Color(0xFFFFF9C4); // Amarillo pastel
         break;
-      case 'Música':
-        cardColor = Color(0xFFCCE5FF); // Celeste claro
+      case 'música':
+        cardColor = const Color(0xFFCCE5FF); // Celeste claro
         break;
-      case 'Cine':
-        cardColor = Color(0xFFE0E0E0); // Gris elegante
+      case 'cine':
+        cardColor = const Color(0xFFE0E0E0); // Gris elegante
         break;
-      case 'Infantil':
-        cardColor = Color(0xFFE1BEE7); // Lila tierno
+      case 'infantil':
+        cardColor = const Color(0xFFE1BEE7); // Lila tierno
+        break;
+      case 'exposición':
+        cardColor = const Color(0xFFFFECB3); // Amarillo claro
         break;
       default:
-        cardColor = Color(0xFFE0E0E0); // Gris claro por defecto
+        cardColor = const Color(0xFFE0E0E0); // Gris claro
+        print('Color por defecto para tipo: $eventType');
+        break;
     }
 
     return GestureDetector(
@@ -174,34 +255,34 @@ class _HomePageState extends State<HomePage> {
       },
       child: Card(
         color: cardColor,
-        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 event['title']!,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 8),
-              Text('Fecha: ${event['date']}'),
-              SizedBox(height: 4),
+              const SizedBox(height: 8),
+              Text('Fecha: $formattedDate'),
+              const SizedBox(height: 4),
               Text('Ubicación: ${event['location']}'),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Align(
                 alignment: Alignment.bottomRight,
                 child: IconButton(
-                  icon: Icon(Icons.favorite_border),
+                  icon: const Icon(Icons.favorite_border),
                   onPressed: () {
                     if (FirebaseAuth.instance.currentUser == null) {
                       AuthService().signInWithGoogle().then((_) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Sesión iniciada')),
+                          const SnackBar(content: Text('Sesión iniciada')),
                         );
                       }).catchError((error) {
                         print('Error signing in: $error');

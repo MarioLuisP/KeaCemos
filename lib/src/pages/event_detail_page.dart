@@ -1,3 +1,5 @@
+/// Detail page for displaying event information.
+
 import 'package:flutter/material.dart';
 
 class EventDetailPage extends StatelessWidget {

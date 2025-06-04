@@ -73,7 +73,7 @@ class _CalendarPageState extends State<CalendarPage> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, _selectedDay); // Return the selected date
           },
         ),
       ),
