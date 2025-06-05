@@ -21,6 +21,18 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _selectedDate = widget.selectedDate;
+    print('HomePage inicializado con selectedDate: $_selectedDate');
+  }
+
+  @override
+  void didUpdateWidget(HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedDate != oldWidget.selectedDate) {
+      setState(() {
+        _selectedDate = widget.selectedDate;
+        print('HomePage actualizado con nuevo selectedDate: $_selectedDate');
+      });
+    }
   }
 
   Future<List<Map<String, String>>> _getEventsForDay(DateTime day) async {

@@ -28,9 +28,12 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
-      HomePage(selectedDate: _selectedDate),
+      HomePage(
+        key: ValueKey(_selectedDate?.toIso8601String() ?? 'no-date'), // Forzar reconstrucción
+        selectedDate: _selectedDate,
+      ),
       const ExplorePage(),
-      CalendarPage(onDateSelected: _onDateSelected), // Pasa callback
+      CalendarPage(onDateSelected: _onDateSelected),
       const Center(child: Text('Favoritos en construcción')),
       const Center(child: Text('Configuración en construcción')),
     ];

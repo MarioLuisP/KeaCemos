@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:myapp/src/services/event_service.dart';
 
 class CalendarPage extends StatefulWidget {
-  final Function(DateTime?)? onDateSelected; // Callback para la fecha
+  final Function(DateTime?)? onDateSelected;
   const CalendarPage({super.key, this.onDateSelected});
 
   @override
@@ -56,7 +56,7 @@ class _CalendarPageState extends State<CalendarPage> {
       _focusedDay = focusedDay;
     });
     if (widget.onDateSelected != null) {
-      widget.onDateSelected!(selectedDay); // Llama al callback
+      widget.onDateSelected!(selectedDay);
     }
   }
 
@@ -67,38 +67,7 @@ class _CalendarPageState extends State<CalendarPage> {
         title: Text(_selectedDay == null
             ? 'Selecciona una fecha'
             : 'Eventos para ${DateFormat('EEEE, d MMM', 'es').format(_selectedDay!)}'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (widget.onDateSelected != null) {
-              widget.onDateSelected!(null); // Cancela sin fecha
-            }
-          },
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: TextButton(
-              onPressed: () {
-                if (widget.onDateSelected != null) {
-                  widget.onDateSelected!(null); // Cancela sin fecha
-                }
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Theme.of(context).primaryColor,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Cancelar',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
+        centerTitle: true,
       ),
       body: TableCalendar(
         locale: 'es_ES',
