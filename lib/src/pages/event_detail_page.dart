@@ -1,5 +1,4 @@
 /// Detail page for displaying event information.
-
 import 'package:flutter/material.dart';
 
 class EventDetailPage extends StatelessWidget {
@@ -22,40 +21,37 @@ class EventDetailPage extends StatelessWidget {
               'https://picsum.photos/seed/jazz/400/200',
               height: 200,
               fit: BoxFit.cover,
+              // Añadir manejo de errores para la imagen
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
             ),
             const SizedBox(height: 16.0),
-            // Title
             Text(
               event['title'] ?? 'Título no disponible',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8.0),
-            // Date and Time
             Text(
               'Fecha y Hora: ${event['date'] ?? 'Fecha no disponible'}',
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 4.0),
-            // Address
             Text(
               'Ubicación: ${event['location'] ?? 'Ubicación no disponible'}',
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16.0),
-            // Description
             const Text(
-              'Descripción del evento: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', // Mock Description
+              'Descripción del evento: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16.0),
-            // Favorite Button
             Align(
               alignment: Alignment.bottomRight,
               child: IconButton(
                 icon: const Icon(Icons.favorite_border),
                 color: Colors.red,
                 onPressed: () {
-                  // Non-functional favorite button
+                  // Placeholder para favoritos (Prompt 7)
                 },
               ),
             ),
