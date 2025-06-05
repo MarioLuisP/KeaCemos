@@ -15,6 +15,9 @@ class _MainScreenState extends State<MainScreen> {
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
+      if (index == 0) {
+        _selectedDate = null; // Resetear fecha al ir a HomePage
+      }
     });
   }
 
@@ -29,13 +32,13 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
       HomePage(
-        key: ValueKey(_selectedDate?.toIso8601String() ?? 'no-date'), // Forzar reconstrucción
+        key: ValueKey(_selectedDate?.toIso8601String() ?? 'no-date'),
         selectedDate: _selectedDate,
       ),
       const ExplorePage(),
       CalendarPage(onDateSelected: _onDateSelected),
       const Center(child: Text('Favoritos en construcción')),
-      const Center(child: Text('Configuración en construcción')),
+      const SettingsPage(),
     ];
 
     return Scaffold(
@@ -45,10 +48,10 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: _onItemTapped,
+        onTap: _onItemTapped, // Corregido de _onTap
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: Theme.of(context).primaryColor, // Corregido de selectedColor
+        unselectedItemColor: Colors.grey, // Corregido de unselectedColor
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
