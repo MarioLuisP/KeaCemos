@@ -4,21 +4,21 @@ class AppThemes {
   static final ThemeData normalTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: Colors.blue,
-    colorScheme: ColorScheme.light(
+    colorScheme: const ColorScheme.light(
       primary: Colors.blue,
       secondary: Colors.blueAccent,
       surface: Colors.white,
     ),
     scaffoldBackgroundColor: Colors.white,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: Colors.blue,
       foregroundColor: Colors.white,
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
       bodyMedium: TextStyle(color: Colors.black87),
     ),
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       selectedItemColor: Colors.blue,
       unselectedItemColor: Colors.grey,
     ),
@@ -37,11 +37,11 @@ class AppThemes {
       backgroundColor: Colors.grey[900],
       foregroundColor: Colors.white,
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
       bodyMedium: TextStyle(color: Colors.white70),
     ),
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       selectedItemColor: Colors.cyan,
       unselectedItemColor: Colors.grey,
     ),
@@ -50,21 +50,21 @@ class AppThemes {
   static final ThemeData fluorTheme = ThemeData(
     brightness: Brightness.dark,
     primaryColor: Colors.pinkAccent,
-    colorScheme: ColorScheme.dark(
+    colorScheme: const ColorScheme.dark(
       primary: Colors.pinkAccent,
       secondary: Colors.limeAccent,
       surface: Colors.black,
     ),
     scaffoldBackgroundColor: Colors.black,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: Colors.black,
       foregroundColor: Colors.cyanAccent,
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Colors.cyanAccent),
       bodyMedium: TextStyle(color: Colors.limeAccent),
     ),
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       selectedItemColor: Colors.pinkAccent,
       unselectedItemColor: Colors.grey,
     ),
@@ -73,21 +73,21 @@ class AppThemes {
   static final ThemeData harmonyTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: CustomColors.peach,
-    colorScheme: ColorScheme.light(
+    colorScheme: const ColorScheme.light(
       primary: CustomColors.peach,
       secondary: CustomColors.mint,
       surface: Colors.white,
     ),
     scaffoldBackgroundColor: Colors.white,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: CustomColors.peach,
       foregroundColor: Colors.black87,
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
       bodyMedium: TextStyle(color: Colors.black87),
     ),
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       selectedItemColor: CustomColors.mint,
       unselectedItemColor: Colors.grey,
     ),

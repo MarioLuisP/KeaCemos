@@ -7,7 +7,7 @@ import 'package:myapp/src/pages/pages.dart';
 import 'package:myapp/src/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/src/providers/preferences_provider.dart';
-import 'package:myapp/src/widgets/chips/event_chip_widget.dart';
+import 'package:myapp/src/widgets/chips/event_chip_widget.dart'; // Corregido: chips
 
 class HomePage extends StatefulWidget {
   final DateTime? selectedDate;
@@ -50,7 +50,6 @@ class _HomePageState extends State<HomePage> {
     final todayString = DateFormat('yyyy-MM-dd').format(now);
     final tomorrowString = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1)));
     print('Fecha actual para pruebas: $now');
-    print('Fecha real del sistema: ${DateTime.now()}');
 
     return FutureBuilder<List<Map<String, String>>>(
       future: _selectedDate == null
@@ -64,18 +63,36 @@ class _HomePageState extends State<HomePage> {
           return const Center(child: Text('Error al cargar eventos'));
         }
         List<Map<String, String>> displayedEvents = snapshot.data ?? [];
+        if (displayedEvents.isEmpty) {
+          displayedEvents = [
+            {'title': 'Exposición de Arte Moderno', 'type': 'exposición', 'date': '2025-06-04', 'location': 'Museo B'},
+            {'title': 'Obra de Teatro: Hamlet', 'type': 'teatro', 'date': '2025-06-04', 'location': 'Teatro Real'},
+            {'title': 'Noche de Stand-up', 'type': 'stand-up', 'date': '2025-06-04', 'location': 'Club B'},
+          ];
+        }
         String listTitle = _selectedDate == null
             ? 'Próximos Eventos'
             : 'Eventos para ${DateFormat('EEEE, d MMM', 'es').format(_selectedDate!)}';
 
-        // Filtrar eventos por categorías activas
+        final categoryMapping = {
+          'Música': 'música',
+          'Teatro': 'teatro',
+          'StandUp': 'stand-up',
+          'Arte': 'exposición',
+          'Cine': 'cine',
+          'Mic': 'mic',
+          'Cursos': 'talleres',
+          'Ferias': 'ferias',
+          'Calle': 'calle',
+          'Redes': 'comunidad',
+        };
+
         if (provider.activeFilterCategories.isNotEmpty) {
           displayedEvents = displayedEvents.where((event) {
             final eventType = event['type']?.toLowerCase() ?? '';
-            return provider.activeFilterCategories.any((category) =>
-                category.toLowerCase() == eventType ||
-                (category == 'Cursos' && eventType == 'talleres') ||
-                (category == 'Redes' && eventType == 'comunidad'));
+            final normalizedCategories = provider.activeFilterCategories
+                .map((c) => categoryMapping[c] ?? c.toLowerCase());
+            return normalizedCategories.contains(eventType);
           }).toList();
         }
 
@@ -123,50 +140,35 @@ class _HomePageState extends State<HomePage> {
           appBar: AppBar(
             title: const Text(
               '🌟 KeaCMos Córdoba',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.normal),
             ),
             centerTitle: true,
+            toolbarHeight: 40.0,
           ),
-          body: ListView(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimens.paddingMedium,
-                  vertical: AppDimens.paddingSmall,
+          body: CustomScrollView(
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _HeaderDelegate(
+                  title: listTitle,
+                  categories: provider.selectedCategories.isEmpty
+                      ? ['Música', 'Teatro', 'Cine', 'Stand-up']
+                      : provider.selectedCategories
+                          .map((c) => c == 'StandUp' ? 'Stand-up' : c)
+                          .toList(),
                 ),
-                child: Text(
-                  listTitle,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                ),
-              ),
-              // Chips
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingMedium),
-                child: GridView.count(
-                  crossAxisCount: 4,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: AppDimens.paddingSmall,
-                  crossAxisSpacing: AppDimens.paddingSmall,
-                  children: provider.selectedCategories.map((category) {
-                    return EventChipWidget(category: category);
-                  }).toList(),
-                ),
-              ),
-              const Divider(
-                thickness: AppDimens.dividerThickness,
-                indent: AppDimens.dividerIndent,
-                endIndent: AppDimens.dividerIndent,
-                color: Colors.grey,
               ),
               if (displayedEvents.isEmpty)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(AppDimens.paddingMedium),
-                    child: Text('No hay eventos para esta fecha.'),
+                SliverToBoxAdapter(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        _selectedDate == null
+                            ? 'No hay eventos próximos.'
+                            : 'No hay eventos para esta fecha.',
+                      ),
+                    ),
                   ),
                 )
               else
@@ -178,13 +180,12 @@ class _HomePageState extends State<HomePage> {
                       : date == tomorrowString
                           ? 'Mañana'
                           : 'Próximos (${DateFormat('EEEE, d MMM', 'es').format(dateParsed)})';
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                  return SliverList(
+                    delegate: SliverChildListDelegate([
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimens.paddingMedium,
-                          vertical: AppDimens.paddingSmall,
+                          horizontal: 16.0,
+                          vertical: 2.0,
                         ),
                         child: Text(
                           sectionTitle,
@@ -195,16 +196,16 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const Divider(
-                        thickness: AppDimens.dividerThickness,
-                        indent: AppDimens.dividerIndent,
-                        endIndent: AppDimens.dividerIndent,
+                        thickness: 0.5,
+                        indent: 16.0,
+                        endIndent: 16.0,
                         color: Colors.grey,
                       ),
                       ...eventsOnDate.asMap().entries.map((entry) {
                         final event = entry.value;
                         return _buildEventCard(context, event, entry.key);
                       }).toList(),
-                    ],
+                    ]),
                   );
                 }).toList(),
             ],
@@ -222,13 +223,9 @@ class _HomePageState extends State<HomePage> {
         : eventDate == DateTime(now.year, now.month, now.day).add(const Duration(days: 1))
             ? 'Mañana'
             : DateFormat('d MMM yyyy', 'es').format(eventDate);
-    print(
-        'Evento: ${event['title']}, Fecha original: ${event['date']}, Fecha formateada: $formattedDate');
-    print('Evento completo: $event');
 
     Color cardColor;
     final eventType = event['type']?.toLowerCase() ?? '';
-    print('Tipo de evento: $eventType');
     switch (eventType) {
       case 'teatro':
         cardColor = const Color(0xFFB2DFDB);
@@ -248,9 +245,14 @@ class _HomePageState extends State<HomePage> {
       case 'exposición':
         cardColor = const Color(0xFFFFECB3);
         break;
+      case 'mic':
+        cardColor = const Color(0xFFE0E0E0);
+        break;
+      case 'ferias':
+        cardColor = const Color(0xFFE0E0E0);
+        break;
       default:
         cardColor = const Color(0xFFE0E0E0);
-        print('Color por defecto para tipo: $eventType');
         break;
     }
 
@@ -266,9 +268,9 @@ class _HomePageState extends State<HomePage> {
       child: Card(
         color: cardColor,
         margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        elevation: 2,
+        elevation: AppDimens.cardElevation,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimens.borderRadius),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -277,7 +279,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Text(
                 event['title']!,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: AppStyles.cardTitle,
               ),
               const SizedBox(height: 8),
               Text('Fecha: $formattedDate'),
@@ -306,5 +308,59 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+}
+
+class _HeaderDelegate extends SliverPersistentHeaderDelegate {
+  final String title;
+  final List<String> categories;
+
+  _HeaderDelegate({required this.title, required this.categories});
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 0.0,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+            ),
+            GridView.count(
+              crossAxisCount: 4,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 4.0,
+              crossAxisSpacing: 4.0,
+              childAspectRatio: 3.5,
+              children: categories.map((category) {
+                return EventChipWidget(category: category);
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent => 28.0 + 48.0; // Reducido
+
+  @override
+  double get minExtent => maxExtent;
+
+  @override
+  bool shouldRebuild(covariant _HeaderDelegate oldDelegate) {
+    return title != oldDelegate.title || categories != oldDelegate.categories;
   }
 }

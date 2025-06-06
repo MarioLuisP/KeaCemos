@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/src/providers/preferences_provider.dart';
+import 'package:myapp/src/utils/utils.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -10,16 +11,16 @@ class SettingsPage extends StatelessWidget {
     final provider = Provider.of<PreferencesProvider>(context);
 
     final List<Map<String, dynamic>> categories = [
-      {'name': 'Música', 'emoji': '🎶', 'color': const Color(0xFFCCE5FF)},
-      {'name': 'Teatro', 'emoji': '🎭', 'color': const Color(0xFFB2DFDB)},
-      {'name': 'StandUp', 'emoji': '😂', 'color': const Color(0xFFFFF9C4)},
-      {'name': 'Arte', 'emoji': '🎨', 'color': const Color(0xFFFFECB3)},
-      {'name': 'Cine', 'emoji': '🎬', 'color': const Color(0xFFE0E0E0)},
-      {'name': 'Mic', 'emoji': '🎤', 'color': const Color(0xFFE1BEE7)},
-      {'name': 'Talleres', 'emoji': '🛠️', 'color': const Color(0xFFDCEDC8)},
-      {'name': 'Ferias', 'emoji': '🏬', 'color': const Color(0xFFFFCDD2)},
-      {'name': 'Calle', 'emoji': '🌆', 'color': const Color(0xFFB3E5FC)},
-      {'name': 'Comunidad', 'emoji': '🤝', 'color': const Color(0xFFC8E6C9)},
+      {'name': 'Música', 'emoji': '🎶', 'color': AppColors.musica},
+      {'name': 'Teatro', 'emoji': '🎭', 'color': AppColors.teatro},
+      {'name': 'StandUp', 'emoji': '😂', 'color': AppColors.standUp},
+      {'name': 'Arte', 'emoji': '🎨', 'color': AppColors.arte},
+      {'name': 'Cine', 'emoji': '🎬', 'color': AppColors.cine},
+      {'name': 'Mic', 'emoji': '🎤', 'color': AppColors.mic},
+      {'name': 'Cursos', 'emoji': '🛠️', 'color': AppColors.cursos}, // Reemplaza Talleres
+      {'name': 'Ferias', 'emoji': '🏬', 'color': AppColors.ferias},
+      {'name': 'Calle', 'emoji': '🌆', 'color': AppColors.calle},
+      {'name': 'Redes', 'emoji': '🤝', 'color': AppColors.redes}, // Reemplaza Comunidad
     ];
 
     return Scaffold(
@@ -28,14 +29,14 @@ class SettingsPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppDimens.paddingMedium),
         children: [
           // Sección: Temas
           Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: AppDimens.cardElevation,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.borderRadius)),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppDimens.paddingMedium),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -45,9 +46,9 @@ class SettingsPage extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppDimens.paddingSmall),
                   Wrap(
-                    spacing: 8,
+                    spacing: AppDimens.paddingSmall,
                     children: [
                       ChoiceChip(
                         label: const Text('Normal'),
@@ -75,13 +76,13 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimens.paddingMedium),
           // Sección: Categorías favoritas
           Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: AppDimens.cardElevation,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.borderRadius)),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppDimens.paddingMedium),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -91,15 +92,19 @@ class SettingsPage extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppDimens.paddingSmall),
                   Text(
                     'Elegí hasta 4 categorías. Seleccionaste ${provider.selectedCategories.length}/4.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                  const SizedBox(height: AppDimens.paddingMedium),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: AppDimens.paddingSmall,
+                    crossAxisSpacing: AppDimens.paddingSmall,
+                    childAspectRatio: 3.5, // Ajustado para FilterChip más anchos
                     children: categories.map((category) {
                       final isSelected = provider.selectedCategories.contains(category['name']);
                       return FilterChip(
@@ -123,13 +128,13 @@ class SettingsPage extends StatelessWidget {
                             );
                           }
                         },
-                        selectedColor: category['color'] as Color,
+                        selectedColor: AppColors.adjustForTheme(context, category['color'] as Color),
                         backgroundColor: (category['color'] as Color).withOpacity(0.5),
                         showCheckmark: true,
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppDimens.paddingMedium),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(

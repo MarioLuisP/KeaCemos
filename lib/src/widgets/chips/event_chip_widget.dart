@@ -14,26 +14,44 @@ class EventChipWidget extends StatelessWidget {
     final isSelected = provider.activeFilterCategories.contains(category);
     final color = AppColors.categoryColors[category] ?? AppColors.defaultColor;
     final adjustedColor = AppColors.adjustForTheme(context, color);
+    final inactiveColor = AppColors.dividerGrey.withOpacity(0.3);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        color: isSelected ? adjustedColor : adjustedColor.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(AppDimens.borderRadius),
-        border: Border.all(
-          color: isSelected ? adjustedColor : AppColors.dividerGrey,
+    return ChipTheme(
+      data: ChipThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.borderRadius),
         ),
+        backgroundColor: Colors.transparent,
       ),
-      height: AppDimens.chipHeight,
-      child: InkWell(
-        onTap: () {
-          provider.toggleFilterCategory(category);
-        },
-        child: Center(
-          child: Text(
-            category,
-            style: AppStyles.chipLabel,
-            textAlign: TextAlign.center,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          color: isSelected ? adjustedColor : inactiveColor,
+          borderRadius: BorderRadius.circular(AppDimens.borderRadius),
+          border: Border.all(
+            color: isSelected ? adjustedColor : AppColors.dividerGrey,
+            width: 1.0,
+          ),
+        ),
+        height: AppDimens.chipHeight,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppDimens.borderRadius),
+          onTap: () {
+            provider.toggleFilterCategory(category);
+          },
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0), // Aumentado
+              child: Text(
+                category,
+                style: AppStyles.chipLabel.copyWith(
+                  color: isSelected ? AppColors.textDark : AppColors.textDark.withOpacity(0.7),
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
         ),
       ),

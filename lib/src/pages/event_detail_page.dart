@@ -1,10 +1,11 @@
 /// Detail page for displaying event information.
+library;
 import 'package:flutter/material.dart';
 
 class EventDetailPage extends StatelessWidget {
   final Map<String, String> event;
 
-  const EventDetailPage({Key? key, required this.event}) : super(key: key);
+  const EventDetailPage({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
