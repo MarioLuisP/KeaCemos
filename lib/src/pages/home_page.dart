@@ -4,6 +4,10 @@ import 'package:myapp/src/services/auth_service.dart';
 import 'package:myapp/src/services/event_service.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/src/pages/pages.dart';
+import 'package:myapp/src/utils/utils.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/src/providers/preferences_provider.dart';
+import 'package:myapp/src/widgets/chips/event_chip_widget.dart';
 
 class HomePage extends StatefulWidget {
   final DateTime? selectedDate;
@@ -41,6 +45,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<PreferencesProvider>(context);
     final now = DateTime(2025, 6, 4);
     final todayString = DateFormat('yyyy-MM-dd').format(now);
     final tomorrowString = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1)));
@@ -62,6 +67,17 @@ class _HomePageState extends State<HomePage> {
         String listTitle = _selectedDate == null
             ? 'Próximos Eventos'
             : 'Eventos para ${DateFormat('EEEE, d MMM', 'es').format(_selectedDate!)}';
+
+        // Filtrar eventos por categorías activas
+        if (provider.activeFilterCategories.isNotEmpty) {
+          displayedEvents = displayedEvents.where((event) {
+            final eventType = event['type']?.toLowerCase() ?? '';
+            return provider.activeFilterCategories.any((category) =>
+                category.toLowerCase() == eventType ||
+                (category == 'Cursos' && eventType == 'talleres') ||
+                (category == 'Redes' && eventType == 'comunidad'));
+          }).toList();
+        }
 
         if (_selectedDate == null) {
           final todayEvents = displayedEvents
@@ -108,15 +124,16 @@ class _HomePageState extends State<HomePage> {
             title: const Text(
               '🌟 KeaCMos Córdoba',
               style: TextStyle(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
             ),
             centerTitle: true,
           ),
           body: ListView(
             children: [
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimens.paddingMedium,
+                  vertical: AppDimens.paddingSmall,
+                ),
                 child: Text(
                   listTitle,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -125,16 +142,30 @@ class _HomePageState extends State<HomePage> {
                       ),
                 ),
               ),
+              // Chips
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingMedium),
+                child: GridView.count(
+                  crossAxisCount: 4,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: AppDimens.paddingSmall,
+                  crossAxisSpacing: AppDimens.paddingSmall,
+                  children: provider.selectedCategories.map((category) {
+                    return EventChipWidget(category: category);
+                  }).toList(),
+                ),
+              ),
               const Divider(
-                thickness: 1,
-                indent: 16,
-                endIndent: 16,
+                thickness: AppDimens.dividerThickness,
+                indent: AppDimens.dividerIndent,
+                endIndent: AppDimens.dividerIndent,
                 color: Colors.grey,
               ),
               if (displayedEvents.isEmpty)
                 const Center(
                   child: Padding(
-                    padding: EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(AppDimens.paddingMedium),
                     child: Text('No hay eventos para esta fecha.'),
                   ),
                 )
@@ -152,20 +183,21 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
+                          horizontal: AppDimens.paddingMedium,
+                          vertical: AppDimens.paddingSmall,
+                        ),
                         child: Text(
                           sectionTitle,
-                          style:
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
                         ),
                       ),
                       const Divider(
-                        thickness: 1,
-                        indent: 16,
-                        endIndent: 16,
+                        thickness: AppDimens.dividerThickness,
+                        indent: AppDimens.dividerIndent,
+                        endIndent: AppDimens.dividerIndent,
                         color: Colors.grey,
                       ),
                       ...eventsOnDate.asMap().entries.map((entry) {
@@ -187,8 +219,7 @@ class _HomePageState extends State<HomePage> {
     final eventDate = DateFormat('yyyy-MM-dd').parse(event['date']!);
     final formattedDate = eventDate == DateTime(now.year, now.month, now.day)
         ? 'Hoy'
-        : eventDate ==
-                DateTime(now.year, now.month, now.day).add(const Duration(days: 1))
+        : eventDate == DateTime(now.year, now.month, now.day).add(const Duration(days: 1))
             ? 'Mañana'
             : DateFormat('d MMM yyyy', 'es').format(eventDate);
     print(

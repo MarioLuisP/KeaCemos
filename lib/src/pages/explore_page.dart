@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/src/services/event_service.dart';
 import 'package:myapp/src/pages/pages.dart';
+import 'package:myapp/src/utils/utils.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/src/providers/preferences_provider.dart';
+import 'package:myapp/src/widgets/chips/event_chip_widget.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -59,6 +63,18 @@ class _ExplorePageState extends State<ExplorePage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<PreferencesProvider>(context);
+    List<Map<String, String>> filteredResults = _searchResults;
+    if (provider.activeFilterCategories.isNotEmpty) {
+      filteredResults = _searchResults.where((event) {
+        final eventType = event['type']?.toLowerCase() ?? '';
+        return provider.activeFilterCategories.any((category) =>
+            category.toLowerCase() == eventType ||
+            (category == 'Cursos' && eventType == 'talleres') ||
+            (category == 'Redes' && eventType == 'comunidad'));
+      }).toList();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Explorar Eventos'),
@@ -66,8 +82,22 @@ class _ExplorePageState extends State<ExplorePage> {
       ),
       body: Column(
         children: [
+          // Chips
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingMedium),
+            child: GridView.count(
+              crossAxisCount: 4,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: AppDimens.paddingSmall,
+              crossAxisSpacing: AppDimens.paddingSmall,
+              children: provider.selectedCategories.map((category) {
+                return EventChipWidget(category: category);
+              }).toList(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppDimens.paddingMedium),
             child: TextField(
               controller: _searchController,
               decoration: const InputDecoration(
@@ -78,12 +108,12 @@ class _ExplorePageState extends State<ExplorePage> {
             ),
           ),
           Expanded(
-            child: _searchResults.isEmpty
+            child: filteredResults.isEmpty
                 ? const Center(child: Text('No hay resultados'))
                 : ListView.builder(
-                    itemCount: _searchResults.length,
+                    itemCount: filteredResults.length,
                     itemBuilder: (context, index) {
-                      final event = _searchResults[index];
+                      final event = filteredResults[index];
                       return _buildEventCard(context, event, index);
                     },
                   ),
@@ -98,8 +128,7 @@ class _ExplorePageState extends State<ExplorePage> {
     final eventDate = DateFormat('yyyy-MM-dd').parse(event['date']!);
     final formattedDate = eventDate == DateTime(now.year, now.month, now.day)
         ? 'Hoy'
-        : eventDate ==
-                DateTime(now.year, now.month, now.day).add(const Duration(days: 1))
+        : eventDate == DateTime(now.year, now.month, now.day).add(const Duration(days: 1))
             ? 'Mañana'
             : DateFormat('d MMM yyyy', 'es').format(eventDate);
     print(
