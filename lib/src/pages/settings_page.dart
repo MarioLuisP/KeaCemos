@@ -17,10 +17,12 @@ class SettingsPage extends StatelessWidget {
       {'name': 'Arte', 'emoji': '🎨', 'color': AppColors.arte},
       {'name': 'Cine', 'emoji': '🎬', 'color': AppColors.cine},
       {'name': 'Mic', 'emoji': '🎤', 'color': AppColors.mic},
-      {'name': 'Cursos', 'emoji': '🛠️', 'color': AppColors.cursos}, // Reemplaza Talleres
+      {'name': 'Cursos', 'emoji': '🛠️', 'color': AppColors.cursos},
       {'name': 'Ferias', 'emoji': '🏬', 'color': AppColors.ferias},
       {'name': 'Calle', 'emoji': '🌆', 'color': AppColors.calle},
-      {'name': 'Redes', 'emoji': '🤝', 'color': AppColors.redes}, // Reemplaza Comunidad
+      {'name': 'Redes', 'emoji': '🤝', 'color': AppColors.redes},
+      {'name': 'Niños', 'emoji': '👧', 'color': AppColors.ninos},
+      {'name': 'Danza', 'emoji': '🩰', 'color': AppColors.danza},
     ];
 
     return Scaffold(
@@ -31,10 +33,12 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppDimens.paddingMedium),
         children: [
-          // Sección: Temas
+          // Tema
           Card(
             elevation: AppDimens.cardElevation,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.borderRadius)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimens.borderRadius),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(AppDimens.paddingMedium),
               child: Column(
@@ -42,45 +46,31 @@ class SettingsPage extends StatelessWidget {
                 children: [
                   Text(
                     'Tema de la app',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: AppDimens.paddingSmall),
                   Wrap(
                     spacing: AppDimens.paddingSmall,
                     children: [
-                      ChoiceChip(
-                        label: const Text('Normal'),
-                        selected: provider.theme == 'normal',
-                        onSelected: (_) => provider.setTheme('normal'),
-                      ),
-                      ChoiceChip(
-                        label: const Text('Oscuro'),
-                        selected: provider.theme == 'dark',
-                        onSelected: (_) => provider.setTheme('dark'),
-                      ),
-                      ChoiceChip(
-                        label: const Text('Fluor'),
-                        selected: provider.theme == 'fluor',
-                        onSelected: (_) => provider.setTheme('fluor'),
-                      ),
-                      ChoiceChip(
-                        label: const Text('Harmony'),
-                        selected: provider.theme == 'harmony',
-                        onSelected: (_) => provider.setTheme('harmony'),
-                      ),
+                      ChoiceChip(label: const Text('Normal'), selected: provider.theme == 'normal', onSelected: (_) => provider.setTheme('normal')),
+                      ChoiceChip(label: const Text('Oscuro'), selected: provider.theme == 'dark', onSelected: (_) => provider.setTheme('dark')),
+                      ChoiceChip(label: const Text('Fluor'), selected: provider.theme == 'fluor', onSelected: (_) => provider.setTheme('fluor')),
+                      ChoiceChip(label: const Text('Harmony'), selected: provider.theme == 'harmony', onSelected: (_) => provider.setTheme('harmony')),
                     ],
                   ),
                 ],
               ),
             ),
           ),
+
           const SizedBox(height: AppDimens.paddingMedium),
-          // Sección: Categorías favoritas
+
+          // Categorías
           Card(
             elevation: AppDimens.cardElevation,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.borderRadius)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimens.borderRadius),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(AppDimens.paddingMedium),
               child: Column(
@@ -88,52 +78,64 @@ class SettingsPage extends StatelessWidget {
                 children: [
                   Text(
                     'Categorías favoritas',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: AppDimens.paddingSmall),
                   Text(
-                    'Elegí hasta 4 categorías. Seleccionaste ${provider.selectedCategories.length}/4.',
+                    'Seleccioná las categorías que te interesan. Todas están activas por defecto.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: AppDimens.paddingMedium),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: AppDimens.paddingSmall,
-                    crossAxisSpacing: AppDimens.paddingSmall,
-                    childAspectRatio: 3.5, // Ajustado para FilterChip más anchos
-                    children: categories.map((category) {
-                      final isSelected = provider.selectedCategories.contains(category['name']);
-                      return FilterChip(
-                        label: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(category['emoji'] as String),
-                            const SizedBox(width: 4),
-                            Text(category['name'] as String),
-                          ],
-                        ),
-                        selected: isSelected,
-                        onSelected: (_) async {
-                          final reachedLimit = provider.selectedCategories.length >= 4 && !isSelected;
-                          await provider.toggleCategory(category['name'] as String);
-                          if (reachedLimit) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Ya elegiste 4. Sacá una para agregar otra.'),
-                              ),
-                            );
-                          }
-                        },
-                        selectedColor: AppColors.adjustForTheme(context, category['color'] as Color),
-                        backgroundColor: (category['color'] as Color).withOpacity(0.5),
-                        showCheckmark: true,
+
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      int crossAxisCount = (constraints.maxWidth / 180).floor().clamp(2, 4);
+                      return GridView.count(
+                        crossAxisCount: crossAxisCount,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        mainAxisSpacing: AppDimens.paddingSmall,
+                        crossAxisSpacing: AppDimens.paddingSmall,
+                        childAspectRatio: 3.5,
+                        children: categories.map((category) {
+                          final isSelected = provider.selectedCategories.contains(category['name']);
+                          final color = AppColors.adjustForTheme(context, category['color'] as Color);
+
+                          return FilterChip(
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(category['emoji'] as String),
+                                const SizedBox(width: 4),
+                                Text(category['name'] as String),
+                              ],
+                            ),
+                            selected: isSelected,
+                            onSelected: (_) async {
+                              await provider.toggleCategory(category['name'] as String);
+                            },
+                            selectedColor: color,
+                            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black12,
+                            side: BorderSide(
+                              color: isSelected ? color : Colors.black54,
+                            ),
+                            checkmarkColor: isSelected
+                                ? (Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white)
+                                : Colors.transparent,
+                            showCheckmark: isSelected,
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? (Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white)
+                                  : Colors.black,
+                            ),
+                          );
+                        }).toList(),
                       );
-                    }).toList(),
+                    },
                   ),
+
                   const SizedBox(height: AppDimens.paddingMedium),
                   Align(
                     alignment: Alignment.centerRight,

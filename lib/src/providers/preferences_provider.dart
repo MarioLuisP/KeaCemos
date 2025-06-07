@@ -3,12 +3,10 @@ import 'package:myapp/src/models/user_preferences.dart';
 
 class PreferencesProvider with ChangeNotifier {
   String _theme = 'normal';
-  Set<String> _selectedCategories = {'Cine', 'Teatro', 'StandUp', 'Ferias'}; // Por defecto
-  Set<String> _activeFilterCategories = {}; // Nuevo: categorías activas para filtrado
+  Set<String> _selectedCategories = {};
+  Set<String> _activeFilterCategories = {};
 
-  PreferencesProvider() {
-    // Constructor vacío, inicialización en init()
-  }
+  PreferencesProvider();
 
   Future<void> init() async {
     await _loadPreferences();
@@ -21,9 +19,15 @@ class PreferencesProvider with ChangeNotifier {
   Future<void> _loadPreferences() async {
     _theme = await UserPreferences.getTheme();
     _selectedCategories = await UserPreferences.getCategories();
+
+    // Si no hay nada guardado, activar todas por defecto
     if (_selectedCategories.isEmpty) {
-      _selectedCategories = {'Cine', 'Teatro', 'StandUp', 'Ferias'};
+      _selectedCategories = {
+        'Música', 'Teatro', 'StandUp', 'Arte', 'Cine', 'Mic', 'Cursos',
+        'Ferias', 'Calle', 'Redes', 'Niños', 'Danza'
+      };
     }
+
     _activeFilterCategories = await UserPreferences.getActiveFilterCategories();
     notifyListeners();
   }
@@ -37,20 +41,21 @@ class PreferencesProvider with ChangeNotifier {
   Future<void> toggleCategory(String category) async {
     if (_selectedCategories.contains(category)) {
       _selectedCategories.remove(category);
-    } else if (_selectedCategories.length < 4) {
-      _selectedCategories.add(category);
-    }
-    await UserPreferences.setCategories(_selectedCategories);
-    // Resetear filtros activos si la categoría ya no está seleccionada
-    if (!_selectedCategories.contains(category)) {
       _activeFilterCategories.remove(category);
       await UserPreferences.setActiveFilterCategories(_activeFilterCategories);
+    } else {
+      _selectedCategories.add(category);
     }
+
+    await UserPreferences.setCategories(_selectedCategories);
     notifyListeners();
   }
 
   Future<void> resetCategories() async {
-    _selectedCategories = {'Cine', 'Teatro', 'StandUp', 'Ferias'};
+    _selectedCategories = {
+      'Música', 'Teatro', 'StandUp', 'Arte', 'Cine', 'Mic', 'Cursos',
+      'Ferias', 'Calle', 'Redes', 'Niños', 'Danza'
+    };
     _activeFilterCategories.clear();
     await UserPreferences.setCategories(_selectedCategories);
     await UserPreferences.setActiveFilterCategories(_activeFilterCategories);

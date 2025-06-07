@@ -12,9 +12,14 @@ class EventChipWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<PreferencesProvider>(context);
     final isSelected = provider.activeFilterCategories.contains(category);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final color = AppColors.categoryColors[category] ?? AppColors.defaultColor;
     final adjustedColor = AppColors.adjustForTheme(context, color);
-    final inactiveColor = AppColors.dividerGrey.withOpacity(0.3);
+
+    final inactiveBackground = isDark ? Colors.black : Colors.white;
+    final inactiveTextColor = isDark ? Colors.white : Colors.black;
+    final inactiveBorderColor = inactiveTextColor;
 
     return ChipTheme(
       data: ChipThemeData(
@@ -27,10 +32,10 @@ class EventChipWidget extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          color: isSelected ? adjustedColor : inactiveColor,
+          color: isSelected ? adjustedColor : inactiveBackground,
           borderRadius: BorderRadius.circular(AppDimens.borderRadius),
           border: Border.all(
-            color: isSelected ? adjustedColor : AppColors.dividerGrey,
+            color: isSelected ? adjustedColor : inactiveBorderColor,
             width: 1.0,
           ),
         ),
@@ -42,14 +47,27 @@ class EventChipWidget extends StatelessWidget {
           },
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0), // Aumentado
-              child: Text(
-                category,
-                style: AppStyles.chipLabel.copyWith(
-                  color: isSelected ? AppColors.textDark : AppColors.textDark.withOpacity(0.7),
-                ),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isSelected)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4.0),
+                      child: Icon(
+                        Icons.check,
+                        size: 16,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  Text(
+                    category,
+                    style: AppStyles.chipLabel.copyWith(
+                      color: isSelected ? AppColors.textDark : inactiveTextColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
           ),

@@ -72,18 +72,24 @@ class _ExplorePageState extends State<ExplorePage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: GridView.count(
-                    crossAxisCount: 4,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 4.0,
-                    crossAxisSpacing: 4.0,
-                    childAspectRatio: 3.5,
-                    children: (prefs.selectedCategories.isEmpty
-                        ? ['Música', 'Teatro', 'Cine', 'StandUp']
-                        : prefs.selectedCategories)
-                        .map((c) => EventChipWidget(category: c))
-                        .toList(),
+                  child: SizedBox(
+                    height: 40.0,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: (prefs.selectedCategories.isEmpty
+                            ? ['Música', 'Teatro', 'Cine', 'StandUp']
+                            : prefs.selectedCategories)
+                            .map((c) => Padding(
+                                  padding: const EdgeInsets.only(right: 4.0),
+                                  child: SizedBox(
+                                    width: 80.0,
+                                    child: EventChipWidget(category: c),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8.0),
