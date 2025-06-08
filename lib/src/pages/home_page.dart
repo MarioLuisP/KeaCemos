@@ -249,16 +249,18 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
                     color: Colors.black87,
                   ),
             ),
-            GridView.count(
-              crossAxisCount: 4,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 4.0,
-              crossAxisSpacing: 4.0,
-              childAspectRatio: 3.5,
-              children: categories.map((category) {
-                return EventChipWidget(category: category);
-              }).toList(),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  const SizedBox(width: 4.0), // Padding inicial
+                  ...categories.map((category) => Padding(
+                        padding: const EdgeInsets.only(right: 4.0),
+                        child: EventChipWidget(category: category),
+                      )),
+                  const SizedBox(width: 4.0), // Padding final
+                ],
+              ),
             ),
           ],
         ),

@@ -5,5 +5,5 @@ class AppDimens {
   static const dividerIndent = 16.0;
   static const cardElevation = 2.0;
   static const borderRadius = 6.0;
-  static const chipHeight = 48.0; // Ajustado para igualar SettingsPage
+  static const chipHeight = 28.0; // Ajustado para igualar SettingsPage
 }
