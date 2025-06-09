@@ -258,6 +258,13 @@ class HomeViewModel with ChangeNotifier {
     return [...todayEvents, ...tomorrowEvents, ...futureEvents].take(20).toList();
   }
 
+
+
+  String capitalizeWord(String word) {
+    if (word.isEmpty) return word;
+    return word[0].toUpperCase() + word.substring(1);
+  }
+
   // Obtener título de sección para una fecha
   String getSectionTitle(String date) {
     final todayString = DateFormat('yyyy-MM-dd').format(_devNow);
@@ -271,22 +278,29 @@ class HomeViewModel with ChangeNotifier {
     } else if (eventDateString == tomorrowString) {
       return 'Mañana';
     } else {
-      return DateFormat('EEEE, d \'de\' MMM', 'es').format(parsedDate); // Ej: Viernes, 6 de jun
+      final weekday = capitalizeWord(DateFormat('EEEE', 'es').format(parsedDate)); // viernes → Viernes
+      final day = DateFormat('d', 'es').format(parsedDate);                         // 6
+      final month = capitalizeWord(DateFormat('MMMM', 'es').format(parsedDate));   // junio → Junio
+      return '$weekday, $day de $month';  // Viernes, 6 de Junio
     }
   }
+
   // Obtener título principal de la página
   String getPageTitle() {
     if (_selectedDate == null) {
       return 'Próximos Eventos';
     } else {
-      return 'Eventos para ${DateFormat('EEEE, d MMM', 'es').format(_selectedDate!)}';
+      final weekday = capitalizeWord(DateFormat('EEEE', 'es').format(_selectedDate!));
+      final day = DateFormat('d', 'es').format(_selectedDate!);
+      final month = capitalizeWord(DateFormat('MMMM', 'es').format(_selectedDate!));
+      return 'Eventos para $weekday, $day de $month';
     }
   }
 
-  // Refresh/reload
-  Future<void> refresh() async {
-    await loadEvents();
-  }
+    // Refresh/reload
+    Future<void> refresh() async {
+      await loadEvents();
+    }
 
   // Obtener color de card según tipo de evento
   Color getEventCardColor(String eventType, BuildContext context) {
@@ -312,6 +326,7 @@ class HomeViewModel with ChangeNotifier {
     } else if (eventDateString == tomorrowString) {
       return 'Mañana';
     } else {
+      // ✅ Formato correcto aquí también
       return DateFormat('d MMM yyyy', 'es').format(eventDate);
     }
   }

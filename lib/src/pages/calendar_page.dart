@@ -85,7 +85,7 @@ class _CalendarPageState extends State<CalendarPage> {
             appBar: AppBar(
               title: Text(_selectedDay == null
                   ? 'Selecciona una fecha'
-                  : 'Eventos para ${DateFormat('EEEE, d MMM', 'es').format(_selectedDay!)}'),
+                  : 'Eventos de ${DateFormat('EEEE, d MMM', 'es').format(_selectedDay!)}'),
               centerTitle: true,
               actions: [
                 // Botón para ir a la fecha seleccionada en HomePage
