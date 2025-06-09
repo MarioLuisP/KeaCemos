@@ -116,7 +116,7 @@ class _ExplorePageState extends State<ExplorePage> {
   Widget _buildEventCard(
       BuildContext context, Map<String, String> event, HomeViewModel viewModel) {
     final formattedDate = viewModel.formatEventDate(event['date']!);
-    final cardColor = viewModel.getEventCardColor(event['type'] ?? '');
+    final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context);
 
     return GestureDetector(
       onTap: () {

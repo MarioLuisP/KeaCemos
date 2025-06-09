@@ -220,7 +220,7 @@ class _CalendarPageState extends State<CalendarPage> {
       itemCount: eventsForDay.length,
       itemBuilder: (context, index) {
         final event = eventsForDay[index];
-        final cardColor = _homeViewModel.getEventCardColor(event['type'] ?? '');
+        final cardColor = _homeViewModel.getEventCardColor(event['type'] ?? '', context);
         
         return Card(
           color: cardColor,

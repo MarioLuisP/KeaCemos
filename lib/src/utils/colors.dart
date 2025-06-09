@@ -7,7 +7,7 @@ class AppColors {
   // Categorías
   static const musica = Color(0xFFFCA1AE); // Música
   static const teatro = Color(0xFFD7D26D); // Teatro
-  static const standUp = Color(0xFF3CCDC7); // StandUp
+  static const standup = Color(0xFF3CCDC7); // StandUp
   static const arte = Color(0xFFFD8977); // Arte
   static const cine = Color(0xFFEBE7A7); // Cine
   static const mic = Color(0xFFE1BEE7); // Mic
@@ -28,7 +28,7 @@ class AppColors {
   static const categoryColors = {
     'Música': musica,
     'Teatro': teatro,
-    'StandUp': standUp,
+    'StandUp': standup,
     'Arte': arte,
     'Cine': cine,
     'Mic': mic,

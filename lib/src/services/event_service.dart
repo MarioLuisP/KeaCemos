@@ -1,22 +1,35 @@
 import 'package:intl/intl.dart';
 import 'package:myapp/src/models/models.dart';
 
+
 class EventService {
+  const EventService(); // Para evitar instancias innecesarias
+
   // Obtener eventos para una fecha específica
   Future<List<Map<String, String>>> getEventsForDay(DateTime day) async {
     final dateString = DateFormat('yyyy-MM-dd').format(day);
-    return events.where((event) => event['date'] == dateString).toList();
+    return events
+        .where((event) => event['date']?.startsWith(dateString) ?? false)
+        .toList()
+        .take(1000)
+        .toList();
   }
 
   // Obtener todos los eventos
   Future<List<Map<String, String>>> getAllEvents() async {
-    return events.toList();
+    return events.toList().take(1000).toList();
   }
 
   // Filtrar por categoría (para Prompt 4 y chips)
   Future<List<Map<String, String>>> getEventsByCategory(String category) async {
+    final lowerCategory = category.toLowerCase();
     return events
-        .where((event) => event['type']!.toLowerCase() == category.toLowerCase())
+        .where((event) {
+          final type = event['type']?.toLowerCase() ?? '';
+          return type == lowerCategory;
+        })
+        .toList()
+        .take(1000)
         .toList();
   }
 
@@ -24,9 +37,13 @@ class EventService {
   Future<List<Map<String, String>>> searchEvents(String keyword) async {
     final lowerKeyword = keyword.toLowerCase();
     return events
-        .where((event) =>
-            event['title']!.toLowerCase().contains(lowerKeyword) ||
-            event['location']!.toLowerCase().contains(lowerKeyword))
+        .where((event) {
+          final title = event['title']?.toLowerCase() ?? '';
+          final location = event['location']?.toLowerCase() ?? '';
+          return title.contains(lowerKeyword) || location.contains(lowerKeyword);
+        })
+        .toList()
+        .take(1000)
         .toList();
   }
 }

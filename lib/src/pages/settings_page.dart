@@ -13,7 +13,7 @@ class SettingsPage extends StatelessWidget {
     final List<Map<String, dynamic>> categories = [
       {'name': 'Música', 'emoji': '🎶', 'color': AppColors.musica},
       {'name': 'Teatro', 'emoji': '🎭', 'color': AppColors.teatro},
-      {'name': 'StandUp', 'emoji': '😂', 'color': AppColors.standUp},
+      {'name': 'StandUp', 'emoji': '😂', 'color': AppColors.standup},
       {'name': 'Arte', 'emoji': '🎨', 'color': AppColors.arte},
       {'name': 'Cine', 'emoji': '🎬', 'color': AppColors.cine},
       {'name': 'Mic', 'emoji': '🎤', 'color': AppColors.mic},

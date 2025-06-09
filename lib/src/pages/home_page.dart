@@ -164,7 +164,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildEventCard(BuildContext context, Map<String, String> event, HomeViewModel viewModel) {
     final formattedDate = viewModel.formatEventDate(event['date']!);
-    final cardColor = viewModel.getEventCardColor(event['type'] ?? '');
+    final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context);
 
     return GestureDetector(
       onTap: () {
