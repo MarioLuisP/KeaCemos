@@ -15,7 +15,7 @@ class AppColors {
   static const ferias = Color(0xFFFFCDD2); // Ferias
   static const calle = Color(0xFFB3E5FC); // Calle
   static const redes = Color(0xFFC8E6C9);
-  static const ninos = Color(0xFFD6CBAE); // Niños
+  static const ninos = Color(0xFFD6CBAE); // ninos
   static const danza = Color(0xFFFDA673); // Comunidad -> Redes // Comunidad -> Redes
   static const defaultColor = Color(0xFFE0E0E0)
   ; // Default

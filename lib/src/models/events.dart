@@ -1,10 +1,10 @@
 final List<Map<String, String>> events = [
   {
-    "id": "música_001",
+    "id": "musica_001",
     "title": "Concierto de Jazz 🎶",
     "date": "2025-06-03T20:00",
     "location": "Teatro A",
-    "type": "Música"
+    "type": "musica"
   },
   {
     "id": "teatro_001",
@@ -25,21 +25,21 @@ final List<Map<String, String>> events = [
     "title": "Show Infantil: Aventuras en la Selva 🐒",
     "date": "2025-06-09T17:00",
     "location": "Teatro Pequeños Sueños",
-    "type": "Niños"
+    "type": "ninos"
   },
   {
     "id": "ninos_002",
     "title": "Títeres y Canciones para Peques 🎭",
     "date": "2025-06-15T16:00",
     "location": "Centro Cultural Infantil",
-    "type": "Niños"
+    "type": "ninos"
   },
   {
     "id": "ninos_003",
     "title": "Cuentacuentos en el Parque 📚",
     "date": "2025-06-22T11:00",
     "location": "Parque de las Infancias",
-    "type": "Niños"
+    "type": "ninos"
   },
   {
     "id": "danza_001",
@@ -56,11 +56,11 @@ final List<Map<String, String>> events = [
     "type": "Danza"
   },
   {
-    "id": "música_002",
+    "id": "musica_002",
     "title": "Recital de Indie Rock 🎸",
     "date": "2025-06-06T20:00",
     "location": "Club del Arte",
-    "type": "Música"
+    "type": "musica"
   },
   {
     "id": "mic_001",
@@ -119,11 +119,11 @@ final List<Map<String, String>> events = [
     "type": "Arte"
   },
   {
-    "id": "música_003",
+    "id": "musica_003",
     "title": "Concierto al Aire Libre 🎶",
     "date": "2025-06-15T20:00",
     "location": "Parque Sarmiento",
-    "type": "Música"
+    "type": "musica"
   },
   {
     "id": "ferias_002",
@@ -189,11 +189,11 @@ final List<Map<String, String>> events = [
     "type": "Arte"
   },
   {
-    "id": "música_004",
+    "id": "musica_004",
     "title": "Encuentro Coral 🎼",
     "date": "2025-06-28T20:00",
     "location": "Teatro del Libertador",
-    "type": "Música"
+    "type": "musica"
   },
   {
     "id": "redes_002",
@@ -231,11 +231,11 @@ final List<Map<String, String>> events = [
     "type": "StandUp"
   },
   {
-    "id": "música_005",
+    "id": "musica_005",
     "title": "Peña Urbana 🎻",
     "date": "2025-07-04T20:00",
     "location": "Espacio 75",
-    "type": "Música"
+    "type": "musica"
   },
   {
     "id": "calle_002",

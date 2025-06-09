@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:myapp/src/providers/preferences_provider.dart';
 import 'package:myapp/src/providers/home_viewmodel.dart';
 import 'package:myapp/src/widgets/chips/event_chip_widget.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   final DateTime? selectedDate;
@@ -18,7 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late HomeViewModel _homeViewModel;
-  
+
   @override
   void initState() {
     super.initState();
@@ -54,7 +55,7 @@ class _HomePageState extends State<HomePage> {
       ],
       child: Consumer2<HomeViewModel, PreferencesProvider>(
         builder: (context, homeViewModel, preferencesProvider, child) {
-          // Aplicar filtros de categorías cuando cambien
+          // Aplicar filtros después del frame actual
           WidgetsBinding.instance.addPostFrameCallback((_) {
             homeViewModel.applyCategoryFilters(preferencesProvider.activeFilterCategories);
           });
@@ -104,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                     categories: preferencesProvider.selectedCategories.isEmpty
                         ? ['Música', 'Teatro', 'Cine', 'StandUp']
                         : preferencesProvider.selectedCategories
-                            .map((c) => c == 'StandUp' ? 'Stand-up' : c)
+                            .map((c) => c == 'StandUp' ? 'StandUp' : c)
                             .toList(),
                   ),
                 ),
@@ -125,7 +126,7 @@ class _HomePageState extends State<HomePage> {
                   ...sortedDates.map((date) {
                     final eventsOnDate = groupedEvents[date]!;
                     final sectionTitle = homeViewModel.getSectionTitle(date);
-                    
+
                     return SliverList(
                       delegate: SliverChildListDelegate([
                         Padding(
@@ -163,7 +164,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildEventCard(BuildContext context, Map<String, String> event, HomeViewModel viewModel) {
-    final formattedDate = viewModel.formatEventDate(event['date']!);
+    final parsedDate = viewModel.parseDate(event['date']!);
+    final formattedDate = DateFormat('d MMM yyyy', 'es').format(parsedDate);
+    final formattedTime = parsedDate.hour > 0 || parsedDate.minute > 0
+        ? '${parsedDate.hour.toString().padLeft(2, '0')}:${parsedDate.minute.toString().padLeft(2, '0')} hs'
+        : '';
     final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context);
 
     return GestureDetector(
@@ -187,7 +192,6 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Contenido principal en columna expandible
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,12 +199,13 @@ class _HomePageState extends State<HomePage> {
                     Text(event['title']!, style: AppStyles.cardTitle),
                     const SizedBox(height: 8),
                     Text('Fecha: $formattedDate'),
+                    if (formattedTime.isNotEmpty)
+                      Text('Hora: $formattedTime'),
                     const SizedBox(height: 4),
                     Text('Ubicación: ${event['location']}'),
                   ],
                 ),
               ),
-              // Corazón alineado arriba a la derecha
               IconButton(
                 icon: const Icon(Icons.favorite_border),
                 onPressed: () {
@@ -218,7 +223,6 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        
       ),
     );
   }
@@ -235,10 +239,7 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16.0,
-          vertical: 0.0,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -254,10 +255,12 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
               child: Row(
                 children: [
                   const SizedBox(width: 4.0), // Padding inicial
-                  ...categories.map((category) => Padding(
-                        padding: const EdgeInsets.only(right: 4.0),
-                        child: EventChipWidget(category: category),
-                      )),
+                  ...categories.map(
+                    (category) => Padding(
+                      padding: const EdgeInsets.only(right: 4.0),
+                      child: EventChipWidget(category: category),
+                    ),
+                  ),
                   const SizedBox(width: 4.0), // Padding final
                 ],
               ),

@@ -264,15 +264,16 @@ class HomeViewModel with ChangeNotifier {
     final tomorrowString = DateFormat('yyyy-MM-dd').format(_devNow.add(const Duration(days: 1)));
     final parsedDate = parseDate(date);
 
-    if (DateFormat('yyyy-MM-dd').format(parsedDate) == todayString) {
+    final eventDateString = DateFormat('yyyy-MM-dd').format(parsedDate);
+
+    if (eventDateString == todayString) {
       return 'Hoy';
-    } else if (DateFormat('yyyy-MM-dd').format(parsedDate) == tomorrowString) {
+    } else if (eventDateString == tomorrowString) {
       return 'Mañana';
     } else {
-      return 'Próximos (${DateFormat('EEEE, d MMM', 'es').format(parsedDate)})';
+      return DateFormat('EEEE, d \'de\' MMM', 'es').format(parsedDate); // Ej: Viernes, 6 de jun
     }
   }
-
   // Obtener título principal de la página
   String getPageTitle() {
     if (_selectedDate == null) {
