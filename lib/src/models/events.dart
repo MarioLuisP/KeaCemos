@@ -20,6 +20,41 @@ final List<Map<String, String>> events = [
     "location": "Cine C",
     "type": "Cine"
   },
+   {
+    "id": "ninos_001",
+    "title": "Show Infantil: Aventuras en la Selva 🐒",
+    "date": "2025-06-09T17:00",
+    "location": "Teatro Pequeños Sueños",
+    "type": "Niños"
+  },
+  {
+    "id": "ninos_002",
+    "title": "Títeres y Canciones para Peques 🎭",
+    "date": "2025-06-15T16:00",
+    "location": "Centro Cultural Infantil",
+    "type": "Niños"
+  },
+  {
+    "id": "ninos_003",
+    "title": "Cuentacuentos en el Parque 📚",
+    "date": "2025-06-22T11:00",
+    "location": "Parque de las Infancias",
+    "type": "Niños"
+  },
+  {
+    "id": "danza_001",
+    "title": "Función de Ballet Clásico: El Lago de los Cisnes 🩰",
+    "date": "2025-06-14T20:00",
+    "location": "Teatro del Libertador",
+    "type": "Danza"
+  },
+  {
+    "id": "danza_002",
+    "title": "Noche de Danzas Urbanas 🔥",
+    "date": "2025-06-28T19:00",
+    "location": "Espacio Cultural Urbano",
+    "type": "Danza"
+  },
   {
     "id": "música_002",
     "title": "Recital de Indie Rock 🎸",
