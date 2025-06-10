@@ -290,10 +290,8 @@ class HomeViewModel with ChangeNotifier {
     if (_selectedDate == null) {
       return 'Próximos Eventos';
     } else {
-      final weekday = capitalizeWord(DateFormat('EEEE', 'es').format(_selectedDate!));
-      final day = DateFormat('d', 'es').format(_selectedDate!);
       final month = capitalizeWord(DateFormat('MMMM', 'es').format(_selectedDate!));
-      return 'Eventos para $weekday, $day de $month';
+      return 'Eventos de $month';
     }
   }
 
