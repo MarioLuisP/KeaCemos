@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/src/providers/home_viewmodel.dart';
-import 'package:myapp/src/providers/preferences_provider.dart';
-import 'package:myapp/src/widgets/chips/event_chip_widget.dart';
-import 'package:myapp/src/pages/event_detail_page.dart';
-import 'package:myapp/src/utils/utils.dart';
+import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
+import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
+import 'package:quehacemos_cba/src/widgets/chips/event_chip_widget.dart';
+import 'package:quehacemos_cba/src/pages/event_detail_page.dart';
+import 'package:quehacemos_cba/src/utils/utils.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -37,9 +37,7 @@ class _ExplorePageState extends State<ExplorePage> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: _viewModel),
-      ],
+      providers: [ChangeNotifierProvider.value(value: _viewModel)],
       child: Consumer2<HomeViewModel, PreferencesProvider>(
         builder: (context, viewModel, prefs, _) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -62,7 +60,9 @@ class _ExplorePageState extends State<ExplorePage> {
                       prefixIcon: const Icon(Icons.search),
                       filled: true,
                       fillColor: Colors.grey[200],
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 14.0,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
                         borderSide: BorderSide.none,
@@ -78,12 +78,14 @@ class _ExplorePageState extends State<ExplorePage> {
                       children: [
                         const SizedBox(width: 4.0), // Padding inicial
                         ...(prefs.selectedCategories.isEmpty
-                            ? ['Música', 'Teatro', 'Cine', 'StandUp']
-                            : prefs.selectedCategories)
-                            .map((c) => Padding(
-                                  padding: const EdgeInsets.only(right: 4.0),
-                                  child: EventChipWidget(category: c),
-                                )),
+                                ? ['Música', 'Teatro', 'Cine', 'StandUp']
+                                : prefs.selectedCategories)
+                            .map(
+                              (c) => Padding(
+                                padding: const EdgeInsets.only(right: 4.0),
+                                child: EventChipWidget(category: c),
+                              ),
+                            ),
                         const SizedBox(width: 4.0), // Padding final
                       ],
                     ),
@@ -91,19 +93,22 @@ class _ExplorePageState extends State<ExplorePage> {
                 ),
                 const SizedBox(height: 8.0),
                 Expanded(
-                  child: viewModel.isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : viewModel.hasError
-                          ? Center(child: Text('Error: ${viewModel.errorMessage}'))
+                  child:
+                      viewModel.isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : viewModel.hasError
+                          ? Center(
+                            child: Text('Error: ${viewModel.errorMessage}'),
+                          )
                           : viewModel.filteredEvents.isEmpty
-                              ? const Center(child: Text('No hay eventos.'))
-                              : ListView.builder(
-                                  itemCount: viewModel.filteredEvents.take(20).length,
-                                  itemBuilder: (context, index) {
-                                    final event = viewModel.filteredEvents[index];
-                                    return _buildEventCard(context, event, viewModel);
-                                  },
-                                ),
+                          ? const Center(child: Text('No hay eventos.'))
+                          : ListView.builder(
+                            itemCount: viewModel.filteredEvents.take(20).length,
+                            itemBuilder: (context, index) {
+                              final event = viewModel.filteredEvents[index];
+                              return _buildEventCard(context, event, viewModel);
+                            },
+                          ),
                 ),
               ],
             ),
@@ -114,7 +119,10 @@ class _ExplorePageState extends State<ExplorePage> {
   }
 
   Widget _buildEventCard(
-      BuildContext context, Map<String, String> event, HomeViewModel viewModel) {
+    BuildContext context,
+    Map<String, String> event,
+    HomeViewModel viewModel,
+  ) {
     final formattedDate = viewModel.formatEventDate(event['date']!);
     final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context);
 

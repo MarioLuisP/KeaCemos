@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:myapp/src/services/auth_service.dart';
-import 'package:myapp/src/pages/pages.dart';
-import 'package:myapp/src/utils/utils.dart';
+import 'package:quehacemos_cba/src/services/auth_service.dart';
+import 'package:quehacemos_cba/src/pages/pages.dart';
+import 'package:quehacemos_cba/src/utils/utils.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/src/providers/preferences_provider.dart';
-import 'package:myapp/src/providers/home_viewmodel.dart';
-import 'package:myapp/src/widgets/chips/event_chip_widget.dart';
+import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
+import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
+import 'package:quehacemos_cba/src/widgets/chips/event_chip_widget.dart';
 import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
@@ -37,7 +37,9 @@ class _HomePageState extends State<HomePage> {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedDate != oldWidget.selectedDate) {
       _homeViewModel.setSelectedDate(widget.selectedDate);
-      print('HomePage actualizado con nuevo selectedDate: ${widget.selectedDate}');
+      print(
+        'HomePage actualizado con nuevo selectedDate: ${widget.selectedDate}',
+      );
     }
   }
 
@@ -50,14 +52,14 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: _homeViewModel),
-      ],
+      providers: [ChangeNotifierProvider.value(value: _homeViewModel)],
       child: Consumer2<HomeViewModel, PreferencesProvider>(
         builder: (context, homeViewModel, preferencesProvider, child) {
           // Aplicar filtros después del frame actual
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            homeViewModel.applyCategoryFilters(preferencesProvider.activeFilterCategories);
+            homeViewModel.applyCategoryFilters(
+              preferencesProvider.activeFilterCategories,
+            );
           });
 
           if (homeViewModel.isLoading) {
@@ -102,11 +104,12 @@ class _HomePageState extends State<HomePage> {
                   pinned: true,
                   delegate: _HeaderDelegate(
                     title: homeViewModel.getPageTitle(),
-                    categories: preferencesProvider.selectedCategories.isEmpty
-                        ? ['Música', 'Teatro', 'Cine', 'StandUp']
-                        : preferencesProvider.selectedCategories
-                            .map((c) => c == 'StandUp' ? 'StandUp' : c)
-                            .toList(),
+                    categories:
+                        preferencesProvider.selectedCategories.isEmpty
+                            ? ['Música', 'Teatro', 'Cine', 'StandUp']
+                            : preferencesProvider.selectedCategories
+                                .map((c) => c == 'StandUp' ? 'StandUp' : c)
+                                .toList(),
                   ),
                 ),
                 if (displayedEvents.isEmpty)
@@ -136,10 +139,12 @@ class _HomePageState extends State<HomePage> {
                           ),
                           child: Text(
                             sectionTitle,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                         const Divider(
@@ -163,12 +168,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildEventCard(BuildContext context, Map<String, String> event, HomeViewModel viewModel) {
+  Widget _buildEventCard(
+    BuildContext context,
+    Map<String, String> event,
+    HomeViewModel viewModel,
+  ) {
     final parsedDate = viewModel.parseDate(event['date']!);
     final formattedDate = DateFormat('d MMM yyyy', 'es').format(parsedDate);
-    final formattedTime = parsedDate.hour > 0 || parsedDate.minute > 0
-        ? '${parsedDate.hour.toString().padLeft(2, '0')}:${parsedDate.minute.toString().padLeft(2, '0')} hs'
-        : '';
+    final formattedTime =
+        parsedDate.hour > 0 || parsedDate.minute > 0
+            ? '${parsedDate.hour.toString().padLeft(2, '0')}:${parsedDate.minute.toString().padLeft(2, '0')} hs'
+            : '';
     final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context);
 
     return GestureDetector(
@@ -199,8 +209,7 @@ class _HomePageState extends State<HomePage> {
                     Text(event['title']!, style: AppStyles.cardTitle),
                     const SizedBox(height: 8),
                     Text('Fecha: $formattedDate'),
-                    if (formattedTime.isNotEmpty)
-                      Text('Hora: $formattedTime'),
+                    if (formattedTime.isNotEmpty) Text('Hora: $formattedTime'),
                     const SizedBox(height: 4),
                     Text('Ubicación: ${event['location']}'),
                   ],
@@ -210,13 +219,16 @@ class _HomePageState extends State<HomePage> {
                 icon: const Icon(Icons.favorite_border),
                 onPressed: () {
                   if (FirebaseAuth.instance.currentUser == null) {
-                    AuthService().signInWithGoogle().then((_) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Sesión iniciada')),
-                      );
-                    }).catchError((error) {
-                      print('Error signing in: $error');
-                    });
+                    AuthService()
+                        .signInWithGoogle()
+                        .then((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Sesión iniciada')),
+                          );
+                        })
+                        .catchError((error) {
+                          print('Error signing in: $error');
+                        });
                   }
                 },
               ),
@@ -235,7 +247,11 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   _HeaderDelegate({required this.title, required this.categories});
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: Padding(
@@ -246,9 +262,9 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
             Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,

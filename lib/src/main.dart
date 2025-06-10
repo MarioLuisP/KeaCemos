@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:myapp/l10n/intl_messages_all.dart';
+import 'package:quehacemos_cba/l10n/intl_messages_all.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/src/navigation/bottom_nav.dart';
-import 'package:myapp/src/providers/preferences_provider.dart';
-import 'package:myapp/src/themes/themes.dart';
+import 'package:quehacemos_cba/src/navigation/bottom_nav.dart';
+import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
+import 'package:quehacemos_cba/src/themes/themes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,12 +31,10 @@ class MyApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            supportedLocales: const [
-              Locale('es', ''),
-              Locale('en', ''),
-            ],
+            supportedLocales: const [Locale('es', ''), Locale('en', '')],
             title: 'KeaCMos Córdoba',
-            theme: AppThemes.themes[provider.theme] ??
+            theme:
+                AppThemes.themes[provider.theme] ??
                 ThemeData(
                   colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
                   useMaterial3: true,

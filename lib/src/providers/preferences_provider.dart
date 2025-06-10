@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/src/models/user_preferences.dart';
+import 'package:quehacemos_cba/src/models/user_preferences.dart';
 
 class PreferencesProvider with ChangeNotifier {
   String _theme = 'normal';
@@ -23,8 +23,18 @@ class PreferencesProvider with ChangeNotifier {
     // Si no hay nada guardado, activar todas por defecto
     if (_selectedCategories.isEmpty) {
       _selectedCategories = {
-        'Música', 'Teatro', 'StandUp', 'Arte', 'Cine', 'Mic', 'Cursos',
-        'Ferias', 'Calle', 'Redes', 'Niños', 'Danza'
+        'Música',
+        'Teatro',
+        'StandUp',
+        'Arte',
+        'Cine',
+        'Mic',
+        'Cursos',
+        'Ferias',
+        'Calle',
+        'Redes',
+        'Niños',
+        'Danza',
       };
     }
 
@@ -53,8 +63,18 @@ class PreferencesProvider with ChangeNotifier {
 
   Future<void> resetCategories() async {
     _selectedCategories = {
-      'Música', 'Teatro', 'StandUp', 'Arte', 'Cine', 'Mic', 'Cursos',
-      'Ferias', 'Calle', 'Redes', 'Niños', 'Danza'
+      'Música',
+      'Teatro',
+      'StandUp',
+      'Arte',
+      'Cine',
+      'Mic',
+      'Cursos',
+      'Ferias',
+      'Calle',
+      'Redes',
+      'Niños',
+      'Danza',
     };
     _activeFilterCategories.clear();
     await UserPreferences.setCategories(_selectedCategories);

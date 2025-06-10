@@ -1,6 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:myapp/src/models/models.dart';
-
+import 'package:quehacemos_cba/src/models/models.dart';
 
 class EventService {
   const EventService(); // Para evitar instancias innecesarias
@@ -40,7 +39,8 @@ class EventService {
         .where((event) {
           final title = event['title']?.toLowerCase() ?? '';
           final location = event['location']?.toLowerCase() ?? '';
-          return title.contains(lowerKeyword) || location.contains(lowerKeyword);
+          return title.contains(lowerKeyword) ||
+              location.contains(lowerKeyword);
         })
         .toList()
         .take(1000)

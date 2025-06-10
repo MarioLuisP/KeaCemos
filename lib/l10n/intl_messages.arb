@@ -1,3 +1,10 @@
 {
-  "@@last_modified": "2025-06-03T23:35:45.759049"
+  "appTitle": "QueHacemos Cba",
+  "@appTitle": {
+    "description": "Título de la aplicación"
+  },
+  "welcome": "¡Bienvenido a QueHacemos Cba!",
+  "@welcome": {
+    "description": "Mensaje de bienvenida"
+  }
 }

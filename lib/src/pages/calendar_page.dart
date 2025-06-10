@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/src/providers/home_viewmodel.dart';
+import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 
 class CalendarPage extends StatefulWidget {
   final Function(DateTime?)? onDateSelected;
@@ -37,7 +37,7 @@ class _CalendarPageState extends State<CalendarPage> {
     // Cargar todos los eventos y cachearlos por fecha
     await _homeViewModel.loadEvents();
     final events = _homeViewModel.filteredEvents;
-    
+
     _eventCache.clear();
     for (var event in events) {
       final eventDate = DateFormat('yyyy-MM-dd').parse(event['date']!);
@@ -45,7 +45,7 @@ class _CalendarPageState extends State<CalendarPage> {
       _eventCache[cacheKey] ??= [];
       _eventCache[cacheKey]!.add(event);
     }
-    
+
     if (mounted) {
       setState(() {});
     }
@@ -62,7 +62,7 @@ class _CalendarPageState extends State<CalendarPage> {
       _selectedDay = selectedDay;
       _focusedDay = focusedDay;
     });
-    
+
     // Notificar al callback si existe (para navegación entre páginas)
     if (widget.onDateSelected != null) {
       widget.onDateSelected!(selectedDay);
@@ -83,9 +83,11 @@ class _CalendarPageState extends State<CalendarPage> {
         builder: (context, viewModel, child) {
           return Scaffold(
             appBar: AppBar(
-              title: Text(_selectedDay == null
-                  ? 'Selecciona una fecha'
-                  : 'Eventos de ${DateFormat('EEEE, d MMM', 'es').format(_selectedDay!)}'),
+              title: Text(
+                _selectedDay == null
+                    ? 'Selecciona una fecha'
+                    : 'Eventos de ${DateFormat('EEEE, d MMM', 'es').format(_selectedDay!)}',
+              ),
               centerTitle: true,
               actions: [
                 // Botón para ir a la fecha seleccionada en HomePage
@@ -178,16 +180,14 @@ class _CalendarPageState extends State<CalendarPage> {
                     CalendarFormat.week: 'Semana',
                   },
                 ),
-                
+
                 // Lista de eventos para el día seleccionado
                 if (_selectedDay != null) ...[
                   const Padding(
                     padding: EdgeInsets.all(16.0),
                     child: Divider(),
                   ),
-                  Expanded(
-                    child: _buildEventsForSelectedDay(),
-                  ),
+                  Expanded(child: _buildEventsForSelectedDay()),
                 ],
               ],
             ),
@@ -199,17 +199,14 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Widget _buildEventsForSelectedDay() {
     final eventsForDay = _getEventsForDay(_selectedDay!);
-    
+
     if (eventsForDay.isEmpty) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Text(
             'No hay eventos para esta fecha.',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
         ),
       );
@@ -220,15 +217,16 @@ class _CalendarPageState extends State<CalendarPage> {
       itemCount: eventsForDay.length,
       itemBuilder: (context, index) {
         final event = eventsForDay[index];
-        final cardColor = _homeViewModel.getEventCardColor(event['type'] ?? '', context);
-        
+        final cardColor = _homeViewModel.getEventCardColor(
+          event['type'] ?? '',
+          context,
+        );
+
         return Card(
           color: cardColor,
           margin: const EdgeInsets.only(bottom: 8.0),
           elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           child: ListTile(
             title: Text(
               event['title']!,

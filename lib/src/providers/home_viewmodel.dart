@@ -2,15 +2,10 @@ import 'dart:io'; // 👈 Import necesario para SocketException
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/src/services/event_service.dart';
-import 'package:myapp/src/utils/colors.dart';
+import 'package:quehacemos_cba/src/services/event_service.dart';
+import 'package:quehacemos_cba/src/utils/colors.dart';
 
-enum EventsLoadingState {
-  idle,
-  loading,
-  loaded,
-  error,
-}
+enum EventsLoadingState { idle, loading, loaded, error }
 
 class HomeViewModel with ChangeNotifier {
   final EventService _eventService = EventService();
@@ -65,18 +60,17 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final List<Map<String, String>> events = await retry(
-        () async {
-          if (_selectedDate != null) {
-            return await _eventService.getEventsForDay(_selectedDate!).timeout(
-                const Duration(seconds: 10));
-          } else {
-            return await _eventService.getAllEvents().timeout(
-                const Duration(seconds: 10));
-          }
-        },
-        retries: 3,
-      );
+      final List<Map<String, String>> events = await retry(() async {
+        if (_selectedDate != null) {
+          return await _eventService
+              .getEventsForDay(_selectedDate!)
+              .timeout(const Duration(seconds: 10));
+        } else {
+          return await _eventService.getAllEvents().timeout(
+            const Duration(seconds: 10),
+          );
+        }
+      }, retries: 3);
 
       _allEvents = events;
       _state = EventsLoadingState.loaded;
@@ -118,9 +112,14 @@ class HomeViewModel with ChangeNotifier {
     // Filtro por búsqueda
     if (_searchQuery.isNotEmpty) {
       final lowerQuery = _searchQuery.toLowerCase();
-      _filteredEvents = _filteredEvents.where((event) =>
-          event['title']!.toLowerCase().contains(lowerQuery) ||
-          event['location']!.toLowerCase().contains(lowerQuery)).toList();
+      _filteredEvents =
+          _filteredEvents
+              .where(
+                (event) =>
+                    event['title']!.toLowerCase().contains(lowerQuery) ||
+                    event['location']!.toLowerCase().contains(lowerQuery),
+              )
+              .toList();
     }
 
     // Ordenar por fecha y luego por tipo
@@ -154,19 +153,27 @@ class HomeViewModel with ChangeNotifier {
     if (activeCategories.isEmpty) {
       _filteredEvents = List.from(_allEvents);
     } else {
-      final normalizedCategories = activeCategories.map((c) => _categoryMapping[c] ?? c.toLowerCase());
-      _filteredEvents = _allEvents.where((event) {
-        final eventType = event['type']?.toLowerCase() ?? '';
-        return normalizedCategories.contains(eventType);
-      }).toList();
+      final normalizedCategories = activeCategories.map(
+        (c) => _categoryMapping[c] ?? c.toLowerCase(),
+      );
+      _filteredEvents =
+          _allEvents.where((event) {
+            final eventType = event['type']?.toLowerCase() ?? '';
+            return normalizedCategories.contains(eventType);
+          }).toList();
     }
 
     // Aplicar filtro de búsqueda si existe
     if (_searchQuery.isNotEmpty) {
       final lowerQuery = _searchQuery.toLowerCase();
-      _filteredEvents = _filteredEvents.where((event) =>
-          event['title']!.toLowerCase().contains(lowerQuery) ||
-          event['location']!.toLowerCase().contains(lowerQuery)).toList();
+      _filteredEvents =
+          _filteredEvents
+              .where(
+                (event) =>
+                    event['title']!.toLowerCase().contains(lowerQuery) ||
+                    event['location']!.toLowerCase().contains(lowerQuery),
+              )
+              .toList();
     }
 
     notifyListeners();
@@ -219,18 +226,20 @@ class HomeViewModel with ChangeNotifier {
   List<String> getSortedDates() {
     final groupedEvents = getGroupedEvents();
     final todayString = DateFormat('yyyy-MM-dd').format(_devNow);
-    final tomorrowString = DateFormat('yyyy-MM-dd').format(_devNow.add(const Duration(days: 1)));
+    final tomorrowString = DateFormat(
+      'yyyy-MM-dd',
+    ).format(_devNow.add(const Duration(days: 1)));
 
-    final sortedDates = groupedEvents.keys.toList()
-      ..sort((a, b) {
-        final dateA = parseDate(a);
-        final dateB = parseDate(b);
-        if (a == todayString || a.startsWith(todayString)) return -2;
-        if (b == todayString || b.startsWith(todayString)) return 2;
-        if (a == tomorrowString || a.startsWith(tomorrowString)) return -1;
-        if (b == tomorrowString || b.startsWith(tomorrowString)) return 1;
-        return dateA.compareTo(dateB);
-      });
+    final sortedDates =
+        groupedEvents.keys.toList()..sort((a, b) {
+          final dateA = parseDate(a);
+          final dateB = parseDate(b);
+          if (a == todayString || a.startsWith(todayString)) return -2;
+          if (b == todayString || b.startsWith(todayString)) return 2;
+          if (a == tomorrowString || a.startsWith(tomorrowString)) return -1;
+          if (b == tomorrowString || b.startsWith(tomorrowString)) return 1;
+          return dateA.compareTo(dateB);
+        });
 
     return sortedDates;
   }
@@ -242,23 +251,30 @@ class HomeViewModel with ChangeNotifier {
     }
 
     final todayString = DateFormat('yyyy-MM-dd').format(_devNow);
-    final tomorrowString = DateFormat('yyyy-MM-dd').format(_devNow.add(const Duration(days: 1)));
+    final tomorrowString = DateFormat(
+      'yyyy-MM-dd',
+    ).format(_devNow.add(const Duration(days: 1)));
 
-    final todayEvents = _filteredEvents
-        .where((event) => event['date']!.startsWith(todayString))
-        .toList();
-    final tomorrowEvents = _filteredEvents
-        .where((event) => event['date']!.startsWith(tomorrowString))
-        .toList();
-    final futureEvents = _filteredEvents.where((event) {
-      final eventDate = parseDate(event['date']!);
-      return eventDate.isAfter(_devNow.add(const Duration(days: 1)));
-    }).toList();
+    final todayEvents =
+        _filteredEvents
+            .where((event) => event['date']!.startsWith(todayString))
+            .toList();
+    final tomorrowEvents =
+        _filteredEvents
+            .where((event) => event['date']!.startsWith(tomorrowString))
+            .toList();
+    final futureEvents =
+        _filteredEvents.where((event) {
+          final eventDate = parseDate(event['date']!);
+          return eventDate.isAfter(_devNow.add(const Duration(days: 1)));
+        }).toList();
 
-    return [...todayEvents, ...tomorrowEvents, ...futureEvents].take(20).toList();
+    return [
+      ...todayEvents,
+      ...tomorrowEvents,
+      ...futureEvents,
+    ].take(20).toList();
   }
-
-
 
   String capitalizeWord(String word) {
     if (word.isEmpty) return word;
@@ -268,7 +284,9 @@ class HomeViewModel with ChangeNotifier {
   // Obtener título de sección para una fecha
   String getSectionTitle(String date) {
     final todayString = DateFormat('yyyy-MM-dd').format(_devNow);
-    final tomorrowString = DateFormat('yyyy-MM-dd').format(_devNow.add(const Duration(days: 1)));
+    final tomorrowString = DateFormat(
+      'yyyy-MM-dd',
+    ).format(_devNow.add(const Duration(days: 1)));
     final parsedDate = parseDate(date);
 
     final eventDateString = DateFormat('yyyy-MM-dd').format(parsedDate);
@@ -278,10 +296,14 @@ class HomeViewModel with ChangeNotifier {
     } else if (eventDateString == tomorrowString) {
       return 'Mañana';
     } else {
-      final weekday = capitalizeWord(DateFormat('EEEE', 'es').format(parsedDate)); // viernes → Viernes
-      final day = DateFormat('d', 'es').format(parsedDate);                         // 6
-      final month = capitalizeWord(DateFormat('MMMM', 'es').format(parsedDate));   // junio → Junio
-      return '$weekday, $day de $month';  // Viernes, 6 de Junio
+      final weekday = capitalizeWord(
+        DateFormat('EEEE', 'es').format(parsedDate),
+      ); // viernes → Viernes
+      final day = DateFormat('d', 'es').format(parsedDate); // 6
+      final month = capitalizeWord(
+        DateFormat('MMMM', 'es').format(parsedDate),
+      ); // junio → Junio
+      return '$weekday, $day de $month'; // Viernes, 6 de Junio
     }
   }
 
@@ -290,22 +312,27 @@ class HomeViewModel with ChangeNotifier {
     if (_selectedDate == null) {
       return 'Próximos Eventos';
     } else {
-      final month = capitalizeWord(DateFormat('MMMM', 'es').format(_selectedDate!));
+      final month = capitalizeWord(
+        DateFormat('MMMM', 'es').format(_selectedDate!),
+      );
       return 'Eventos de $month';
     }
   }
 
-    // Refresh/reload
-    Future<void> refresh() async {
-      await loadEvents();
-    }
+  // Refresh/reload
+  Future<void> refresh() async {
+    await loadEvents();
+  }
 
   // Obtener color de card según tipo de evento
   Color getEventCardColor(String eventType, BuildContext context) {
-    final category = _categoryMapping.entries
-        .firstWhere((entry) => entry.value == eventType.toLowerCase(),
-            orElse: () => MapEntry('', 'default'))
-        .key;
+    final category =
+        _categoryMapping.entries
+            .firstWhere(
+              (entry) => entry.value == eventType.toLowerCase(),
+              orElse: () => MapEntry('', 'default'),
+            )
+            .key;
 
     final color = AppColors.categoryColors[category] ?? AppColors.defaultColor;
     return AppColors.adjustForTheme(context, color);
@@ -315,7 +342,9 @@ class HomeViewModel with ChangeNotifier {
   String formatEventDate(String dateString) {
     final eventDate = parseDate(dateString);
     final todayString = DateFormat('yyyy-MM-dd').format(_devNow);
-    final tomorrowString = DateFormat('yyyy-MM-dd').format(_devNow.add(const Duration(days: 1)));
+    final tomorrowString = DateFormat(
+      'yyyy-MM-dd',
+    ).format(_devNow.add(const Duration(days: 1)));
 
     final eventDateString = DateFormat('yyyy-MM-dd').format(eventDate);
 

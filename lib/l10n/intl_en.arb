@@ -1,0 +1,10 @@
+{
+  "appTitle": "QueHacemos Cba",
+  "@appTitle": {
+    "description": "Application title"
+  },
+  "welcome": "Welcome to QueHacemos Cba!",
+  "@welcome": {
+    "description": "Welcome message"
+  }
+}

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/src/providers/preferences_provider.dart';
-import 'package:myapp/src/utils/utils.dart';
+import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
+import 'package:quehacemos_cba/src/utils/utils.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -26,10 +26,7 @@ class SettingsPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Configuración'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Configuración'), centerTitle: true),
       body: ListView(
         padding: const EdgeInsets.all(AppDimens.paddingMedium),
         children: [
@@ -46,16 +43,34 @@ class SettingsPage extends StatelessWidget {
                 children: [
                   Text(
                     'Tema de la app',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: AppDimens.paddingSmall),
                   Wrap(
                     spacing: AppDimens.paddingSmall,
                     children: [
-                      ChoiceChip(label: const Text('Normal'), selected: provider.theme == 'normal', onSelected: (_) => provider.setTheme('normal')),
-                      ChoiceChip(label: const Text('Oscuro'), selected: provider.theme == 'dark', onSelected: (_) => provider.setTheme('dark')),
-                      ChoiceChip(label: const Text('Fluor'), selected: provider.theme == 'fluor', onSelected: (_) => provider.setTheme('fluor')),
-                      ChoiceChip(label: const Text('Harmony'), selected: provider.theme == 'harmony', onSelected: (_) => provider.setTheme('harmony')),
+                      ChoiceChip(
+                        label: const Text('Normal'),
+                        selected: provider.theme == 'normal',
+                        onSelected: (_) => provider.setTheme('normal'),
+                      ),
+                      ChoiceChip(
+                        label: const Text('Oscuro'),
+                        selected: provider.theme == 'dark',
+                        onSelected: (_) => provider.setTheme('dark'),
+                      ),
+                      ChoiceChip(
+                        label: const Text('Fluor'),
+                        selected: provider.theme == 'fluor',
+                        onSelected: (_) => provider.setTheme('fluor'),
+                      ),
+                      ChoiceChip(
+                        label: const Text('Harmony'),
+                        selected: provider.theme == 'harmony',
+                        onSelected: (_) => provider.setTheme('harmony'),
+                      ),
                     ],
                   ),
                 ],
@@ -78,7 +93,9 @@ class SettingsPage extends StatelessWidget {
                 children: [
                   Text(
                     'Categorías favoritas',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: AppDimens.paddingSmall),
                   Text(
@@ -89,7 +106,9 @@ class SettingsPage extends StatelessWidget {
 
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      int crossAxisCount = (constraints.maxWidth / 180).floor().clamp(2, 4);
+                      int crossAxisCount = (constraints.maxWidth / 180)
+                          .floor()
+                          .clamp(2, 4);
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         shrinkWrap: true,
@@ -97,41 +116,58 @@ class SettingsPage extends StatelessWidget {
                         mainAxisSpacing: AppDimens.paddingSmall,
                         crossAxisSpacing: AppDimens.paddingSmall,
                         childAspectRatio: 3.5,
-                        children: categories.map((category) {
-                          final isSelected = provider.selectedCategories.contains(category['name']);
-                          final color = AppColors.adjustForTheme(context, category['color'] as Color);
+                        children:
+                            categories.map((category) {
+                              final isSelected = provider.selectedCategories
+                                  .contains(category['name']);
+                              final color = AppColors.adjustForTheme(
+                                context,
+                                category['color'] as Color,
+                              );
 
-                          return FilterChip(
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(category['emoji'] as String),
-                                const SizedBox(width: 4),
-                                Text(category['name'] as String),
-                              ],
-                            ),
-                            selected: isSelected,
-                            onSelected: (_) async {
-                              await provider.toggleCategory(category['name'] as String);
-                            },
-                            selectedColor: color,
-                            backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                ? Colors.white
-                                : Colors.black12,
-                            side: BorderSide(
-                              color: isSelected ? color : Colors.black54,
-                            ),
-                            checkmarkColor: isSelected
-                                ? (Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white)
-                                : Colors.transparent,
-                            showCheckmark: isSelected,
-                            labelStyle: TextStyle(
-                              color: isSelected
-                                  ? (Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white)
-                                  : Colors.black,
-                            ),
-                          );
-                        }).toList(),
+                              return FilterChip(
+                                label: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(category['emoji'] as String),
+                                    const SizedBox(width: 4),
+                                    Text(category['name'] as String),
+                                  ],
+                                ),
+                                selected: isSelected,
+                                onSelected: (_) async {
+                                  await provider.toggleCategory(
+                                    category['name'] as String,
+                                  );
+                                },
+                                selectedColor: color,
+                                backgroundColor:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black12,
+                                side: BorderSide(
+                                  color: isSelected ? color : Colors.black54,
+                                ),
+                                checkmarkColor:
+                                    isSelected
+                                        ? (Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.black
+                                            : Colors.white)
+                                        : Colors.transparent,
+                                showCheckmark: isSelected,
+                                labelStyle: TextStyle(
+                                  color:
+                                      isSelected
+                                          ? (Theme.of(context).brightness ==
+                                                  Brightness.dark
+                                              ? Colors.black
+                                              : Colors.white)
+                                          : Colors.black,
+                                ),
+                              );
+                            }).toList(),
                       );
                     },
                   ),

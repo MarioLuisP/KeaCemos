@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/src/pages/pages.dart';
+import 'package:quehacemos_cba/src/pages/pages.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -44,10 +44,7 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: pages),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onItemTapped,
@@ -55,14 +52,8 @@ class _MainScreenState extends State<MainScreen> {
         selectedItemColor: Theme.of(context).primaryColor,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Explorar',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Explorar'),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: 'Calendario',
