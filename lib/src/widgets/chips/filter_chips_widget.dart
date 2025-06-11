@@ -19,33 +19,44 @@ class FilterChipsRow extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          // Botón Refresh / Limpiar Filtros
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: GestureDetector(
-              onTap: () {
-                prefs.clearActiveFilterCategories();
-                viewModel.applyCategoryFilters(Set<String>());
-              },
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Icon(Icons.refresh),
-              ),
-            ),
-          ),
+          // Botón Refresh / Limpiar Filtros con efecto 3D
+          _buildRefreshButton(context),
 
           // Chips dinámicos
-          ..._buildCategoryChips(),
+          ..._buildCategoryChips(context),
         ],
       ),
     );
   }
 
-  List<Widget> _buildCategoryChips() {
+  Widget _buildRefreshButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: SizedBox(
+        height: 40,
+        width: 40,
+        child: Material(
+          color: Theme.of(context).colorScheme.surfaceVariant,
+          borderRadius: BorderRadius.circular(24),
+          elevation: 2, // Sombra suave por defecto
+          child: InkWell(
+            onTap: () {
+              prefs.clearActiveFilterCategories();
+              viewModel.applyCategoryFilters(Set<String>());
+            },
+            borderRadius: BorderRadius.circular(24),
+            child: Icon(
+              Icons.refresh,
+              size: 20,
+              color: Theme.of(context).iconTheme.color,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildCategoryChips(BuildContext context) {
     final categories = prefs.selectedCategories.isEmpty
         ? ['Música', 'Teatro', 'Cine', 'StandUp']
         : prefs.selectedCategories.toList();
