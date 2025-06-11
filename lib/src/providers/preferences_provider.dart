@@ -60,7 +60,7 @@ class PreferencesProvider with ChangeNotifier {
     await UserPreferences.setCategories(_selectedCategories);
     notifyListeners();
   }
-
+  
   Future<void> resetCategories() async {
     _selectedCategories = {
       'Música',
@@ -91,4 +91,11 @@ class PreferencesProvider with ChangeNotifier {
     await UserPreferences.setActiveFilterCategories(_activeFilterCategories);
     notifyListeners();
   }
+  Future<void> clearActiveFilterCategories() async {
+  _activeFilterCategories.clear();
+  await UserPreferences.setActiveFilterCategories(_activeFilterCategories);
+  notifyListeners();
+  }
+
+
 }

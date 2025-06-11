@@ -5,6 +5,7 @@ import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/widgets/chips/event_chip_widget.dart';
 import 'package:quehacemos_cba/src/pages/event_detail_page.dart';
 import 'package:quehacemos_cba/src/utils/utils.dart';
+import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart'; // Nuevo import
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -76,85 +77,63 @@ class _ExplorePageState extends State<ExplorePage> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        const SizedBox(width: 4.0), // Padding inicial
-                        ...(prefs.selectedCategories.isEmpty
-                                ? ['Música', 'Teatro', 'Cine', 'StandUp']
-                                : prefs.selectedCategories)
-                            .map(
-                              (c) => Padding(
-                                padding: const EdgeInsets.only(right: 4.0),
-                                child: EventChipWidget(category: c),
+                        // Botón de limpiar filtros
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              prefs.clearActiveFilterCategories();
+                              viewModel.applyCategoryFilters(Set<String>());
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surfaceVariant,
+                                borderRadius: BorderRadius.circular(24),
                               ),
+                              child: const Icon(Icons.refresh),
                             ),
-                        const SizedBox(width: 4.0), // Padding final
+                          ),
+                        ),
+
+                        // Chips dinámicos
+                        ...[
+                          if (prefs.selectedCategories.isEmpty)
+                            ['Música', 'Teatro', 'Cine', 'StandUp']
+                          else
+                            prefs.selectedCategories
+                        ].first.map(
+                          (c) => Padding(
+                            padding: const EdgeInsets.only(right: 4.0),
+                            child: EventChipWidget(category: c),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 8.0),
                 Expanded(
-                  child:
-                      viewModel.isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : viewModel.hasError
+                  child: viewModel.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : viewModel.hasError
                           ? Center(
-                            child: Text('Error: ${viewModel.errorMessage}'),
-                          )
+                              child: Text('Error: ${viewModel.errorMessage}'),
+                            )
                           : viewModel.filteredEvents.isEmpty
-                          ? const Center(child: Text('No hay eventos.'))
-                          : ListView.builder(
-                            itemCount: viewModel.filteredEvents.take(20).length,
-                            itemBuilder: (context, index) {
-                              final event = viewModel.filteredEvents[index];
-                              return _buildEventCard(context, event, viewModel);
-                            },
-                          ),
+                              ? const Center(child: Text('No hay eventos.'))
+                              : ListView.builder(
+                                  itemCount: viewModel.filteredEvents.take(20).length,
+                                  itemBuilder: (context, index) {
+                                    final event = viewModel.filteredEvents[index];
+                                    return EventCardWidget(event: event, viewModel: viewModel);
+                                  },
+                                ),
                 ),
               ],
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildEventCard(
-    BuildContext context,
-    Map<String, String> event,
-    HomeViewModel viewModel,
-  ) {
-    final formattedDate = viewModel.formatEventDate(event['date']!);
-    final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context);
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EventDetailPage(event: event),
-          ),
-        );
-      },
-      child: Card(
-        color: cardColor,
-        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        elevation: AppDimens.cardElevation,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimens.borderRadius),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(event['title']!, style: AppStyles.cardTitle),
-              const SizedBox(height: 8),
-              Text('Fecha: $formattedDate'),
-              const SizedBox(height: 4),
-              Text('Ubicación: ${event['location']}'),
-            ],
-          ),
-        ),
       ),
     );
   }

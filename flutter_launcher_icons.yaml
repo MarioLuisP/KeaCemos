@@ -1,7 +1,7 @@
 flutter_launcher_icons:
-  android: false
+  android: true
   ios: true # Dejaste iOS por ahora, pero lo ajustaremos si cambias de opinión
   image_path: "assets/icons/Icon-512.png" # Tu ícono principal 512x512
   adaptive_icon_foreground: "assets/icons/Icon-maskable-192.png" # Tu ícono maskable 192x192
-  adaptive_icon_background: "#000000" # Fondo negro para complementar tu diseño
+  adaptive_icon_background: "#FFFFFF" # Fondo negro para complementar tu diseño
   remove_alpha_ios: true # Agrega esta línea
