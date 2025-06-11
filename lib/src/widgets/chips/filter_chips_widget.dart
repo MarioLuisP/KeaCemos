@@ -15,17 +15,21 @@ class FilterChipsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          // Botón Refresh / Limpiar Filtros con efecto 3D
-          _buildRefreshButton(context),
+    return Row(
+      children: [
+        // Botón Refresh / Limpiar Filtros (Fijo)
+        _buildRefreshButton(context),
 
-          // Chips dinámicos
-          ..._buildCategoryChips(context),
-        ],
-      ),
+        // Chips dinámicos (Scroll horizontal)
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _buildCategoryChips(context),
+            ),
+          ),
+          ),
+      ],
     );
   }
 
@@ -38,7 +42,7 @@ class FilterChipsRow extends StatelessWidget {
         child: Material(
           color: Theme.of(context).colorScheme.surfaceVariant,
           borderRadius: BorderRadius.circular(24),
-          elevation: 2, // Sombra suave por defecto
+          elevation: 2,
           child: InkWell(
             onTap: () {
               prefs.clearActiveFilterCategories();
