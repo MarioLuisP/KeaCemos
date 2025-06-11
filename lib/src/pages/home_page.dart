@@ -92,7 +92,7 @@ class _HomePageState extends State<HomePage> {
           return Scaffold(
             appBar: AppBar(
               title: const Text(
-                '🌟 KeaCMos Córdoba',
+                'QuehaCeMos Córdoba',
                 style: TextStyle(fontWeight: FontWeight.normal),
               ),
               centerTitle: true,

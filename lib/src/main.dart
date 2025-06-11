@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [Locale('es', ''), Locale('en', '')],
-            title: 'KeaCMos Córdoba',
+            title: 'QuehaCeMos Córdoba',
             theme:
                 AppThemes.themes[provider.theme] ??
                 ThemeData(
