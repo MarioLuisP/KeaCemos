@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
-import 'package:quehacemos_cba/src/widgets/chips/event_chip_widget.dart';
+import 'package:quehacemos_cba/src/widgets/chips/filter_chips_widget.dart'; // Nuevo import
 import 'package:quehacemos_cba/src/pages/event_detail_page.dart';
 import 'package:quehacemos_cba/src/utils/utils.dart';
-import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart'; // Nuevo import
+import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -52,6 +52,7 @@ class _ExplorePageState extends State<ExplorePage> {
             ),
             body: Column(
               children: [
+                // Campo de búsqueda
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextField(
@@ -71,48 +72,16 @@ class _ExplorePageState extends State<ExplorePage> {
                     ),
                   ),
                 ),
+
+                // Fila de chips + refresh
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        // Botón de limpiar filtros
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              prefs.clearActiveFilterCategories();
-                              viewModel.applyCategoryFilters(Set<String>());
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceVariant,
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: const Icon(Icons.refresh),
-                            ),
-                          ),
-                        ),
-
-                        // Chips dinámicos
-                        ...[
-                          if (prefs.selectedCategories.isEmpty)
-                            ['Música', 'Teatro', 'Cine', 'StandUp']
-                          else
-                            prefs.selectedCategories
-                        ].first.map(
-                          (c) => Padding(
-                            padding: const EdgeInsets.only(right: 4.0),
-                            child: EventChipWidget(category: c),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: FilterChipsRow(prefs: prefs, viewModel: viewModel),
                 ),
+
                 const SizedBox(height: 8.0),
+
+                // Lista de eventos
                 Expanded(
                   child: viewModel.isLoading
                       ? const Center(child: CircularProgressIndicator())
