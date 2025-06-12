@@ -3,9 +3,10 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
+import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
 
 class CalendarPage extends StatefulWidget {
-  final Function(DateTime?)? onDateSelected;
+  final Function(DateTime)? onDateSelected;
   const CalendarPage({super.key, this.onDateSelected});
 
   @override
@@ -14,7 +15,7 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime(2025, 6, 4); // Mantener fecha de desarrollo
+  DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   late HomeViewModel _homeViewModel;
   final Map<DateTime, List<Map<String, String>>> _eventCache = {};
@@ -34,9 +35,8 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _preloadEvents() async {
-    // Cargar todos los eventos y cachearlos por fecha
     await _homeViewModel.loadEvents();
-    final events = _homeViewModel.filteredEvents;
+    final events = _homeViewModel.filteredEvents ?? [];
 
     _eventCache.clear();
     for (var event in events) {
@@ -63,7 +63,6 @@ class _CalendarPageState extends State<CalendarPage> {
       _focusedDay = focusedDay;
     });
 
-    // Notificar al callback si existe (para navegación entre páginas)
     if (widget.onDateSelected != null) {
       widget.onDateSelected!(selectedDay);
     }
@@ -83,105 +82,154 @@ class _CalendarPageState extends State<CalendarPage> {
         builder: (context, viewModel, child) {
           return Scaffold(
             appBar: AppBar(
-              title: Text(
-                _selectedDay == null
-                    ? 'Selecciona una fecha'
-                    : 'Eventos de ${DateFormat('EEEE, d MMM', 'es').format(_selectedDay!)}',
-              ),
+              title: const Text('Elije el Día'),
               centerTitle: true,
-              actions: [
-                // Botón para ir a la fecha seleccionada en HomePage
-                if (_selectedDay != null)
-                  IconButton(
-                    icon: const Icon(Icons.list),
-                    tooltip: 'Ver eventos de este día',
-                    onPressed: () {
-                      // Navegar a HomePage con la fecha seleccionada
-                      Navigator.pop(context);
-                      if (widget.onDateSelected != null) {
-                        widget.onDateSelected!(_selectedDay);
-                      }
-                    },
-                  ),
-              ],
+              actions: [],
             ),
             body: Column(
               children: [
-                // Calendario
-                TableCalendar(
-                  locale: 'es_ES',
-                  firstDay: DateTime.utc(2020, 1, 1),
-                  lastDay: DateTime.utc(2030, 12, 31),
-                  focusedDay: _focusedDay,
-                  calendarFormat: _calendarFormat,
-                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                  onDaySelected: _onDaySelected,
-                  onFormatChanged: (format) {
-                    if (_calendarFormat != format) {
-                      setState(() => _calendarFormat = format);
-                    }
-                  },
-                  onPageChanged: (focusedDay) {
-                    print('Mes cambiado: $focusedDay');
-                    setState(() => _focusedDay = focusedDay);
-                    _preloadEvents();
-                  },
-                  calendarStyle: CalendarStyle(
-                    todayDecoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    selectedDecoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  calendarBuilders: CalendarBuilders(
-                    markerBuilder: (context, date, events) {
-                      final eventsForDay = _getEventsForDay(date);
-                      if (eventsForDay.isNotEmpty) {
-                        return Container(
-                          margin: const EdgeInsets.all(4.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.deepPurpleAccent.withOpacity(0.3),
-                          ),
-                          width: 40,
-                          height: 40,
-                          child: Center(
-                            child: Text(
-                              eventsForDay.length.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        );
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: TableCalendar(
+                    locale: 'es_ES',
+                    firstDay: DateTime.utc(2020, 1, 1),
+                    lastDay: DateTime.utc(2030, 12, 31),
+                    focusedDay: _focusedDay,
+                    calendarFormat: _calendarFormat,
+                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                    onDaySelected: _onDaySelected,
+                    onFormatChanged: (format) {
+                      if (_calendarFormat != format) {
+                        setState(() => _calendarFormat = format);
                       }
-                      return null;
+                    },
+                    onPageChanged: (focusedDay) {
+                      print('Mes cambiado: $focusedDay');
+                      setState(() => _focusedDay = focusedDay);
+                      _preloadEvents();
+                    },
+                    daysOfWeekHeight: 20,
+                    rowHeight: 40,
+                    calendarStyle: CalendarStyle(
+                      todayDecoration: BoxDecoration(
+                        color: Colors.blue[200],
+                        shape: BoxShape.circle,
+                      ),
+                      selectedDecoration: BoxDecoration(
+                        color: Colors.blue[400],
+                        shape: BoxShape.circle,
+                      ),
+                      defaultDecoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        shape: BoxShape.circle,
+                      ),
+                      weekendDecoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        shape: BoxShape.circle,
+                      ),
+                      outsideDecoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        shape: BoxShape.circle,
+                      ),
+                      defaultTextStyle: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      weekendTextStyle: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      outsideTextStyle: TextStyle(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.bold,
+                      ),
+                      todayTextStyle: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      selectedTextStyle: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    // ******************************************
+calendarBuilders: CalendarBuilders(
+  defaultBuilder: (context, day, focusedDay) {
+    final eventsForDay = _getEventsForDay(day);
+    if (eventsForDay.isNotEmpty && !isSameDay(day, _selectedDay) && !isSameDay(day, DateTime.now())) {
+      return Center( // Centrar verticalmente y luego ajustar con margin
+        child: Container(
+          width: 28,
+          height: 28,
+          margin: const EdgeInsets.only(bottom: 1), // Bajar el círculo
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 172, 241, 253),
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            '${day.day}',
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
+    }
+    return null;
+  },
+  markerBuilder: (context, date, events) {
+    final eventsForDay = _getEventsForDay(date);
+    if (eventsForDay.isNotEmpty) {
+      return Positioned(
+        left: 0,
+        bottom: 2,
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.deepPurple[700]!, width: 1),
+          ),
+          width: 16,
+          height: 16,
+          child: Center(
+            child: Text(
+              eventsForDay.length.toString(),
+              style: TextStyle(
+                color: Colors.deepPurple[700],
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return null;
+  },
+),
+                    //******************************* */
+                    eventLoader: _getEventsForDay,
+                    headerStyle: HeaderStyle(
+                      formatButtonVisible: true,
+                      formatButtonShowsNext: false,
+                      formatButtonTextStyle: const TextStyle(color: Colors.white, fontSize: 12),
+                      formatButtonDecoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      titleCentered: true,
+                      titleTextStyle: const TextStyle(fontSize: 16),
+                      leftChevronPadding: const EdgeInsets.all(4),
+                      rightChevronPadding: const EdgeInsets.all(4),
+                    ),
+                    availableCalendarFormats: const {
+                      CalendarFormat.month: 'Mes',
+                      CalendarFormat.twoWeeks: '2 Semanas',
+                      CalendarFormat.week: 'Semana',
                     },
                   ),
-                  eventLoader: _getEventsForDay,
-                  headerStyle: HeaderStyle(
-                    formatButtonVisible: true,
-                    formatButtonShowsNext: false,
-                    formatButtonTextStyle: const TextStyle(color: Colors.white),
-                    formatButtonDecoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    titleCentered: true,
-                  ),
-                  availableCalendarFormats: const {
-                    CalendarFormat.month: 'Mes',
-                    CalendarFormat.twoWeeks: '2 Semanas',
-                    CalendarFormat.week: 'Semana',
-                  },
                 ),
-
-                // Lista de eventos para el día seleccionado
                 if (_selectedDay != null) ...[
                   const Padding(
                     padding: EdgeInsets.all(16.0),
@@ -217,38 +265,12 @@ class _CalendarPageState extends State<CalendarPage> {
       itemCount: eventsForDay.length,
       itemBuilder: (context, index) {
         final event = eventsForDay[index];
-        final cardColor = _homeViewModel.getEventCardColor(
-          event['type'] ?? '',
-          context,
-        );
-
-        return Card(
-          color: cardColor,
-          margin: const EdgeInsets.only(bottom: 8.0),
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: ListTile(
-            title: Text(
-              event['title']!,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('📍 ${event['location']}'),
-                Text('🎭 ${event['type']}'),
-              ],
-            ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              // TODO: Navegar a EventDetailPage
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => EventDetailPage(event: event),
-              //   ),
-              // );
-            },
+        return Semantics(
+          label: 'Evento ${event['title']}',
+          button: true,
+          child: EventCardWidget(
+            event: event,
+            viewModel: _homeViewModel,
           ),
         );
       },
