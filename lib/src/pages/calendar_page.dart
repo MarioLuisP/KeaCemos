@@ -37,18 +37,16 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _preloadEvents() async {
     await _homeViewModel.loadEvents();
     final events = _homeViewModel.filteredEvents ?? [];
-
     _eventCache.clear();
     for (var event in events) {
       final eventDate = DateFormat('yyyy-MM-dd').parse(event['date']!);
-      final cacheKey = DateTime(eventDate.year, eventDate.month, eventDate.day);
-      _eventCache[cacheKey] ??= [];
-      _eventCache[cacheKey]!.add(event);
+      if (eventDate.month == _focusedDay.month && eventDate.year == _focusedDay.year) {
+        final cacheKey = DateTime(eventDate.year, eventDate.month, eventDate.day);
+        _eventCache[cacheKey] ??= [];
+        _eventCache[cacheKey]!.add(event);
+      }
     }
-
-    if (mounted) {
-      setState(() {});
-    }
+    if (mounted) setState(() {});
   }
 
   List<Map<String, String>> _getEventsForDay(DateTime day) {
@@ -113,23 +111,23 @@ class _CalendarPageState extends State<CalendarPage> {
                     calendarStyle: CalendarStyle(
                       todayDecoration: BoxDecoration(
                         color: Colors.blue[200],
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       selectedDecoration: BoxDecoration(
                         color: Colors.blue[400],
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       defaultDecoration: BoxDecoration(
                         color: Colors.grey[200],
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       weekendDecoration: BoxDecoration(
                         color: Colors.grey[200],
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       outsideDecoration: BoxDecoration(
                         color: Colors.grey[200],
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       defaultTextStyle: TextStyle(
                         color: Colors.black,
@@ -152,63 +150,103 @@ class _CalendarPageState extends State<CalendarPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    // ******************************************
-calendarBuilders: CalendarBuilders(
-  defaultBuilder: (context, day, focusedDay) {
-    final eventsForDay = _getEventsForDay(day);
-    if (eventsForDay.isNotEmpty && !isSameDay(day, _selectedDay) && !isSameDay(day, DateTime.now())) {
-      return Center( // Centrar verticalmente y luego ajustar con margin
-        child: Container(
-          width: 28,
-          height: 28,
-          margin: const EdgeInsets.only(bottom: 1), // Bajar el círculo
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 172, 241, 253),
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            '${day.day}',
-            style: const TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      );
-    }
-    return null;
-  },
-  markerBuilder: (context, date, events) {
-    final eventsForDay = _getEventsForDay(date);
-    if (eventsForDay.isNotEmpty) {
-      return Positioned(
-        left: 0,
-        bottom: 2,
-        child: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.deepPurple[700]!, width: 1),
-          ),
-          width: 16,
-          height: 16,
-          child: Center(
-            child: Text(
-              eventsForDay.length.toString(),
-              style: TextStyle(
-                color: Colors.deepPurple[700],
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return null;
-  },
-),
-                    //******************************* */
+                    calendarBuilders: CalendarBuilders(
+                      todayBuilder: (context, day, focusedDay) {
+                        return Center(
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            margin: const EdgeInsets.only(bottom: 1),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 185, 236, 252),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '${day.day}',
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      selectedBuilder: (context, day, focusedDay) {
+                        return Center(
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            margin: const EdgeInsets.only(bottom: 1),
+                            decoration: BoxDecoration(
+                              color: Colors.blue[400],
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '${day.day}',
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      defaultBuilder: (context, day, focusedDay) {
+                        final eventsForDay = _getEventsForDay(day);
+                        if (eventsForDay.isNotEmpty) {
+                          return Center(
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              margin: const EdgeInsets.only(bottom: 1),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[200],
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                '${day.day}',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        return null;
+                      },
+                      markerBuilder: (context, date, events) {
+                        final eventsForDay = _getEventsForDay(date);
+                        if (eventsForDay.isNotEmpty) {
+                          return Positioned(
+                            left: 0,
+                            bottom: 2,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.deepPurple[700]!, width: 1),
+                              ),
+                              width: 16,
+                              height: 16,
+                              child: Center(
+                                child: Text(
+                                  eventsForDay.length.toString(),
+                                  style: TextStyle(
+                                    color: Colors.deepPurple[700],
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        return null;
+                      },
+                    ),
                     eventLoader: _getEventsForDay,
                     headerStyle: HeaderStyle(
                       formatButtonVisible: true,
