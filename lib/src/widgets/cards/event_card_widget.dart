@@ -3,6 +3,7 @@ import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/pages/event_detail_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quehacemos_cba/src/services/auth_service.dart';
+import 'package:quehacemos_cba/src/utils/dimens.dart';
 
 class EventCardWidget extends StatelessWidget {
   final Map<String, String> event;
@@ -14,7 +15,6 @@ class EventCardWidget extends StatelessWidget {
     required this.viewModel,
   }) : super(key: key);
 
-  // Método para oscurecer un color en un 20%
   Color _darkenColor(Color color, [double amount = 0.2]) {
     final hsl = HSLColor.fromColor(color);
     final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
@@ -28,7 +28,7 @@ class EventCardWidget extends StatelessWidget {
         ? '${parsedDate.hour.toString().padLeft(2, '0')}:${parsedDate.minute.toString().padLeft(2, '0')} hs'
         : '';
     final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context);
-    final darkCardColor = _darkenColor(cardColor, 0.2); // 20% más oscuro
+    final darkCardColor = _darkenColor(cardColor, 0.2);
 
     return GestureDetector(
       onTap: () {
@@ -40,10 +40,13 @@ class EventCardWidget extends StatelessWidget {
         );
       },
       child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        elevation: 6.0,
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppDimens.paddingMedium,
+          vertical: AppDimens.paddingSmall,
+        ),
+        elevation: AppDimens.cardElevation,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppDimens.borderRadius),
         ),
         child: Container(
           decoration: BoxDecoration(
@@ -52,10 +55,10 @@ class EventCardWidget extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: [cardColor, darkCardColor],
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppDimens.borderRadius),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(AppDimens.paddingMedium),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -67,10 +70,10 @@ class EventCardWidget extends StatelessWidget {
                         event['title']!,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onSurface, // Asegura contraste
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppDimens.paddingMedium),
                       if (formattedTime.isNotEmpty)
                         Text(
                           'Hora: $formattedTime',
@@ -80,7 +83,7 @@ class EventCardWidget extends StatelessWidget {
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
                         ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppDimens.paddingSmall),
                       Text(
                         'Ubicación: ${event['location']}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(

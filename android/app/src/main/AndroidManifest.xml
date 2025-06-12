@@ -1,11 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.quehacemos.cba">
     <application
-        android:label="QuehaCeMos Cba"
+        android:label="QCM Cba"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
+            android:label="QuehaCeMos Cba"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""

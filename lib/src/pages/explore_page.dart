@@ -17,6 +17,9 @@ class ExplorePage extends StatefulWidget {
 class _ExplorePageState extends State<ExplorePage> {
   late HomeViewModel _viewModel;
   final TextEditingController _searchController = TextEditingController();
+  
+  // 🚀 OPTIMIZACIÓN: Variables para evitar rebuilds innecesarios
+  Set<String> _lastAppliedFilters = {};
 
   @override
   void initState() {
@@ -35,15 +38,28 @@ class _ExplorePageState extends State<ExplorePage> {
     super.dispose();
   }
 
+  // 🎯 FUNCIÓN DE OPTIMIZACIÓN: Chequea si realmente necesitamos aplicar filtros
+  bool _needsFilterUpdate(Set<String> currentFilters) {
+    if (_lastAppliedFilters.length != currentFilters.length) return true;
+    for (String filter in currentFilters) {
+      if (!_lastAppliedFilters.contains(filter)) return true;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [ChangeNotifierProvider.value(value: _viewModel)],
       child: Consumer2<HomeViewModel, PreferencesProvider>(
         builder: (context, viewModel, prefs, _) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            viewModel.applyCategoryFilters(prefs.activeFilterCategories);
-          });
+          // 🔥 OPTIMIZACIÓN: Solo aplicar filtros cuando REALMENTE cambien
+          if (_needsFilterUpdate(prefs.activeFilterCategories)) {
+            _lastAppliedFilters = Set.from(prefs.activeFilterCategories);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              viewModel.applyCategoryFilters(prefs.activeFilterCategories);
+            });
+          }
 
           return Scaffold(
             appBar: AppBar(

@@ -9,9 +9,9 @@ class AppThemes {
       secondary: Colors.blueAccent,
       surface: Colors.white,
     ),
-    scaffoldBackgroundColor: Colors.white,
+    scaffoldBackgroundColor: Color(0xFFF0E2D7),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.blue,
+      backgroundColor: Color.fromARGB(255, 172, 111, 41),
       foregroundColor: Colors.white,
     ),
     textTheme: const TextTheme(
