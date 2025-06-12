@@ -69,13 +69,10 @@ class _HomePageState extends State<HomePage> {
           // Aplicar filtros solo cuando cambien
           if (_needsFilterUpdate(preferencesProvider.activeFilterCategories)) {
             _lastAppliedFilters = Set.from(preferencesProvider.activeFilterCategories);
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              homeViewModel.applyCategoryFilters(
-                preferencesProvider.activeFilterCategories,
-              );
-            });
+            homeViewModel.applyCategoryFilters(
+              preferencesProvider.activeFilterCategories,
+            );
           }
-
           if (homeViewModel.isLoading) {
             return const Scaffold(
               backgroundColor: Color(0xFFD3D3D3),

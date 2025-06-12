@@ -56,11 +56,8 @@ class _ExplorePageState extends State<ExplorePage> {
           // 🔥 OPTIMIZACIÓN: Solo aplicar filtros cuando REALMENTE cambien
           if (_needsFilterUpdate(prefs.activeFilterCategories)) {
             _lastAppliedFilters = Set.from(prefs.activeFilterCategories);
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              viewModel.applyCategoryFilters(prefs.activeFilterCategories);
-            });
+            viewModel.applyCategoryFilters(prefs.activeFilterCategories); // Inmediato
           }
-
           return Scaffold(
             appBar: AppBar(
               title: const Text('Explorar Eventos'),
