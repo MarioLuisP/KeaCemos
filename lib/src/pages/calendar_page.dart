@@ -35,16 +35,13 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _preloadEvents() async {
-    await _homeViewModel.loadEvents();
-    final events = _homeViewModel.filteredEvents ?? [];
+    final events = await _homeViewModel.getEventsForMonth(_focusedDay);
     _eventCache.clear();
     for (var event in events) {
       final eventDate = DateFormat('yyyy-MM-dd').parse(event['date']!);
-      if (eventDate.month == _focusedDay.month && eventDate.year == _focusedDay.year) {
-        final cacheKey = DateTime(eventDate.year, eventDate.month, eventDate.day);
-        _eventCache[cacheKey] ??= [];
-        _eventCache[cacheKey]!.add(event);
-      }
+      final cacheKey = DateTime(eventDate.year, eventDate.month, eventDate.day);
+      _eventCache[cacheKey] ??= [];
+      _eventCache[cacheKey]!.add(event);
     }
     if (mounted) setState(() {});
   }
@@ -158,7 +155,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             height: 28,
                             margin: const EdgeInsets.only(bottom: 1),
                             decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 185, 236, 252),
+                              color: Colors.blue[200],
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             alignment: Alignment.center,

@@ -6,6 +6,7 @@ import 'package:quehacemos_cba/src/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
+import 'package:quehacemos_cba/src/providers/filter_criteria.dart';
 import 'package:quehacemos_cba/src/widgets/chips/event_chip_widget.dart';
 import 'package:quehacemos_cba/src/widgets/chips/filter_chips_widget.dart'; // Nuevo import
 import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart'; // Nuevo import
@@ -32,7 +33,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _initializeViewModel() async {
-    await _homeViewModel.initialize(selectedDate: widget.selectedDate);
+    final initialCriteria = FilterCriteria(selectedDate: widget.selectedDate);
+ await _homeViewModel.initialize(initialCriteria: initialCriteria);
+
+
   }
 
   @override

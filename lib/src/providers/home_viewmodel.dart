@@ -1,360 +1,416 @@
-import 'dart:io'; // 👈 Import necesario para SocketException
+import 'dart:io';
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
 import 'package:quehacemos_cba/src/services/event_service.dart';
-import 'package:quehacemos_cba/src/utils/colors.dart';
+import 'filter_criteria.dart';
+import 'category_constants.dart';
+import 'event_filter_logic.dart';
+import 'event_data_builder.dart';
 
 enum EventsLoadingState { idle, loading, loaded, error }
 
+/// ViewModel refactorizado que usa la nueva arquitectura modular
+/// Delega el procesamiento de eventos a EventDataBuilder y EventFilterLogic
 class HomeViewModel with ChangeNotifier {
   final EventService _eventService = EventService();
+  final EventDataBuilder _dataBuilder;
+  final EventFilterLogic _filterLogic = EventFilterLogic();
 
   // Estado actual
   EventsLoadingState _state = EventsLoadingState.idle;
   List<Map<String, String>> _allEvents = [];
-  List<Map<String, String>> _filteredEvents = [];
-  DateTime? _selectedDate;
-  String _searchQuery = '';
+  FilterCriteria _filterCriteria = FilterCriteria.empty;
   String? _errorMessage;
 
   // Configuración de desarrollo
-  final DateTime _devNow = DateTime(2025, 6, 4); // Fecha fija en desarrollo
+  final DateTime _devNow = DateTime(2025, 6, 4);
 
-  // Mapeo de categorías centralizado
-  static const Map<String, String> _categoryMapping = {
-    'Música': 'musica',
-    'Teatro': 'teatro',
-    'StandUp': 'standup',
-    'Arte': 'arte',
-    'Cine': 'cine',
-    'Mic': 'mic',
-    'Cursos': 'cursos',
-    'Ferias': 'ferias',
-    'Calle': 'calle',
-    'Redes': 'redes',
-    'Niños': 'ninos',
-    'Danza': 'danza',
-  };
+  // Eventos procesados (cache)
+  List<Map<String, String>> _processedEvents = [];
+  Map<String, List<Map<String, String>>> _groupedEvents = {};
 
-  // Getters
+  HomeViewModel() : _dataBuilder = EventDataBuilder(DateTime(2025, 6, 4));
+
+  // ============ GETTERS PÚBLICOS ============
+  
   EventsLoadingState get state => _state;
-  List<Map<String, String>> get filteredEvents => _filteredEvents;
-  DateTime? get selectedDate => _selectedDate;
-  String get searchQuery => _searchQuery;
+  FilterCriteria get filterCriteria => _filterCriteria;
   String? get errorMessage => _errorMessage;
   bool get isLoading => _state == EventsLoadingState.loading;
   bool get hasError => _state == EventsLoadingState.error;
   DateTime get currentDate => _devNow;
+  
+  // Getters de datos procesados
+  List<Map<String, String>> get filteredEvents => _processedEvents;
+  Map<String, List<Map<String, String>>> get groupedEvents => _groupedEvents;
+  
+  // Getters derivados de FilterCriteria
+  DateTime? get selectedDate => _filterCriteria.selectedDate;
+  String get searchQuery => _filterCriteria.query;
+  Set<String> get selectedCategories => _filterCriteria.selectedCategories;
 
-  // Inicialización
-  Future<void> initialize({DateTime? selectedDate}) async {
-    _selectedDate = selectedDate;
+  // ============ INICIALIZACIÓN Y CARGA DE DATOS ============
+
+  /// Inicializa el ViewModel con criterios opcionales
+  Future<void> initialize({FilterCriteria? initialCriteria}) async {
+    if (initialCriteria != null) {
+      _filterCriteria = initialCriteria;
+    }
     await loadEvents();
   }
 
-  // Cargar eventos
+  /// Carga eventos desde el servicio y los procesa
   Future<void> loadEvents() async {
     _state = EventsLoadingState.loading;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final List<Map<String, String>> events = await retry(() async {
-        if (_selectedDate != null) {
+      final List<Map<String, String>> events = await _retryOperation(() async {
+        if (_filterCriteria.selectedDate != null) {
           return await _eventService
-              .getEventsForDay(_selectedDate!)
+              .getEventsForDay(_filterCriteria.selectedDate!)
               .timeout(const Duration(seconds: 10));
         } else {
           return await _eventService.getAllEvents().timeout(
             const Duration(seconds: 10),
           );
         }
-      }, retries: 3);
+      });
 
       _allEvents = events;
       _state = EventsLoadingState.loaded;
-      _applyFilters();
+      _processEvents();
     } catch (e) {
-      if (e is SocketException) {
-        _state = EventsLoadingState.error;
-        _errorMessage = 'No hay conexión a internet.';
-      } else if (e is TimeoutException) {
-        _state = EventsLoadingState.error;
-        _errorMessage = 'La carga de eventos tomó demasiado tiempo.';
-      } else {
-        _state = EventsLoadingState.error;
-        _errorMessage = 'Ocurrió un error inesperado: $e';
-      }
-
-      _filteredEvents = [];
-      notifyListeners();
+      _handleLoadError(e);
     }
   }
 
-  // Reintento con delay
-  Future<T> retry<T>(Future<T> Function() action, {int retries = 3}) async {
-    for (var i = 0; i < retries; i++) {
-      try {
-        return await action();
-      } catch (e) {
-        if (i == retries - 1) rethrow;
-        await Future.delayed(const Duration(seconds: 2));
-      }
-    }
-    throw Exception("No se pudo completar la acción");
+  /// Procesa eventos usando la nueva arquitectura
+/// Procesa eventos usando la nueva arquitectura
+void _processEvents() {
+  print('⚙️ Procesando eventos con filtros: ${_filterCriteria.toString()}');
+  
+  if (_allEvents.isEmpty) {
+    print('📭 No hay eventos para procesar');
+    _processedEvents = [];
+    _groupedEvents = {};
+  } else {
+    // Usar EventDataBuilder para procesamiento completo
+    _groupedEvents = _dataBuilder.processEventsComplete(_allEvents, _filterCriteria);
+    
+    // Para compatibilidad, generar lista plana para HomePage
+    _processedEvents = _dataBuilder.processEventsForHomePage(_allEvents, _filterCriteria);
+    
+    print('✅ Procesados: ${_processedEvents.length} eventos, ${_groupedEvents.keys.length} fechas');
   }
+  
+  // ASEGURAR que siempre notifique
+  notifyListeners();
+}
+  // ============ MÉTODOS DE FILTRADO ============
 
-  // Aplicar filtros (búsqueda + ordenamiento)
-  void _applyFilters() {
-    _filteredEvents = List.from(_allEvents);
+/// Actualiza criterios de filtrado y reprocesa eventos
+void updateFilterCriteria(FilterCriteria newCriteria) {
+  print('🔄 Actualizando filtros: ${newCriteria.toString()}');
+  
+  // SIEMPRE actualizar, sin comparación problemática
+  _filterCriteria = newCriteria;
+  _processEvents();
+  print('✅ Filtros actualizados. Eventos filtrados: ${_processedEvents.length}');
+}
 
-    // Filtro por búsqueda
-    if (_searchQuery.isNotEmpty) {
-      final lowerQuery = _searchQuery.toLowerCase();
-      _filteredEvents =
-          _filteredEvents
-              .where(
-                (event) =>
-                    event['title']!.toLowerCase().contains(lowerQuery) ||
-                    event['location']!.toLowerCase().contains(lowerQuery),
-              )
-              .toList();
-    }
+/// Actualiza solo la búsqueda
+void setSearchQuery(String query) {
+  print('🔍 Actualizando búsqueda: "$query"');
+  final newCriteria = _filterCriteria.copyWith(query: query);
+  updateFilterCriteria(newCriteria);
+}
 
-    // Ordenar por fecha y luego por tipo
-    _filteredEvents.sort((a, b) {
-      final dateA = parseDate(a['date']!);
-      final dateB = parseDate(b['date']!);
+/// Actualiza solo las categorías seleccionadas
+void setSelectedCategories(Set<String> categories) {
+  print('🏷️ Actualizando categorías: $categories');
+  final newCriteria = _filterCriteria.copyWith(selectedCategories: categories);
+  updateFilterCriteria(newCriteria);
+}
 
-      int dateComparison = dateA.compareTo(dateB);
-      if (dateComparison != 0) return dateComparison;
-
-      final typeA = a['type']?.toLowerCase() ?? '';
-      final typeB = b['type']?.toLowerCase() ?? '';
-
-      return typeA.compareTo(typeB);
-    });
-
-    notifyListeners();
+/// Método específico para toggle de categoría (más robusto)
+void toggleCategory(String category) {
+  print('🔄 Toggle categoría: $category');
+  
+  final currentCategories = Set<String>.from(_filterCriteria.selectedCategories);
+  
+  if (currentCategories.contains(category)) {
+    currentCategories.remove(category);
+    print('➖ Removiendo categoría: $category');
+  } else {
+    currentCategories.add(category);
+    print('➕ Agregando categoría: $category');
   }
+  
+  setSelectedCategories(currentCategories);
+}
 
-  // Parseo flexible de fecha (con o sin hora)
-  DateTime parseDate(String dateString) {
-    try {
-      return DateFormat('yyyy-MM-ddTHH:mm').parse(dateString);
-    } catch (e) {
-      return DateFormat('yyyy-MM-dd').parse(dateString);
-    }
-  }
+/// Método específico para seleccionar solo una categoría
+void selectSingleCategory(String category) {
+  print('🎯 Seleccionando solo categoría: $category');
+  setSelectedCategories({category});
+}
 
-  // Aplicar filtros de categorías desde PreferencesProvider
+/// Limpia todos los filtros
+void clearAllFilters() {
+  print('🧹 Limpiando todos los filtros');
+  updateFilterCriteria(FilterCriteria.empty);
+}
+
+/// Limpia solo la búsqueda
+void clearSearch() {
+  print('🧹 Limpiando búsqueda');
+  setSearchQuery('');
+}
+
+/// Actualiza solo la fecha seleccionada
+Future<void> setSelectedDate(DateTime? date) async {
+  print('📅 Actualizando fecha: $date');
+  
+  final newCriteria = _filterCriteria.copyWith(
+    selectedDate: date,
+    clearDate: date == null,
+  );
+  
+  // SIEMPRE actualizar y recargar para fechas
+  _filterCriteria = newCriteria;
+  await loadEvents(); // Recargar eventos si cambia la fecha
+}
+
+/// Limpia solo la fecha seleccionada
+Future<void> clearSelectedDate() async {
+  print('🧹 Limpiando fecha seleccionada');
+  await setSelectedDate(null);
+}
+
+  // ============ COMPATIBILIDAD CON CÓDIGO EXISTENTE ============
+
+  /// Aplica filtros de categorías (para PreferencesProvider)
   void applyCategoryFilters(Set<String> activeCategories) {
-    if (activeCategories.isEmpty) {
-      _filteredEvents = List.from(_allEvents);
-    } else {
-      final normalizedCategories = activeCategories.map(
-        (c) => _categoryMapping[c] ?? c.toLowerCase(),
-      );
-      _filteredEvents =
-          _allEvents.where((event) {
-            final eventType = event['type']?.toLowerCase() ?? '';
-            return normalizedCategories.contains(eventType);
-          }).toList();
-    }
-
-    // Aplicar filtro de búsqueda si existe
-    if (_searchQuery.isNotEmpty) {
-      final lowerQuery = _searchQuery.toLowerCase();
-      _filteredEvents =
-          _filteredEvents
-              .where(
-                (event) =>
-                    event['title']!.toLowerCase().contains(lowerQuery) ||
-                    event['location']!.toLowerCase().contains(lowerQuery),
-              )
-              .toList();
-    }
-
-    notifyListeners();
+    setSelectedCategories(activeCategories);
   }
 
-  // Cambiar fecha seleccionada (para Calendar)
-  Future<void> setSelectedDate(DateTime? date) async {
-    if (_selectedDate != date) {
-      _selectedDate = date;
-      await loadEvents();
-    }
-  }
+ 
 
-  // Cambiar query de búsqueda (para Explorer)
-  void setSearchQuery(String query) {
-    if (_searchQuery != query) {
-      _searchQuery = query;
-      _applyFilters();
-    }
-  }
-
-  // Limpiar búsqueda
-  void clearSearch() {
-    _searchQuery = '';
-    _applyFilters();
-  }
-
-  // Limpiar fecha seleccionada (volver a mostrar todos)
-  Future<void> clearSelectedDate() async {
-    _selectedDate = null;
-    await loadEvents();
-  }
-
-  // Obtener eventos agrupados por fecha (para HomePage)
-  Map<String, List<Map<String, String>>> getGroupedEvents() {
-    final groupedEvents = <String, List<Map<String, String>>>{};
-
-    for (var event in _filteredEvents) {
-      final date = event['date']!;
-      if (!groupedEvents.containsKey(date)) {
-        groupedEvents[date] = [];
-      }
-      groupedEvents[date]!.add(event);
-    }
-
-    return groupedEvents;
-  }
-
-  // Obtener fechas ordenadas (para HomePage)
+  /// Obtiene fechas ordenadas con prioridad para hoy/mañana
   List<String> getSortedDates() {
-    final groupedEvents = getGroupedEvents();
-    final todayString = DateFormat('yyyy-MM-dd').format(_devNow);
-    final tomorrowString = DateFormat(
-      'yyyy-MM-dd',
-    ).format(_devNow.add(const Duration(days: 1)));
-
-    final sortedDates =
-        groupedEvents.keys.toList()..sort((a, b) {
-          final dateA = parseDate(a);
-          final dateB = parseDate(b);
-          if (a == todayString || a.startsWith(todayString)) return -2;
-          if (b == todayString || b.startsWith(todayString)) return 2;
-          if (a == tomorrowString || a.startsWith(tomorrowString)) return -1;
-          if (b == tomorrowString || b.startsWith(tomorrowString)) return 1;
-          return dateA.compareTo(dateB);
-        });
-
-    return sortedDates;
+    return _dataBuilder.getSortedDates(_groupedEvents);
   }
 
-  // Obtener eventos limitados para HomePage (si no hay fecha seleccionada)
-  List<Map<String, String>> getHomePageEvents() {
-    if (_selectedDate != null) {
-      return _filteredEvents;
+  
+  // ============ MÉTODOS ESPECÍFICOS PARA CALENDARIO ============
+
+/// Obtiene TODOS los eventos para calendario (sin límites)
+List<Map<String, String>> getCalendarEvents() {
+  return _dataBuilder.processEventsForCalendar(_allEvents, _filterCriteria);
+}
+
+/// Obtiene eventos agrupados para calendario (sin límites)
+Map<String, List<Map<String, String>>> getCalendarGroupedEvents() {
+  return _dataBuilder.processEventsCompleteForCalendar(_allEvents, _filterCriteria);
+}
+
+/// Obtiene eventos de un mes específico para calendario
+Future<List<Map<String, String>>> getEventsForMonth(DateTime month) async {
+  try {
+    print('Intentando obtener eventos para el mes: ${month.month}/${month.year}');
+    // Obtener todos los eventos
+    final allEvents = await _eventService.getAllEvents().timeout(const Duration(seconds: 10));
+    print('Eventos totales desde EventService: ${allEvents.length}');
+
+    if (allEvents.isEmpty) {
+      print('⚠️ No hay eventos desde EventService, simulando datos...');
+      allEvents.addAll([
+        for (int day = 1; day <= DateTime(month.year, month.month + 1, 0).day; day++)
+          for (int i = 1; i <= 20; i++)
+            {'date': '${month.year}-${month.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}', 'title': 'Evento $i del día $day'}
+      ]);
+      print('Eventos simulados añadidos: ${allEvents.length}');
     }
 
-    final todayString = DateFormat('yyyy-MM-dd').format(_devNow);
-    final tomorrowString = DateFormat(
-      'yyyy-MM-dd',
-    ).format(_devNow.add(const Duration(days: 1)));
-
-    final todayEvents =
-        _filteredEvents
-            .where((event) => event['date']!.startsWith(todayString))
-            .toList();
-    final tomorrowEvents =
-        _filteredEvents
-            .where((event) => event['date']!.startsWith(tomorrowString))
-            .toList();
-    final futureEvents =
-        _filteredEvents.where((event) {
-          final eventDate = parseDate(event['date']!);
-          return eventDate.isAfter(_devNow.add(const Duration(days: 1)));
-        }).toList();
-
-    return [
-      ...todayEvents,
-      ...tomorrowEvents,
-      ...futureEvents,
-    ].take(20).toList();
+    // Crear criterio temporal SIN selectedDate para evitar filtro de día específico
+    final monthCriteria = _filterCriteria.copyWith(
+      selectedDate: null, // Evitar filtro de fecha específica
+    );
+    
+    // Procesar eventos sin filtro de fecha, solo búsqueda y categorías
+    final processedEvents = _dataBuilder.processEventsForCalendar(allEvents, monthCriteria);
+    
+    // Filtrar manualmente por mes/año
+    final filteredEvents = processedEvents.where((event) {
+      final eventDate = DateFormat('yyyy-MM-dd').tryParse(event['date']!) ??
+          DateFormat('yyyy-MM-ddTHH:mm').tryParse(event['date']!) ??
+          DateTime.now();
+      final matches = eventDate.month == month.month && eventDate.year == month.year;
+      print('Filtrando ${event['date']} - Parseado: $eventDate - Coincide: $matches');
+      return matches;
+    }).toList();
+    
+    print('Eventos filtrados para el mes: ${filteredEvents.length}');
+    return filteredEvents;
+  } catch (e) {
+    print('❌ Error cargando eventos del mes: $e');
+    return [];
   }
+}
 
-  String capitalizeWord(String word) {
-    if (word.isEmpty) return word;
-    return word[0].toUpperCase() + word.substring(1);
-  }
+/// Obtiene eventos de un día específico para calendario
+List<Map<String, String>> getEventsForDay(DateTime day) {
+  final dayString = DateFormat('yyyy-MM-dd').format(day);
+  
+  return getCalendarEvents().where((event) {
+    return event['date']!.startsWith(dayString);
+  }).toList();
+}
 
-  // Obtener título de sección para una fecha
+// ============ COMPATIBILIDAD - MÉTODOS EXISTENTES PARA HOMEPAGE ============
+
+/// Obtiene eventos limitados para HomePage (mantiene límite de 30)
+List<Map<String, String>> getHomePageEvents() {
+  return _processedEvents; // Ya tiene límite aplicado
+}
+
+/// Obtiene eventos agrupados por fecha (mantiene límite)
+Map<String, List<Map<String, String>>> getGroupedEvents() {
+  return _groupedEvents; // Ya tiene límite aplicado
+}
+
+  // ============ MÉTODOS DE PRESENTACIÓN (DELEGADOS) ============
+
+  /// Obtiene título de sección para una fecha
   String getSectionTitle(String date) {
-    final todayString = DateFormat('yyyy-MM-dd').format(_devNow);
-    final tomorrowString = DateFormat(
-      'yyyy-MM-dd',
-    ).format(_devNow.add(const Duration(days: 1)));
-    final parsedDate = parseDate(date);
-
-    final eventDateString = DateFormat('yyyy-MM-dd').format(parsedDate);
-
-    if (eventDateString == todayString) {
-      return 'Hoy';
-    } else if (eventDateString == tomorrowString) {
-      return 'Mañana';
-    } else {
-      final weekday = capitalizeWord(
-        DateFormat('EEEE', 'es').format(parsedDate),
-      ); // viernes → Viernes
-      final day = DateFormat('d', 'es').format(parsedDate); // 6
-      final month = capitalizeWord(
-        DateFormat('MMMM', 'es').format(parsedDate),
-      ); // junio → Junio
-      return '$weekday, $day de $month'; // Viernes, 6 de Junio
-    }
+    return _dataBuilder.getSectionTitle(date);
   }
 
-  // Obtener título principal de la página
+  /// Obtiene título principal de la página
   String getPageTitle() {
-    if (_selectedDate == null) {
-      return 'Próximos Eventos';
-    } else {
-      final month = capitalizeWord(
-        DateFormat('MMMM', 'es').format(_selectedDate!),
-      );
-      return 'Eventos de $month';
-    }
+    return _dataBuilder.getPageTitleFromCriteria(_filterCriteria);
   }
 
-  // Refresh/reload
+  /// Obtiene color de card según tipo de evento
+  Color getEventCardColor(String eventType, BuildContext context) {
+    return _dataBuilder.getEventCardColor(eventType, context);
+  }
+
+  /// Formatea fecha para mostrar en eventos
+  String formatEventDate(String dateString) {
+    return _dataBuilder.formatEventDate(dateString);
+  }
+
+  // ============ ANÁLISIS Y ESTADÍSTICAS ============
+
+  /// Obtiene estadísticas de los eventos actuales
+  Map<String, dynamic> getEventStatistics() {
+    return _dataBuilder.getEventStatistics(_processedEvents);
+  }
+
+  /// Verifica si hay filtros activos
+  bool get hasActiveFilters => _filterCriteria.hasActiveFilters;
+
+  /// Verifica si solo hay búsqueda activa
+  bool get hasOnlySearch => _filterCriteria.hasOnlySearch;
+
+  /// Obtiene resumen de filtros activos para UI
+  String getActiveFiltersDescription() {
+    if (_filterCriteria.isEmpty) return 'Sin filtros';
+    
+    final parts = <String>[];
+    
+    if (_filterCriteria.query.isNotEmpty) {
+      parts.add('Búsqueda: "${_filterCriteria.query}"');
+    }
+    
+    if (_filterCriteria.selectedCategories.isNotEmpty) {
+      parts.add('${_filterCriteria.selectedCategories.length} categorías');
+    }
+    
+    if (_filterCriteria.selectedDate != null) {
+      parts.add('Fecha específica');
+    }
+    
+    return parts.join(', ');
+  }
+
+  // ============ OPERACIONES DE REFRESH ============
+
+  /// Refresh/reload completo
   Future<void> refresh() async {
     await loadEvents();
   }
 
-  // Obtener color de card según tipo de evento
-  Color getEventCardColor(String eventType, BuildContext context) {
-    final category =
-        _categoryMapping.entries
-            .firstWhere(
-              (entry) => entry.value == eventType.toLowerCase(),
-              orElse: () => MapEntry('', 'default'),
-            )
-            .key;
-
-    final color = AppColors.categoryColors[category] ?? AppColors.defaultColor;
-    return AppColors.adjustForTheme(context, color);
+  /// Recarga manteniendo filtros actuales
+  Future<void> reloadWithCurrentFilters() async {
+    final currentCriteria = _filterCriteria;
+    await loadEvents();
+    // Los filtros se mantienen automáticamente
   }
 
-  // Formatear fecha para mostrar
-  String formatEventDate(String dateString) {
-    final eventDate = parseDate(dateString);
-    final todayString = DateFormat('yyyy-MM-dd').format(_devNow);
-    final tomorrowString = DateFormat(
-      'yyyy-MM-dd',
-    ).format(_devNow.add(const Duration(days: 1)));
+  // ============ MÉTODOS PRIVADOS ============
 
-    final eventDateString = DateFormat('yyyy-MM-dd').format(eventDate);
-
-    if (eventDateString == todayString) {
-      return 'Hoy';
-    } else if (eventDateString == tomorrowString) {
-      return 'Mañana';
+  /// Manejo de errores de carga
+  void _handleLoadError(Object error) {
+    if (error is SocketException) {
+      _state = EventsLoadingState.error;
+      _errorMessage = 'No hay conexión a internet.';
+    } else if (error is TimeoutException) {
+      _state = EventsLoadingState.error;
+      _errorMessage = 'La carga de eventos tomó demasiado tiempo.';
     } else {
-      // ✅ Formato correcto aquí también
-      return DateFormat('d MMM yyyy', 'es').format(eventDate);
+      _state = EventsLoadingState.error;
+      _errorMessage = 'Ocurrió un error inesperado: $error';
     }
+
+    _processedEvents = [];
+    _groupedEvents = {};
+    notifyListeners();
+  }
+
+  /// Reintento con delay exponencial
+  Future<T> _retryOperation<T>(
+    Future<T> Function() operation, {
+    int maxRetries = 3,
+  }) async {
+    var delay = const Duration(seconds: 1);
+    
+    for (var attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (e) {
+        if (attempt == maxRetries - 1) rethrow;
+        
+        await Future.delayed(delay);
+        delay = Duration(seconds: delay.inSeconds * 2); // Backoff exponencial
+      }
+    }
+    
+    throw Exception("No se pudo completar la operación");
+  }
+
+  // ============ MÉTODOS DE DEPURACIÓN ============
+
+  /// Debug: información del estado actual
+  Map<String, dynamic> getDebugInfo() {
+    return {
+      'state': _state.toString(),
+      'totalEvents': _allEvents.length,
+      'filteredEvents': _processedEvents.length,
+      'groupedDates': _groupedEvents.keys.length,
+      'filterCriteria': _filterCriteria.toString(),
+      'hasError': hasError,
+      'errorMessage': _errorMessage,
+    };
+  }
+
+  @override
+  void dispose() {
+    // Cleanup si es necesario
+    super.dispose();
   }
 }

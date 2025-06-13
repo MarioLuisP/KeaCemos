@@ -23,11 +23,8 @@ class EventCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final parsedDate = viewModel.parseDate(event['date']!);
-    final formattedTime = parsedDate.hour > 0 || parsedDate.minute > 0
-        ? '${parsedDate.hour.toString().padLeft(2, '0')}:${parsedDate.minute.toString().padLeft(2, '0')} hs'
-        : '';
-    final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context);
+    final formattedDateString = viewModel.formatEventDate(event['date']!);
+    final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context); // Default category
     final darkCardColor = _darkenColor(cardColor, 0.2);
 
     return GestureDetector(
@@ -74,14 +71,13 @@ class EventCardWidget extends StatelessWidget {
                             ),
                       ),
                       const SizedBox(height: AppDimens.paddingMedium),
-                      if (formattedTime.isNotEmpty)
-                        Text(
-                          'Hora: $formattedTime',
+                       Text( // Display the formatted date string
+                          'Fecha: $formattedDateString',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Theme.of(context).colorScheme.onSurface,
-                              ),
+                                 ),
                         ),
                       const SizedBox(height: AppDimens.paddingSmall),
                       Text(
