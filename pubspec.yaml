@@ -44,6 +44,8 @@ dependencies:
   intl_translation: ^0.20.1  # Asegúrate de usar la misma versión que intl
   provider: ^6.1.2
   shared_preferences: ^2.0.0
+  glass_kit: ^4.0.1
+
   
 dev_dependencies:
   flutter_test:

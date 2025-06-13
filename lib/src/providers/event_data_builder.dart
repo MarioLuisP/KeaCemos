@@ -43,10 +43,11 @@ class EventDataBuilder {
 
     for (var event in events) {
       final date = event['date']!;
-      if (!groupedEvents.containsKey(date)) {
-        groupedEvents[date] = [];
+      final dateOnly = DateFormat('yyyy-MM-dd').format(DateFormat('yyyy-MM-ddTHH:mm').parse(date));
+      if (!groupedEvents.containsKey(dateOnly)) {
+        groupedEvents[dateOnly] = [];
       }
-      groupedEvents[date]!.add(event);
+      groupedEvents[dateOnly]!.add(event);
     }
 
     return groupedEvents;
