@@ -73,8 +73,18 @@ class EventCardWidget extends StatelessWidget {
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
                       ),
-                      const SizedBox(height: AppDimens.paddingMedium),
+                      
+                      const SizedBox(height: AppDimens.paddingSmall),
                       Text(
+                        viewModel.getCategoryWithEmoji(event['type'] ?? ''),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                            ),
+                      ),
+                      const SizedBox(height: AppDimens.paddingMedium),  
+                    Text(
                         // MEJORADO: Ya no dice "Fecha:" porque el emoji es suficiente
                         formattedDateString,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(

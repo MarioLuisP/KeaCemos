@@ -306,7 +306,24 @@ Map<String, List<Map<String, String>>> getGroupedEvents() {
   String getSectionTitle(String date) {
     return _dataBuilder.getSectionTitle(date);
   }
-
+  String getCategoryWithEmoji(String type) {
+    const categoryEmojis = {
+      'musica': 'Música 🎵',
+      'teatro': 'Teatro 🎭',
+      'standup': 'StandUp 🎤',
+      'arte': 'Arte 🎨',
+      'cine': 'Cine 🎬',
+      'mic': 'Mic 🎙️',
+      'cursos': 'Cursos 📚',
+      'ferias': 'Ferias 🛍️',
+      'calle': 'Calle 🌆',
+      'redes': 'Redes 📱',
+      'ninos': 'Niños 👶',
+      'danza': 'Danza 💃',
+    };
+  
+  return categoryEmojis[type.toLowerCase()] ?? type;
+}
   /// Obtiene título principal de la página
   String getPageTitle() {
     return _dataBuilder.getPageTitleFromCriteria(_filterCriteria);
