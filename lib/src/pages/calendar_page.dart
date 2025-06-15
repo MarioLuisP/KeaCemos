@@ -147,74 +147,99 @@ class _CalendarPageState extends State<CalendarPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    calendarBuilders: CalendarBuilders(
-                      todayBuilder: (context, day, focusedDay) {
-                        return Center(
-                          child: Container(
-                            width: 28,
-                            height: 28,
-                            margin: const EdgeInsets.only(bottom: 1),
-                            decoration: BoxDecoration(
-                              color: Colors.blue[200],
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '${day.day}',
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                      selectedBuilder: (context, day, focusedDay) {
-                        return Center(
-                          child: Container(
-                            width: 28,
-                            height: 28,
-                            margin: const EdgeInsets.only(bottom: 1),
-                            decoration: BoxDecoration(
-                              color: Colors.blue[400],
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '${day.day}',
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                      defaultBuilder: (context, day, focusedDay) {
-                        final eventsForDay = _getEventsForDay(day);
-                        if (eventsForDay.isNotEmpty) {
-                          return Center(
-                            child: Container(
-                              width: 28,
-                              height: 28,
-                              margin: const EdgeInsets.only(bottom: 1),
-                              decoration: BoxDecoration(
-                                color: Colors.blue[200],
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                '${day.day}',
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        return null;
-                      },
+
+// ARREGLO MÍNIMO para calendar_page.dart
+// SOLO CAMBIAR EL calendarBuilders:
+
+calendarBuilders: CalendarBuilders(
+  // ✅ ARREGLO: Today builder que respeta si está seleccionado
+  todayBuilder: (context, day, focusedDay) {
+    final isSelected = isSameDay(_selectedDay, day);
+    final eventsForDay = _getEventsForDay(day);
+    
+    return Center(
+      child: Container(
+        width: 28,
+        height: 28,
+        margin: const EdgeInsets.only(bottom: 1),
+        decoration: BoxDecoration(
+          // Si está seleccionado, usar color de selección
+          // Si no, usar color de "today"
+          color: isSelected 
+              ? Colors.blue[400] 
+              : (eventsForDay.isNotEmpty ? Colors.orange[300] : Colors.blue[200]),
+          borderRadius: BorderRadius.circular(8.0),
+          // Borde extra para "today" cuando no está seleccionado
+          border: isSelected ? null : Border.all(color: Colors.blue[600]!, width: 2),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          '${day.day}',
+          style: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  },
+  
+  // ✅ ARREGLO: Selected builder que NO interfiere con today
+  selectedBuilder: (context, day, focusedDay) {
+    // Solo actuar si NO es today (today builder se encarga)
+    if (isSameDay(day, DateTime.now())) {
+      return null; // Dejar que todayBuilder maneje
+    }
+    
+    final eventsForDay = _getEventsForDay(day);
+    return Center(
+      child: Container(
+        width: 28,
+        height: 28,
+        margin: const EdgeInsets.only(bottom: 1),
+        decoration: BoxDecoration(
+          color: eventsForDay.isNotEmpty ? Colors.purple[300] : Colors.blue[400],
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          '${day.day}',
+          style: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  },
+  
+  // Mantener el resto igual...
+  defaultBuilder: (context, day, focusedDay) {
+    final eventsForDay = _getEventsForDay(day);
+    if (eventsForDay.isNotEmpty) {
+      return Center(
+        child: Container(
+          width: 28,
+          height: 28,
+          margin: const EdgeInsets.only(bottom: 1),
+          decoration: BoxDecoration(
+            color: Colors.green[200], // Días con eventos
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            '${day.day}',
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
+    }
+    return null;
+  },
+
                       markerBuilder: (context, date, events) {
                         final eventsForDay = _getEventsForDay(date);
                         if (eventsForDay.isNotEmpty) {
@@ -244,6 +269,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         return null;
                       },
                     ),
+                  
                     eventLoader: _getEventsForDay,
                     headerStyle: HeaderStyle(
                       formatButtonVisible: true,

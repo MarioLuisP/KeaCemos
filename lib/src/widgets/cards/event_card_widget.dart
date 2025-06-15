@@ -23,8 +23,9 @@ class EventCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formattedDateString = viewModel.formatEventDate(event['date']!);
-    final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context); // Default category
+    // CAMBIO PRINCIPAL: Usar formato 'card' específico
+    final formattedDateString = viewModel.formatEventDate(event['date']!, format: 'card');
+    final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context);
     final darkCardColor = _darkenColor(cardColor, 0.2);
 
     return GestureDetector(
@@ -71,14 +72,15 @@ class EventCardWidget extends StatelessWidget {
                             ),
                       ),
                       const SizedBox(height: AppDimens.paddingMedium),
-                       Text( // Display the formatted date string
-                          'Fecha: $formattedDateString',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).colorScheme.onSurface,
-                                 ),
-                        ),
+                      Text(
+                        // MEJORADO: Ya no dice "Fecha:" porque el emoji es suficiente
+                        formattedDateString,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                               ),
+                      ),
                       const SizedBox(height: AppDimens.paddingSmall),
                       Text(
                         'Ubicación: ${event['location']}',

@@ -218,57 +218,66 @@ Map<String, List<Map<String, String>>> getCalendarGroupedEvents() {
 }
 
 /// Obtiene eventos de un mes específico para calendario
-Future<List<Map<String, String>>> getEventsForMonth(DateTime month) async {
-  try {
-    print('Intentando obtener eventos para el mes: ${month.month}/${month.year}');
-    // Obtener todos los eventos
-    final allEvents = await _eventService.getAllEvents().timeout(const Duration(seconds: 10));
-    print('Eventos totales desde EventService: ${allEvents.length}');
-
-    if (allEvents.isEmpty) {
-      print('⚠️ No hay eventos desde EventService, simulando datos...');
-      allEvents.addAll([
-        for (int day = 1; day <= DateTime(month.year, month.month + 1, 0).day; day++)
-          for (int i = 1; i <= 20; i++)
-            {'date': '${month.year}-${month.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}', 'title': 'Evento $i del día $day'}
-      ]);
-      print('Eventos simulados añadidos: ${allEvents.length}');
+  Future<List<Map<String, String>>> getEventsForMonth(DateTime month) async {
+    try {
+      print('📅 Cargando eventos para: ${month.month}/${month.year}');
+      
+      // 1. Obtener eventos del servicio
+      final allEvents = await _eventService.getAllEvents()
+          .timeout(const Duration(seconds: 10));
+      
+      print('📊 Eventos totales: ${allEvents.length}');
+      
+      
+      // 3. Usar EventDataBuilder para filtrar eficientemente
+      final monthStart = DateTime(month.year, month.month, 1);
+      final monthEnd = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+      
+      // Crear criterio específico para el mes
+      final monthCriteria = _filterCriteria.copyWith(
+        selectedDate: null, // No filtrar por día específico
+      );
+      
+      // 4. Procesar Y filtrar en una sola pasada
+      final filteredEvents = allEvents.where((event) {
+        try {
+          // Parsear fecha del evento
+          final eventDateStr = event['date'] ?? '';
+          final eventDate = DateFormat('yyyy-MM-dd').tryParse(eventDateStr) ??
+              DateFormat('yyyy-MM-ddTHH:mm').tryParse(eventDateStr);
+          
+          if (eventDate == null) return false;
+          
+          // Verificar si está en el mes correcto
+          return eventDate.year == month.year && eventDate.month == month.month;
+        } catch (e) {
+          print('⚠️ Error parseando fecha: ${event['date']} - $e');
+          return false;
+        }
+      }).toList();
+      
+      // 5. Aplicar filtros adicionales (búsqueda, categorías) usando la arquitectura existente
+      final finalEvents = _dataBuilder.processEventsForCalendar(filteredEvents, monthCriteria);
+      
+      print('✅ Eventos del mes procesados: ${finalEvents.length}');
+      return finalEvents;
+      
+    } catch (e) {
+      print('❌ Error cargando eventos del mes: $e');
+      return [];
     }
-
-    // Crear criterio temporal SIN selectedDate para evitar filtro de día específico
-    final monthCriteria = _filterCriteria.copyWith(
-      selectedDate: null, // Evitar filtro de fecha específica
-    );
-    
-    // Procesar eventos sin filtro de fecha, solo búsqueda y categorías
-    final processedEvents = _dataBuilder.processEventsForCalendar(allEvents, monthCriteria);
-    
-    // Filtrar manualmente por mes/año
-    final filteredEvents = processedEvents.where((event) {
-      final eventDate = DateFormat('yyyy-MM-dd').tryParse(event['date']!) ??
-          DateFormat('yyyy-MM-ddTHH:mm').tryParse(event['date']!) ??
-          DateTime.now();
-      final matches = eventDate.month == month.month && eventDate.year == month.year;
-      print('Filtrando ${event['date']} - Parseado: $eventDate - Coincide: $matches');
-      return matches;
-    }).toList();
-    
-    print('Eventos filtrados para el mes: ${filteredEvents.length}');
-    return filteredEvents;
-  } catch (e) {
-    print('❌ Error cargando eventos del mes: $e');
-    return [];
   }
-}
 
 /// Obtiene eventos de un día específico para calendario
-List<Map<String, String>> getEventsForDay(DateTime day) {
-  final dayString = DateFormat('yyyy-MM-dd').format(day);
-  
-  return getCalendarEvents().where((event) {
-    return event['date']!.startsWith(dayString);
-  }).toList();
-}
+  List<Map<String, String>> getEventsForDay(DateTime day) {
+    final dayString = DateFormat('yyyy-MM-dd').format(day);
+    
+    // Usar los eventos ya cacheados si es el mes actual
+    return _allEvents.where((event) {
+      final eventDate = event['date'] ?? '';
+      return eventDate.startsWith(dayString);
+    }).toList();
+  }
 
 // ============ COMPATIBILIDAD - MÉTODOS EXISTENTES PARA HOMEPAGE ============
 
@@ -300,10 +309,74 @@ Map<String, List<Map<String, String>>> getGroupedEvents() {
   }
 
   /// Formatea fecha para mostrar en eventos
-  String formatEventDate(String dateString) {
-    return _dataBuilder.formatEventDate(dateString);
-  }
+// EN HomeViewModel - REEMPLAZAR el método formatEventDate existente
 
+/// Formatea fecha para mostrar en diferentes contextos
+String formatEventDate(String dateString, {String format = 'full'}) {
+  // Intentar parsear la fecha en diferentes formatos
+  DateTime? date;
+  
+  try {
+    // Primero intentar con formato ISO completo
+    date = DateTime.tryParse(dateString);
+    
+    // Si falla, intentar solo fecha (yyyy-MM-dd)
+    if (date == null && dateString.length >= 10) {
+      date = DateTime.tryParse(dateString.substring(0, 10));
+    }
+    
+    // Si aún falla, devolver string original
+    if (date == null) {
+      print('⚠️ No se pudo parsear fecha: $dateString');
+      return dateString;
+    }
+  } catch (e) {
+    print('❌ Error parseando fecha: $dateString - $e');
+    return dateString;
+  }
+  
+  switch(format) {
+    case 'card':
+      // Formato para tarjetas: "📅 3 jun - 20:30 hs"
+      return "📅 ${date.day} ${_getMonthAbbrev(date.month)}${_getTimeString(date)}";
+      
+    case 'calendar':
+      // Formato para calendario: "3/6"
+      return "${date.day}/${date.month}";
+      
+    case 'full':
+    default:
+      // Formato completo para home: "Martes, 3 de Junio"
+      return _getFullDateFormat(date);
+  }
+}
+
+/// Obtiene abreviación del mes en español
+String _getMonthAbbrev(int month) {
+  const months = [
+    '', 'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+    'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
+  ];
+  return months[month] ?? 'mes';
+}
+
+/// Formatea la hora si está disponible
+String _getTimeString(DateTime date) {
+  // Si la fecha tiene hora específica (no es medianoche)
+  if (date.hour != 0 || date.minute != 0) {
+    return " - ${date.hour}:${date.minute.toString().padLeft(2,'0')} hs";
+  }
+  return ""; // Solo fecha, sin hora
+}
+
+/// Formato completo de fecha (método existente mejorado)
+String _getFullDateFormat(DateTime date) {
+  final formatter = DateFormat('EEEE, d \'de\' MMMM', 'es_ES');
+  String formatted = formatter.format(date);
+  
+  // Capitalizar primera letra
+  return formatted.substring(0, 1).toUpperCase() + formatted.substring(1);
+}
   // ============ ANÁLISIS Y ESTADÍSTICAS ============
 
   /// Obtiene estadísticas de los eventos actuales
