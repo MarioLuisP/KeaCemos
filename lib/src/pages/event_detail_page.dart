@@ -1,6 +1,8 @@
 /// Detail page for displaying event information.
 library;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 
 class EventDetailPage extends StatelessWidget {
   final Map<String, String> event;
@@ -48,15 +50,20 @@ class EventDetailPage extends StatelessWidget {
             const SizedBox(height: 16.0),
             Align(
               alignment: Alignment.bottomRight,
-              child: IconButton(
-                icon: const Icon(Icons.favorite_border),
-                color: Colors.red,
-                onPressed: () {
-                  // Placeholder para favoritos (Prompt 7)
+              child: Consumer<FavoritesProvider>(
+                builder: (context, favoritesProvider, child) {
+                  final isFavorite = favoritesProvider.isFavorite(event['id']!);
+                  return IconButton(
+                    icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+                    color: isFavorite ? Colors.red : Colors.grey,
+                    onPressed: () {
+                      // Necesitarás el viewModel aquí, o implementar el toggle directamente
+                      favoritesProvider.toggleFavorite(event['id']!);
+                    },
+                  );
                 },
               ),
-            ),
-          ],
+            ),          ],
         ),
       ),
     );

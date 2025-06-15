@@ -15,21 +15,23 @@ class EventDataBuilder {
 
   // ============ MÉTODOS PRINCIPALES (NUEVA API) ============
   
-  /// Procesa eventos completos: filtra, ordena y agrupa
+  /// Procesa eventos completos: filtra, ordena y agrupa (SIN DUPLICADOS)
   Map<String, List<Map<String, String>>> processEventsComplete(
     List<Map<String, String>> allEvents,
     FilterCriteria criteria,
   ) {
-    final processedEvents = _filterLogic.processEvents(allEvents, criteria);
+    final cleanEvents = _removeDuplicates(allEvents);
+    final processedEvents = _filterLogic.processEvents(cleanEvents, criteria);
     return groupEventsByDate(processedEvents);
   }
   
-  /// Procesa eventos para HomePage con límite inteligente
+  /// Procesa eventos para HomePage con límite inteligente (SIN DUPLICADOS)
   List<Map<String, String>> processEventsForHomePage(
     List<Map<String, String>> allEvents,
     FilterCriteria criteria,
   ) {
-    final processedEvents = _filterLogic.processEvents(allEvents, criteria);
+    final cleanEvents = _removeDuplicates(allEvents);
+    final processedEvents = _filterLogic.processEvents(cleanEvents, criteria);
     return getHomePageEvents(processedEvents, criteria.selectedDate != null);
   }
   
@@ -53,16 +55,16 @@ class EventDataBuilder {
     return groupedEvents;
   }
   
-  /// Procesa eventos para Calendario SIN LÍMITES
+  /// Procesa eventos para Calendario SIN LÍMITES (SIN DUPLICADOS)
   List<Map<String, String>> processEventsForCalendar(
     List<Map<String, String>> allEvents,
     FilterCriteria criteria,
   ) {
-    // Solo filtrar y ordenar, SIN límites
-    return _filterLogic.processEvents(allEvents, criteria);
+    final cleanEvents = _removeDuplicates(allEvents);
+    return _filterLogic.processEvents(cleanEvents, criteria);
   }
 
-  /// Procesa eventos completos para vistas que necesitan agrupación
+  /// Procesa eventos completos para vistas que necesitan agrupación (SIN DUPLICADOS)
   Map<String, List<Map<String, String>>> processEventsCompleteForCalendar(
     List<Map<String, String>> allEvents,
     FilterCriteria criteria,
@@ -97,43 +99,60 @@ class EventDataBuilder {
     return sortedDates;
   }
 
+  /// Obtiene eventos limitados para HomePage (SIN DUPLICADOS)
+  List<Map<String, String>> getHomePageEvents(
+    List<Map<String, String>> events,
+    bool hasSelectedDate,
+  ) {
+    // Si hay fecha seleccionada, mostrar todos los eventos de ese día
+    if (hasSelectedDate) return events;
 
+    final todayString = DateFormat('yyyy-MM-dd').format(_currentDate);
+    final tomorrowString = DateFormat('yyyy-MM-dd').format(
+      _currentDate.add(const Duration(days: 1)),
+    );
 
+    // USAR SETS para evitar duplicados durante la clasificación temporal
+    final processedEventIds = <String>{};
+    final result = <Map<String, String>>[];
 
-/// Obtiene eventos limitados para HomePage (máximo 30)
-  /// SOLO para HomePage, NO para calendario
-List<Map<String, String>> getHomePageEvents(
-  List<Map<String, String>> events,
-  bool hasSelectedDate,
-) {
-  // Si hay fecha seleccionada, mostrar todos los eventos de ese día
-  if (hasSelectedDate) return events;
+    // PASO 1: Eventos de hoy (prioridad más alta)
+    for (final event in events) {
+      if (event['date']!.startsWith(todayString)) {
+        final eventId = event['id'] ?? event['title'] ?? '';
+        if (eventId.isNotEmpty && !processedEventIds.contains(eventId)) {
+          processedEventIds.add(eventId);
+          result.add(event);
+        }
+      }
+    }
 
-  final todayString = DateFormat('yyyy-MM-dd').format(_currentDate);
-  final tomorrowString = DateFormat('yyyy-MM-dd').format(
-    _currentDate.add(const Duration(days: 1)),
-  );
+    // PASO 2: Eventos de mañana
+    for (final event in events) {
+      if (event['date']!.startsWith(tomorrowString)) {
+        final eventId = event['id'] ?? event['title'] ?? '';
+        if (eventId.isNotEmpty && !processedEventIds.contains(eventId)) {
+          processedEventIds.add(eventId);
+          result.add(event);
+        }
+      }
+    }
 
-  final todayEvents = events
-      .where((event) => event['date']!.startsWith(todayString))
-      .toList();
-      
-  final tomorrowEvents = events
-      .where((event) => event['date']!.startsWith(tomorrowString))
-      .toList();
-      
-  final futureEvents = events.where((event) {
-    final eventDate = _parseDate(event['date']!);
-    return eventDate.isAfter(_currentDate.add(const Duration(days: 1)));
-  }).toList();
+    // PASO 3: Eventos futuros
+    for (final event in events) {
+      final eventDate = _parseDate(event['date']!);
+      if (eventDate.isAfter(_currentDate.add(const Duration(days: 1)))) {
+        final eventId = event['id'] ?? event['title'] ?? '';
+        if (eventId.isNotEmpty && !processedEventIds.contains(eventId)) {
+          processedEventIds.add(eventId);
+          result.add(event);
+        }
+      }
+    }
 
-  // LÍMITE SOLO PARA HOMEPAGE
-  return [
-    ...todayEvents,
-    ...tomorrowEvents,
-    ...futureEvents,
-  ].take(30).toList();
-}
+    // LÍMITE SOLO PARA HOMEPAGE
+    return result.take(30).toList();
+  }
 
   // ============ MÉTODOS DE FORMATEO Y PRESENTACIÓN ============
 
@@ -242,6 +261,22 @@ List<Map<String, String>> getHomePageEvents(
   }
 
   // ============ MÉTODOS PRIVADOS ============
+
+  /// Remueve eventos duplicados basándose en su ID
+  List<Map<String, String>> _removeDuplicates(List<Map<String, String>> events) {
+    final seen = <String>{};
+    final deduplicated = <Map<String, String>>[];
+    
+    for (final event in events) {
+      final eventId = event['id'] ?? event['title'] ?? '';
+      if (eventId.isNotEmpty && !seen.contains(eventId)) {
+        seen.add(eventId);
+        deduplicated.add(event);
+      }
+    }
+    
+    return deduplicated;
+  }
 
   /// Parseo flexible de fecha (con o sin hora)
   DateTime _parseDate(String dateString) {

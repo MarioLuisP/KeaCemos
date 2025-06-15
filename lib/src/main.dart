@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/navigation/bottom_nav.dart';
 import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/themes/themes.dart';
+import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
+import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,12 +19,30 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) {
-        final provider = PreferencesProvider();
-        provider.init(); // Llamar init() para cargar preferencias
-        return provider;
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) {
+            final provider = PreferencesProvider();
+            provider.init(); // Llamar init() para cargar preferencias
+            return provider;
+          },
+        ),
+        ChangeNotifierProvider(create: (context) => FavoritesProvider()),
+        ChangeNotifierProvider(
+          create: (context) {
+            print('🏗️ Creando HomeViewModel...');
+            final viewModel = HomeViewModel();
+            // 🚨 SOLUCIÓN: Inicializar automáticamente al crear el provider
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              print('🚀 Auto-inicializando HomeViewModel...');
+              await viewModel.initialize();
+              print('✅ HomeViewModel inicializado con ${viewModel.filteredEvents.length} eventos');
+            });
+            return viewModel;
+          },
+        ),
+      ],      
       child: Consumer<PreferencesProvider>(
         builder: (context, provider, _) {
           return MaterialApp(

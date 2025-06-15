@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quehacemos_cba/src/pages/pages.dart';
+import 'package:quehacemos_cba/src/pages/favorites_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -39,7 +40,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       const ExplorePage(),
       CalendarPage(onDateSelected: _onDateSelected),
-      const Center(child: Text('Favoritos en construcción')),
+      const FavoritesPage(),
       const SettingsPage(),
     ];
 

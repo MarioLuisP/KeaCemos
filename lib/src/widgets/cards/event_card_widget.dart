@@ -4,6 +4,8 @@ import 'package:quehacemos_cba/src/pages/event_detail_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quehacemos_cba/src/services/auth_service.dart';
 import 'package:quehacemos_cba/src/utils/dimens.dart';
+import 'package:provider/provider.dart';
+import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 
 class EventCardWidget extends StatelessWidget {
   final Map<String, String> event;
@@ -83,7 +85,7 @@ class EventCardWidget extends StatelessWidget {
                       ),
                       const SizedBox(height: AppDimens.paddingSmall),
                       Text(
-                        'Ubicación: ${event['location']}',
+                        '📍 ${event['location']}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
@@ -93,25 +95,20 @@ class EventCardWidget extends StatelessWidget {
                 ),
                 Align(
                   alignment: Alignment.topCenter,
-                  child: IconButton(
-                    iconSize: 24,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(Icons.favorite_border),
-                    color: Theme.of(context).colorScheme.onSurface,
-                    onPressed: () {
-                      if (FirebaseAuth.instance.currentUser == null) {
-                        AuthService().signInWithGoogle().then((_) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Sesión iniciada')),
-                          );
-                        }).catchError((error) {
-                          print('Error signing in: $error');
-                        });
-                      }
+                  child: Consumer<FavoritesProvider>(
+                    builder: (context, favoritesProvider, child) {
+                      final isFavorite = favoritesProvider.isFavorite(event['id']!);
+                      return IconButton(
+                        iconSize: 24,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+                        color: isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
+                        onPressed: () => viewModel.toggleFavorite(event['id']!, favoritesProvider),
+                      );
                     },
                   ),
-                ),
+                ),                
               ],
             ),
           ),

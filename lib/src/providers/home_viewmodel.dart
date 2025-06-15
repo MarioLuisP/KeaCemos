@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:quehacemos_cba/src/services/event_service.dart';
+import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'filter_criteria.dart';
 import 'category_constants.dart';
 import 'event_filter_logic.dart';
+import 'favorites_provider.dart';
 import 'event_data_builder.dart';
 
 enum EventsLoadingState { idle, loading, loaded, error }
@@ -31,6 +33,7 @@ class HomeViewModel with ChangeNotifier {
   Map<String, List<Map<String, String>>> _groupedEvents = {};
 
   HomeViewModel() : _dataBuilder = EventDataBuilder(DateTime(2025, 6, 4));
+
 
   // ============ GETTERS PÚBLICOS ============
   
@@ -86,7 +89,13 @@ class HomeViewModel with ChangeNotifier {
       _handleLoadError(e);
     }
   }
+// ============ MÉTODOS DE FAVORITOS ============
 
+  /// Toggle favorito de un evento
+  void toggleFavorite(String eventId, FavoritesProvider favoritesProvider) {
+    favoritesProvider.toggleFavorite(eventId);
+    print('🤍 Toggle favorito: $eventId');
+  }
   /// Procesa eventos usando la nueva arquitectura
 /// Procesa eventos usando la nueva arquitectura
 void _processEvents() {
