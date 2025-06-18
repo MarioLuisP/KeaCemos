@@ -306,24 +306,10 @@ Map<String, List<Map<String, String>>> getGroupedEvents() {
   String getSectionTitle(String date) {
     return _dataBuilder.getSectionTitle(date);
   }
+/// Obtiene nombre de categoría con emoji delegando a EventDataBuilder
   String getCategoryWithEmoji(String type) {
-    const categoryEmojis = {
-      'musica': 'Música 🎵',
-      'teatro': 'Teatro 🎭',
-      'standup': 'StandUp 🎤',
-      'arte': 'Arte 🎨',
-      'cine': 'Cine 🎬',
-      'mic': 'Mic 🎙️',
-      'cursos': 'Cursos 📚',
-      'ferias': 'Ferias 🛍️',
-      'calle': 'Calle 🌆',
-      'redes': 'Redes 📱',
-      'ninos': 'Niños 👶',
-      'danza': 'Danza 💃',
-    };
-  
-  return categoryEmojis[type.toLowerCase()] ?? type;
-}
+    return _dataBuilder.getCategoryWithEmoji(type);
+  }
   /// Obtiene título principal de la página
   String getPageTitle() {
     return _dataBuilder.getPageTitleFromCriteria(_filterCriteria);
@@ -335,73 +321,8 @@ Map<String, List<Map<String, String>>> getGroupedEvents() {
   }
 
   /// Formatea fecha para mostrar en eventos
-// EN HomeViewModel - REEMPLAZAR el método formatEventDate existente
-
-/// Formatea fecha para mostrar en diferentes contextos
-String formatEventDate(String dateString, {String format = 'full'}) {
-  // Intentar parsear la fecha en diferentes formatos
-  DateTime? date;
-  
-  try {
-    // Primero intentar con formato ISO completo
-    date = DateTime.tryParse(dateString);
-    
-    // Si falla, intentar solo fecha (yyyy-MM-dd)
-    if (date == null && dateString.length >= 10) {
-      date = DateTime.tryParse(dateString.substring(0, 10));
-    }
-    
-    // Si aún falla, devolver string original
-    if (date == null) {
-      print('⚠️ No se pudo parsear fecha: $dateString');
-      return dateString;
-    }
-  } catch (e) {
-    print('❌ Error parseando fecha: $dateString - $e');
-    return dateString;
-  }
-  
-  switch(format) {
-    case 'card':
-      // Formato para tarjetas: "📅 3 jun - 20:30 hs"
-      return "📅 ${date.day} ${_getMonthAbbrev(date.month)}${_getTimeString(date)}";
-      
-    case 'calendar':
-      // Formato para calendario: "3/6"
-      return "${date.day}/${date.month}";
-      
-    case 'full':
-    default:
-      // Formato completo para home: "Martes, 3 de Junio"
-      return _getFullDateFormat(date);
-  }
-}
-
-/// Obtiene abreviación del mes en español
-String _getMonthAbbrev(int month) {
-  const months = [
-    '', 'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-    'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
-  ];
-  return months[month] ?? 'mes';
-}
-
-/// Formatea la hora si está disponible
-String _getTimeString(DateTime date) {
-  // Si la fecha tiene hora específica (no es medianoche)
-  if (date.hour != 0 || date.minute != 0) {
-    return " - ${date.hour}:${date.minute.toString().padLeft(2,'0')} hs";
-  }
-  return ""; // Solo fecha, sin hora
-}
-
-/// Formato completo de fecha (método existente mejorado)
-String _getFullDateFormat(DateTime date) {
-  final formatter = DateFormat('EEEE, d \'de\' MMMM', 'es_ES');
-  String formatted = formatter.format(date);
-  
-  // Capitalizar primera letra
-  return formatted.substring(0, 1).toUpperCase() + formatted.substring(1);
+  String formatEventDate(String dateString, {String format = 'full'}) {
+    return _dataBuilder.formatEventDate(dateString, format: format);
 }
   // ============ ANÁLISIS Y ESTADÍSTICAS ============
 
