@@ -4,6 +4,7 @@ import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/widgets/chips/filter_chips_widget.dart';
 import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
+import 'package:quehacemos_cba/src/providers/filter_criteria.dart';
 
 class HomePage extends StatefulWidget {
   final DateTime? selectedDate;
@@ -14,19 +15,28 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // 🚀 OPTIMIZACIÓN: Variables para evitar rebuilds innecesarios
   Set<String> _lastAppliedFilters = {};
+  bool _hasInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    print('🏠 HomePage inicializado con selectedDate: ${widget.selectedDate}');
-    
-    // 🚨 SIMPLE: Solo setear la fecha si es diferente
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    print('🏁 HomePage init con fecha seleccionada: ${widget.selectedDate}');
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final viewModel = Provider.of<HomeViewModel>(context, listen: false);
-      if (widget.selectedDate != viewModel.selectedDate) {
-        viewModel.setSelectedDate(widget.selectedDate);
+
+      if (!_hasInitialized && viewModel.filteredEvents.isEmpty) {
+        print('📦 Inicializando eventos desde HomePage...');
+        await viewModel.initialize(
+          initialCriteria: FilterCriteria(selectedDate: widget.selectedDate),
+        );
+        _hasInitialized = true;
+      } else {
+        print('♻️ Ya había eventos o ya se había inicializado');
+        if (widget.selectedDate != viewModel.selectedDate) {
+          viewModel.setSelectedDate(widget.selectedDate);
+        }
       }
     });
   }
@@ -37,14 +47,13 @@ class _HomePageState extends State<HomePage> {
     if (widget.selectedDate != oldWidget.selectedDate) {
       final viewModel = Provider.of<HomeViewModel>(context, listen: false);
       viewModel.setSelectedDate(widget.selectedDate);
-      print('🔄 HomePage actualizado con nuevo selectedDate: ${widget.selectedDate}');
+      print('🗓️ Fecha actualizada desde HomePage: ${widget.selectedDate}');
     }
   }
 
-  // 🎯 FUNCIÓN DE OPTIMIZACIÓN: Chequea si realmente necesitamos aplicar filtros
   bool _needsFilterUpdate(Set<String> currentFilters) {
     if (_lastAppliedFilters.length != currentFilters.length) return true;
-    for (String filter in currentFilters) {
+    for (final filter in currentFilters) {
       if (!_lastAppliedFilters.contains(filter)) return true;
     }
     return false;
@@ -52,19 +61,16 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // 🚨 SIMPLE: Solo Consumer2 como ExplorePage
     return Consumer2<HomeViewModel, PreferencesProvider>(
       builder: (context, viewModel, prefs, _) {
-        
-        print('🏠 HomePage build - Eventos en viewModel: ${viewModel.filteredEvents.length}');
-        
-        // 🔥 OPTIMIZACIÓN: Solo aplicar filtros cuando REALMENTE cambien
+        print('🧠 Eventos disponibles: ${viewModel.filteredEvents.length}');
+
         if (_needsFilterUpdate(prefs.activeFilterCategories)) {
+          print('🎯 Aplicando filtros nuevos: ${prefs.activeFilterCategories}');
           _lastAppliedFilters = Set.from(prefs.activeFilterCategories);
           viewModel.applyCategoryFilters(prefs.activeFilterCategories);
         }
-        
-        // Estados de carga y error
+
         if (viewModel.isLoading) {
           return const Scaffold(
             backgroundColor: Color(0xFFD3D3D3),
@@ -90,13 +96,12 @@ class _HomePageState extends State<HomePage> {
           );
         }
 
-        // 🎯 DATOS: Obtener eventos agrupados
         final displayedEvents = viewModel.getHomePageEvents();
         final groupedEvents = viewModel.getGroupedEvents();
         final sortedDates = viewModel.getSortedDates();
 
         return Scaffold(
-          appBar: AppBar(          
+          appBar: AppBar(
             title: const Text(
               'QuehaCeMos Córdoba',
               style: TextStyle(fontWeight: FontWeight.normal),
@@ -106,7 +111,6 @@ class _HomePageState extends State<HomePage> {
           ),
           body: CustomScrollView(
             slivers: [
-              // Header pegajoso con título y filtros
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _HeaderDelegate(
@@ -115,8 +119,6 @@ class _HomePageState extends State<HomePage> {
                   viewModel: viewModel,
                 ),
               ),
-              
-              // Contenido: eventos agrupados por fecha o mensaje vacío
               if (displayedEvents.isEmpty)
                 SliverToBoxAdapter(
                   child: Center(
@@ -131,43 +133,32 @@ class _HomePageState extends State<HomePage> {
                   ),
                 )
               else
-                // 🎯 AGRUPACIÓN: Por cada fecha, crear una sección
                 ...sortedDates.map((date) {
                   final eventsOnDate = groupedEvents[date]!;
                   final sectionTitle = viewModel.getSectionTitle(date);
 
                   return SliverList(
                     delegate: SliverChildListDelegate([
-                      // Título de la sección (fecha)
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 2.0,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
                         child: Text(
                           sectionTitle,
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
                         ),
                       ),
-                      
-                      // Divisor
                       const Divider(
                         thickness: 0.5,
                         indent: 16.0,
                         endIndent: 16.0,
                         color: Colors.grey,
                       ),
-                      
-                      // Eventos de esa fecha
-                      ...eventsOnDate.map((event) {
-                        return EventCardWidget(
-                          event: event,
-                          viewModel: viewModel,
-                        );
-                      }).toList(),
+                      ...eventsOnDate.map((event) => EventCardWidget(
+                            event: event,
+                            viewModel: viewModel,
+                          )),
                     ]),
                   );
                 }).toList(),
@@ -179,7 +170,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// 🎯 HEADER DELEGATE: Igual que antes pero más simple
 class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   final String title;
   final PreferencesProvider prefs;
@@ -194,20 +184,19 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: Color(0xFFD3D3D3),
+      color: const Color(0xFFD3D3D3),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
             ),
-            // 🎯 CHIPS: Mismo componente que ExplorePage
             FilterChipsRow(
               prefs: prefs,
               viewModel: viewModel,
