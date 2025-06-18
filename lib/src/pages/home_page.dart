@@ -1,73 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:quehacemos_cba/src/services/auth_service.dart';
-import 'package:quehacemos_cba/src/pages/pages.dart';
-import 'package:quehacemos_cba/src/utils/utils.dart';
 import 'package:provider/provider.dart';
-import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
-import 'package:quehacemos_cba/src/providers/filter_criteria.dart';
-import 'package:quehacemos_cba/src/widgets/chips/event_chip_widget.dart';
+import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/widgets/chips/filter_chips_widget.dart';
 import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
-import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   final DateTime? selectedDate;
   const HomePage({super.key, this.selectedDate});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  // 🚀 OPTIMIZACIÓN: Variables para evitar rebuilds innecesarios
   Set<String> _lastAppliedFilters = {};
-  bool _hasInitialized = false;
 
   @override
   void initState() {
     super.initState();
     print('🏠 HomePage inicializado con selectedDate: ${widget.selectedDate}');
     
-    // 🚨 CAMBIO: Inicializar después del primer frame
+    // 🚨 SIMPLE: Solo setear la fecha si es diferente
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeViewModel();
-    });
-  }
-
-  Future<void> _initializeViewModel() async {
-    if (_hasInitialized) return;
-    
-    print('🚀 Inicializando HomeViewModel desde HomePage...');
-    final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
-    
-    // Solo inicializar si no tiene eventos cargados
-    if (homeViewModel.filteredEvents.isEmpty) {
-      final initialCriteria = FilterCriteria(selectedDate: widget.selectedDate);
-      await homeViewModel.initialize(initialCriteria: initialCriteria);
-      print('✅ HomeViewModel inicializado desde HomePage con ${homeViewModel.filteredEvents.length} eventos');
-    } else {
-      print('✅ HomeViewModel ya tenía ${homeViewModel.filteredEvents.length} eventos cargados');
-      // Solo actualizar la fecha si es diferente
-      if (widget.selectedDate != homeViewModel.selectedDate) {
-        await homeViewModel.setSelectedDate(widget.selectedDate);
+      final viewModel = Provider.of<HomeViewModel>(context, listen: false);
+      if (widget.selectedDate != viewModel.selectedDate) {
+        viewModel.setSelectedDate(widget.selectedDate);
       }
-    }
-    
-    _hasInitialized = true;
+    });
   }
 
   @override
   void didUpdateWidget(HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedDate != oldWidget.selectedDate) {
-      final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
-      homeViewModel.setSelectedDate(widget.selectedDate);
+      final viewModel = Provider.of<HomeViewModel>(context, listen: false);
+      viewModel.setSelectedDate(widget.selectedDate);
       print('🔄 HomePage actualizado con nuevo selectedDate: ${widget.selectedDate}');
     }
   }
 
+  // 🎯 FUNCIÓN DE OPTIMIZACIÓN: Chequea si realmente necesitamos aplicar filtros
   bool _needsFilterUpdate(Set<String> currentFilters) {
     if (_lastAppliedFilters.length != currentFilters.length) return true;
     for (String filter in currentFilters) {
@@ -78,36 +52,36 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // 🚨 CAMBIO PRINCIPAL: Usar directamente los providers globales, NO crear instancias locales
-    return Consumer3<HomeViewModel, PreferencesProvider, FavoritesProvider>(
-      builder: (context, homeViewModel, preferencesProvider, favoritesProvider, child) {
+    // 🚨 SIMPLE: Solo Consumer2 como ExplorePage
+    return Consumer2<HomeViewModel, PreferencesProvider>(
+      builder: (context, viewModel, prefs, _) {
         
-        // Debug para verificar que usamos la instancia correcta
-        print('🏠 HomePage build - Eventos en homeViewModel: ${homeViewModel.filteredEvents.length}');
+        print('🏠 HomePage build - Eventos en viewModel: ${viewModel.filteredEvents.length}');
         
-        // Aplicar filtros solo cuando cambien
-        if (_needsFilterUpdate(preferencesProvider.activeFilterCategories)) {
-          _lastAppliedFilters = Set.from(preferencesProvider.activeFilterCategories);
-          homeViewModel.applyCategoryFilters(preferencesProvider.activeFilterCategories);
+        // 🔥 OPTIMIZACIÓN: Solo aplicar filtros cuando REALMENTE cambien
+        if (_needsFilterUpdate(prefs.activeFilterCategories)) {
+          _lastAppliedFilters = Set.from(prefs.activeFilterCategories);
+          viewModel.applyCategoryFilters(prefs.activeFilterCategories);
         }
         
-        if (homeViewModel.isLoading) {
+        // Estados de carga y error
+        if (viewModel.isLoading) {
           return const Scaffold(
             backgroundColor: Color(0xFFD3D3D3),
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        if (homeViewModel.hasError) {
+        if (viewModel.hasError) {
           return Scaffold(
             backgroundColor: Color(0xFFD3D3D3),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Error: ${homeViewModel.errorMessage}'),
+                  Text('Error: ${viewModel.errorMessage}'),
                   ElevatedButton(
-                    onPressed: () => homeViewModel.refresh(),
+                    onPressed: () => viewModel.refresh(),
                     child: const Text('Reintentar'),
                   ),
                 ],
@@ -116,9 +90,10 @@ class _HomePageState extends State<HomePage> {
           );
         }
 
-        final displayedEvents = homeViewModel.getHomePageEvents();
-        final groupedEvents = homeViewModel.getGroupedEvents();
-        final sortedDates = homeViewModel.getSortedDates();
+        // 🎯 DATOS: Obtener eventos agrupados
+        final displayedEvents = viewModel.getHomePageEvents();
+        final groupedEvents = viewModel.getGroupedEvents();
+        final sortedDates = viewModel.getSortedDates();
 
         return Scaffold(
           appBar: AppBar(          
@@ -131,21 +106,24 @@ class _HomePageState extends State<HomePage> {
           ),
           body: CustomScrollView(
             slivers: [
+              // Header pegajoso con título y filtros
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _HeaderDelegate(
-                  title: homeViewModel.getPageTitle(),
-                  preferencesProvider: preferencesProvider,
-                  homeViewModel: homeViewModel,
+                  title: viewModel.getPageTitle(),
+                  prefs: prefs,
+                  viewModel: viewModel,
                 ),
               ),
+              
+              // Contenido: eventos agrupados por fecha o mensaje vacío
               if (displayedEvents.isEmpty)
                 SliverToBoxAdapter(
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
-                        homeViewModel.selectedDate == null
+                        viewModel.selectedDate == null
                             ? 'No hay eventos próximos.'
                             : 'No hay eventos para esta fecha.',
                       ),
@@ -153,12 +131,14 @@ class _HomePageState extends State<HomePage> {
                   ),
                 )
               else
+                // 🎯 AGRUPACIÓN: Por cada fecha, crear una sección
                 ...sortedDates.map((date) {
                   final eventsOnDate = groupedEvents[date]!;
-                  final sectionTitle = homeViewModel.getSectionTitle(date);
+                  final sectionTitle = viewModel.getSectionTitle(date);
 
                   return SliverList(
                     delegate: SliverChildListDelegate([
+                      // Título de la sección (fecha)
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16.0,
@@ -172,17 +152,20 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
+                      
+                      // Divisor
                       const Divider(
                         thickness: 0.5,
                         indent: 16.0,
                         endIndent: 16.0,
                         color: Colors.grey,
                       ),
-                      ...eventsOnDate.asMap().entries.map((entry) {
-                        final event = entry.value;
+                      
+                      // Eventos de esa fecha
+                      ...eventsOnDate.map((event) {
                         return EventCardWidget(
                           event: event,
-                          viewModel: homeViewModel,
+                          viewModel: viewModel,
                         );
                       }).toList(),
                     ]),
@@ -196,15 +179,16 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// 🎯 HEADER DELEGATE: Igual que antes pero más simple
 class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   final String title;
-  final PreferencesProvider preferencesProvider;
-  final HomeViewModel homeViewModel;
+  final PreferencesProvider prefs;
+  final HomeViewModel viewModel;
 
   _HeaderDelegate({
     required this.title,
-    required this.preferencesProvider,
-    required this.homeViewModel,
+    required this.prefs,
+    required this.viewModel,
   });
 
   @override
@@ -223,9 +207,10 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
                 color: Colors.black87,
               ),
             ),
+            // 🎯 CHIPS: Mismo componente que ExplorePage
             FilterChipsRow(
-              prefs: preferencesProvider,
-              viewModel: homeViewModel,
+              prefs: prefs,
+              viewModel: viewModel,
             ),
           ],
         ),
@@ -242,7 +227,7 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant _HeaderDelegate oldDelegate) {
     return title != oldDelegate.title ||
-        preferencesProvider != oldDelegate.preferencesProvider ||
-        homeViewModel != oldDelegate.homeViewModel;
+        prefs != oldDelegate.prefs ||
+        viewModel != oldDelegate.viewModel;
   }
 }
