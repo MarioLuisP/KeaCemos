@@ -56,14 +56,13 @@ class EventDataBuilder {
 
     return groupedEvents;
   }
-
   /// Procesa eventos para Calendario SIN LÍMITES (SIN DUPLICADOS)
   List<Map<String, String>> processEventsForCalendar(
     List<Map<String, String>> allEvents,
     FilterCriteria criteria,
   ) {
     final cleanEvents = _removeDuplicates(allEvents);
-    return _filterLogic.processEvents(cleanEvents, criteria);
+    return _filterLogic.sortEvents(cleanEvents);
   }
 
   /// Procesa eventos completos para vistas que necesitan agrupación (SIN DUPLICADOS)
