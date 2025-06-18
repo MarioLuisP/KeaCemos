@@ -93,15 +93,39 @@ class AppThemes {
     ),
   );
 
+  static final ThemeData sepiaTheme = ThemeData(
+    brightness: Brightness.light,
+    primaryColor: Color(0xFF6B4E31), // Marrón oscuro
+    colorScheme: const ColorScheme.light(
+      primary: Color(0xFF6B4E31),
+      secondary: Color(0xFFA38C7A), // Marrón piedra
+      surface: Color(0xFFF8F1E9), // Pergamino claro
+    ),
+    scaffoldBackgroundColor: Color(0xFFF8F1E9), // Pergamino claro
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF6B4E31), // Marrón oscuro
+      foregroundColor: Colors.white,
+    ),
+    textTheme: const TextTheme(
+      titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+      bodyMedium: TextStyle(color: Colors.black87),
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      selectedItemColor: Color(0xFFA38C7A), // Marrón piedra
+      unselectedItemColor: Colors.grey,
+    ),
+  );
+
   static Map<String, ThemeData> themes = {
     'normal': normalTheme,
     'dark': darkTheme,
     'fluor': fluorTheme,
     'harmony': harmonyTheme,
+    'sepia': sepiaTheme,
   };
 }
 
 class CustomColors {
-  static const peach = Color(0xFFFFE4B5); // Melocotón
-  static const mint = Color(0xFF98FF98); // Menta
+  static const peach = Color(0xFFFFE4B5);
+  static const mint = Color(0xFF98FF98);
 }

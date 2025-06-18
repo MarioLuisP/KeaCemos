@@ -21,6 +21,16 @@ class UserPreferences {
     await prefs.setStringList('categories', categories.toList());
   }
 
+    static Future<Set<String>> getFavoriteIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (prefs.getStringList('favorite_ids') ?? []).toSet();
+  }
+
+  static Future<void> setFavoriteIds(Set<String> favoriteIds) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('favorite_ids', favoriteIds.toList());
+  }
+
   static Future<Set<String>> getActiveFilterCategories() async {
     final prefs = await SharedPreferences.getInstance();
     return (prefs.getStringList('activeFilterCategories') ?? []).toSet();

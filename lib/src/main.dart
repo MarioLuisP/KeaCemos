@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
             return provider;
           },
         ),
-        ChangeNotifierProvider(create: (context) => FavoritesProvider()),
+        ChangeNotifierProvider(create: (context) => FavoritesProvider()..init()),
         ChangeNotifierProvider(
           create: (context) {
             print('🏗️ Creando HomeViewModel...');

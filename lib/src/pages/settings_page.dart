@@ -30,7 +30,6 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppDimens.paddingMedium),
         children: [
-          // Tema
           Card(
             elevation: AppDimens.cardElevation,
             shape: RoundedRectangleBorder(
@@ -44,8 +43,8 @@ class SettingsPage extends StatelessWidget {
                   Text(
                     'Tema de la app',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: AppDimens.paddingSmall),
                   Wrap(
@@ -71,16 +70,18 @@ class SettingsPage extends StatelessWidget {
                         selected: provider.theme == 'harmony',
                         onSelected: (_) => provider.setTheme('harmony'),
                       ),
+                      ChoiceChip(
+                        label: const Text('Sepia'),
+                        selected: provider.theme == 'sepia',
+                        onSelected: (_) => provider.setTheme('sepia'),
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
           ),
-
           const SizedBox(height: AppDimens.paddingMedium),
-
-          // Categorías
           Card(
             elevation: AppDimens.cardElevation,
             shape: RoundedRectangleBorder(
@@ -94,8 +95,8 @@ class SettingsPage extends StatelessWidget {
                   Text(
                     'Categorías favoritas',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: AppDimens.paddingSmall),
                   Text(
@@ -103,12 +104,9 @@ class SettingsPage extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: AppDimens.paddingMedium),
-
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      int crossAxisCount = (constraints.maxWidth / 180)
-                          .floor()
-                          .clamp(2, 4);
+                      int crossAxisCount = (constraints.maxWidth / 180).floor().clamp(2, 4);
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         shrinkWrap: true,
@@ -116,62 +114,48 @@ class SettingsPage extends StatelessWidget {
                         mainAxisSpacing: AppDimens.paddingSmall,
                         crossAxisSpacing: AppDimens.paddingSmall,
                         childAspectRatio: 3.5,
-                        children:
-                            categories.map((category) {
-                              final isSelected = provider.selectedCategories
-                                  .contains(category['name']);
-                              final color = AppColors.adjustForTheme(
-                                context,
-                                category['color'] as Color,
-                              );
+                        children: categories.map((category) {
+                          final isSelected = provider.selectedCategories.contains(category['name']);
+                          final color = AppColors.adjustForTheme(context, category['color'] as Color);
 
-                              return FilterChip(
-                                label: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(category['emoji'] as String),
-                                    const SizedBox(width: 4),
-                                    Text(category['name'] as String),
-                                  ],
-                                ),
-                                selected: isSelected,
-                                onSelected: (_) async {
-                                  await provider.toggleCategory(
-                                    category['name'] as String,
-                                  );
-                                },
-                                selectedColor: color,
-                                backgroundColor:
-                                    Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : Colors.black12,
-                                side: BorderSide(
-                                  color: isSelected ? color : Colors.black54,
-                                ),
-                                checkmarkColor:
-                                    isSelected
-                                        ? (Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Colors.black
-                                            : Colors.white)
-                                        : Colors.transparent,
-                                showCheckmark: isSelected,
-                                labelStyle: TextStyle(
-                                  color:
-                                      isSelected
-                                          ? (Theme.of(context).brightness ==
-                                                  Brightness.dark
-                                              ? Colors.black
-                                              : Colors.white)
-                                          : Colors.black,
-                                ),
-                              );
-                            }).toList(),
+                          return FilterChip(
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(category['emoji'] as String),
+                                const SizedBox(width: 4),
+                                Text(category['name'] as String),
+                              ],
+                            ),
+                            selected: isSelected,
+                            onSelected: (_) async {
+                              await provider.toggleCategory(category['name'] as String);
+                            },
+                            selectedColor: color,
+                            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black12,
+                            side: BorderSide(
+                              color: isSelected ? color : Colors.black54,
+                            ),
+                            checkmarkColor: isSelected
+                                ? (Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.black
+                                    : Colors.white)
+                                : Colors.transparent,
+                            showCheckmark: isSelected,
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? (Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.black
+                                      : Colors.white)
+                                  : Colors.black,
+                            ),
+                          );
+                        }).toList(),
                       );
                     },
                   ),
-
                   const SizedBox(height: AppDimens.paddingMedium),
                   Align(
                     alignment: Alignment.centerRight,
