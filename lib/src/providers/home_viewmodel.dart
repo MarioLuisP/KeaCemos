@@ -7,7 +7,6 @@ import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'filter_criteria.dart';
 import 'category_constants.dart';
 import 'event_filter_logic.dart';
-import 'favorites_provider.dart';
 import 'event_data_builder.dart';
 
 enum EventsLoadingState { idle, loading, loaded, error }

@@ -5,29 +5,47 @@ import 'category_constants.dart';
 /// Maneja toda la lógica de filtrado y búsqueda de eventos
 /// Ahora usa FilterCriteria para encapsular parámetros
 class EventFilterLogic {
+  // 🔥 NUEVO: Fecha actual para filtro de eventos pasados
+  final DateTime _currentDate = DateTime(2025, 6, 4); // Usar la misma fecha que HomeViewModel
   
   /// Método principal: aplica todos los filtros según criterios
   List<Map<String, String>> applyFilters(
     List<Map<String, String>> events,
     FilterCriteria criteria,
   ) {
-    if (criteria.isEmpty) return events;
+    if (criteria.isEmpty) {
+      // 🔥 NUEVO: Aunque no hay filtros específicos, siempre filtrar eventos pasados
+      // EXCEPTO cuando hay una fecha específica seleccionada
+      if (criteria.selectedDate == null) {
+        return _filterPastEvents(events);
+      }
+      return events;
+    }
     
     var filtered = events;
+    
+    // 🔥 NUEVO: Filtrar eventos pasados PRIMERO (excepto si hay fecha específica)
+    if (criteria.selectedDate == null) {
+      filtered = _filterPastEvents(filtered);
+      print('🕒 Eventos después de filtrar pasados: ${filtered.length}');
+    }
     
     // Aplicar filtro de búsqueda
     if (criteria.query.isNotEmpty) {
       filtered = _applySearchFilter(filtered, criteria.query);
+      print('🔍 Eventos después de búsqueda: ${filtered.length}');
     }
     
     // Aplicar filtro de categorías
     if (criteria.selectedCategories.isNotEmpty) {
       filtered = _applyCategoryFilter(filtered, criteria.selectedCategories);
+      print('🏷️ Eventos después de categorías: ${filtered.length}');
     }
     
     // Aplicar filtro de fecha (si está presente)
     if (criteria.selectedDate != null) {
       filtered = _applyDateFilter(filtered, criteria.selectedDate!);
+      print('📅 Eventos después de fecha específica: ${filtered.length}');
     }
     
     return filtered;
@@ -64,8 +82,45 @@ class EventFilterLogic {
     List<Map<String, String>> events,
     FilterCriteria criteria,
   ) {
+    print('🔄 Procesando ${events.length} eventos con criterios: ${criteria.toString()}');
     final filtered = applyFilters(events, criteria);
+    print('✅ Eventos filtrados: ${filtered.length}');
     return sortEvents(filtered);
+  }
+  
+  // ============ NUEVOS MÉTODOS PARA FILTRO DE EVENTOS PASADOS ============
+  
+  /// 🔥 NUEVO: Filtra eventos anteriores a hoy
+  List<Map<String, String>> _filterPastEvents(List<Map<String, String>> events) {
+    final todayStart = DateTime(_currentDate.year, _currentDate.month, _currentDate.day);
+    
+    final filteredEvents = events.where((event) {
+      try {
+        final eventDate = _parseDate(event['date']!);
+        final eventDateOnly = DateTime(eventDate.year, eventDate.month, eventDate.day);
+        
+        // Solo mantener eventos de hoy en adelante
+        final isToday = eventDateOnly.isAtSameMomentAs(todayStart);
+        final isFuture = eventDateOnly.isAfter(todayStart);
+        
+        if (!isToday && !isFuture) {
+          print('🗑️ Eliminando evento pasado: ${event['title']} (${event['date']})');
+        }
+        
+        return isToday || isFuture;
+      } catch (e) {
+        print('⚠️ Error parseando fecha para filtro: ${event['date']} - $e');
+        return false; // Descartar eventos con fecha inválida
+      }
+    }).toList();
+    
+    print('🕒 Filtro de eventos pasados: ${events.length} → ${filteredEvents.length}');
+    return filteredEvents;
+  }
+  
+  /// 🔥 NUEVO: Método público para filtrar eventos pasados (útil para testing)
+  List<Map<String, String>> filterPastEvents(List<Map<String, String>> events) {
+    return _filterPastEvents(events);
   }
   
   // ============ MÉTODOS LEGACY (RETROCOMPATIBILIDAD) ============

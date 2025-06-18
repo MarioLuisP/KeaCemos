@@ -142,10 +142,11 @@ class EventDataBuilder {
       }
     }
 
-    // PASO 3: Eventos futuros
+      // PASO 3: Eventos futuros (solo posteriores a mañana)
+    final tomorrowDate = _currentDate.add(const Duration(days: 1));
     for (final event in events) {
       final eventDate = _parseDate(event['date']!);
-      if (eventDate.isAfter(_currentDate.add(const Duration(days: 1)))) {
+      if (eventDate.isAfter(tomorrowDate)) {
         final eventId = event['id'] ?? event['title'] ?? '';
         if (eventId.isNotEmpty && !processedEventIds.contains(eventId)) {
           processedEventIds.add(eventId);
@@ -153,7 +154,6 @@ class EventDataBuilder {
         }
       }
     }
-
     // LÍMITE SOLO PARA HOMEPAGE
     return result.take(30).toList();
   }
