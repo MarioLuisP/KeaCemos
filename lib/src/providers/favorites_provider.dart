@@ -3,13 +3,20 @@ import 'package:quehacemos_cba/src/models/user_preferences.dart';
 
 class FavoritesProvider with ChangeNotifier {
   Set<String> _favoriteIds = {};
+  bool _isInitialized = false;
 
   FavoritesProvider() {
-    init();
+    _initializeAsync();
   }
 
+  bool get isInitialized => _isInitialized;
+
+  void _initializeAsync() {
+    init();
+  }
   Future<void> init() async {
     _favoriteIds = await UserPreferences.getFavoriteIds();
+    _isInitialized = true; // ← AGREGAR ESTA LÍNEA
     notifyListeners();
   }
 

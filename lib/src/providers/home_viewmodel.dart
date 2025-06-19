@@ -219,6 +219,8 @@ Future<void> clearSelectedDate() async {
 List<Map<String, String>> getCalendarEvents() {
   return _dataBuilder.processEventsForCalendar(_allEvents, _filterCriteria);
 }
+/// Obtiene TODOS los eventos sin filtros para favoritos
+List<Map<String, String>> get allEvents => _allEvents;
 
 /// Obtiene eventos agrupados para calendario (sin límites)
 Map<String, List<Map<String, String>>> getCalendarGroupedEvents() {
