@@ -12,10 +12,10 @@ class EventCardWidget extends StatelessWidget {
   final HomeViewModel viewModel;
 
   const EventCardWidget({
-    Key? key,
+    super.key,
     required this.event,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   Color _darkenColor(Color color, [double amount = 0.2]) {
     final hsl = HSLColor.fromColor(color);
@@ -25,9 +25,15 @@ class EventCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // CAMBIO PRINCIPAL: Usar formato 'card' específico
-    final formattedDateString = viewModel.formatEventDate(event['date']!, format: 'card');
-    final cardColor = viewModel.getEventCardColor(event['type'] ?? '', context);
+    // Cache valores para evitar recálculos
+    final eventId = event['id']!;
+    final eventTitle = event['title']!;
+    final eventType = event['type'] ?? '';
+    final eventLocation = event['location'] ?? '';
+    final eventDate = event['date']!;
+    
+    final formattedDateString = viewModel.formatEventDate(eventDate, format: 'card');
+    final cardColor = viewModel.getEventCardColor(eventType, context);
     final darkCardColor = _darkenColor(cardColor, 0.2);
 
     return GestureDetector(
@@ -67,16 +73,18 @@ class EventCardWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        event['title']!,
+                        eventTitle,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       
                       const SizedBox(height: AppDimens.paddingSmall),
                       Text(
-                        viewModel.getCategoryWithEmoji(event['type'] ?? ''),
+                        viewModel.getCategoryWithEmoji(eventType),
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
@@ -84,21 +92,22 @@ class EventCardWidget extends StatelessWidget {
                             ),
                       ),
                       const SizedBox(height: AppDimens.paddingMedium),  
-                    Text(
-                        // MEJORADO: Ya no dice "Fecha:" porque el emoji es suficiente
+                      Text(
                         formattedDateString,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Theme.of(context).colorScheme.onSurface,
-                               ),
+                        ),
                       ),
                       const SizedBox(height: AppDimens.paddingSmall),
                       Text(
-                        '📍 ${event['location']}',
+                        '📍 $eventLocation',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -107,14 +116,16 @@ class EventCardWidget extends StatelessWidget {
                   alignment: Alignment.topCenter,
                   child: Consumer<FavoritesProvider>(
                     builder: (context, favoritesProvider, child) {
-                      final isFavorite = favoritesProvider.isFavorite(event['id']!);
+                      final isFavorite = favoritesProvider.isFavorite(eventId);
                       return IconButton(
                         iconSize: 24,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
-                        icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
-                        color: isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
-                        onPressed: () => viewModel.toggleFavorite(event['id']!, favoritesProvider),
+                        icon: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
+                        ),
+                        onPressed: () => viewModel.toggleFavorite(eventId, favoritesProvider),
                       );
                     },
                   ),

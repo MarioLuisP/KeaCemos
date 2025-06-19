@@ -3,37 +3,105 @@ import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/widgets/chips/event_chip_widget.dart';
 
-class FilterChipsRow extends StatelessWidget {
+class FilterChipsRow extends StatefulWidget {
   final PreferencesProvider prefs;
   final HomeViewModel viewModel;
 
   const FilterChipsRow({
-    Key? key,
+    super.key,
     required this.prefs,
     required this.viewModel,
-  }) : super(key: key);
+  });
+
+  @override
+  State<FilterChipsRow> createState() => _FilterChipsRowState();
+}
+
+class _FilterChipsRowState extends State<FilterChipsRow> {
+  // Cache para evitar reconstruir la lista de chips constantemente
+  List<String>? _cachedCategories;
+  Set<String>? _lastActiveFilters;
 
   @override
   Widget build(BuildContext context) {
+    // Solo reconstruir chips si las categorías o filtros activos cambiaron
+    final currentActiveFilters = widget.prefs.activeFilterCategories;
+    final currentCategories = widget.prefs.selectedCategories.isEmpty
+        ? ['Música', 'Teatro', 'Cine', 'StandUp']
+        : widget.prefs.selectedCategories.toList();
+
+    final shouldRebuildChips = _cachedCategories == null ||
+        !_listEquals(_cachedCategories!, currentCategories) ||
+        _lastActiveFilters == null ||
+        !_setEquals(_lastActiveFilters!, currentActiveFilters);
+
+    if (shouldRebuildChips) {
+      _cachedCategories = currentCategories;
+      _lastActiveFilters = Set.from(currentActiveFilters);
+    }
+
     return Row(
       children: [
         // Botón Refresh / Limpiar Filtros (Fijo)
-        _buildRefreshButton(context),
+        _RefreshButton(
+          prefs: widget.prefs,
+          viewModel: widget.viewModel,
+        ),
 
         // Chips dinámicos (Scroll horizontal)
         Expanded(
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _buildCategoryChips(context),
+              children: shouldRebuildChips 
+                  ? _buildCategoryChips(context, currentCategories)
+                  : _buildCategoryChips(context, _cachedCategories!),
             ),
           ),
-          ),
+        ),
       ],
     );
   }
 
-  Widget _buildRefreshButton(BuildContext context) {
+  List<Widget> _buildCategoryChips(BuildContext context, List<String> categories) {
+    return categories.map((category) {
+      return Padding(
+        padding: const EdgeInsets.only(right: 4.0),
+        child: EventChipWidget(
+          category: category,
+          key: ValueKey(category), // Key para mejor reutilización
+        ),
+      );
+    }).toList();
+  }
+
+  // Utilidades para comparar listas y sets eficientemente
+  bool _listEquals<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  bool _setEquals<T>(Set<T> a, Set<T> b) {
+    if (a.length != b.length) return false;
+    return a.containsAll(b);
+  }
+}
+
+// Widget separado para el botón refresh - evita rebuilds innecesarios
+class _RefreshButton extends StatelessWidget {
+  final PreferencesProvider prefs;
+  final HomeViewModel viewModel;
+
+  const _RefreshButton({
+    required this.prefs,
+    required this.viewModel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: SizedBox(
@@ -58,18 +126,5 @@ class FilterChipsRow extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  List<Widget> _buildCategoryChips(BuildContext context) {
-    final categories = prefs.selectedCategories.isEmpty
-        ? ['Música', 'Teatro', 'Cine', 'StandUp']
-        : prefs.selectedCategories.toList();
-
-    return categories.map((category) {
-      return Padding(
-        padding: const EdgeInsets.only(right: 4.0),
-        child: EventChipWidget(category: category),
-      );
-    }).toList();
   }
 }

@@ -32,7 +32,9 @@ class HomeViewModel with ChangeNotifier {
   Map<String, List<Map<String, String>>> _groupedEvents = {};
 
   HomeViewModel() : _dataBuilder = EventDataBuilder(DateTime(2025, 6, 4));
-
+// Variables para control de refresh
+  DateTime? _lastRefreshTime;
+  static const Duration _refreshInterval = Duration(minutes: 5);
 
   // ============ GETTERS PÚBLICOS ============
   
@@ -142,7 +144,18 @@ void setSelectedCategories(Set<String> categories) {
   final newCriteria = _filterCriteria.copyWith(selectedCategories: categories);
   updateFilterCriteria(newCriteria);
 }
-
+Future<void> refreshIfNeeded() async {
+  final now = DateTime.now();
+  
+  if (_lastRefreshTime == null || 
+      now.difference(_lastRefreshTime!) > _refreshInterval) {
+    print('🔄 Refresh automático por tiempo transcurrido');
+    await refresh();
+    _lastRefreshTime = now;
+  } else {
+    print('⏰ Refresh no necesario, último hace ${now.difference(_lastRefreshTime!).inMinutes} min');
+  }
+}
 /// Método específico para toggle de categoría (más robusto)
 void toggleCategory(String category) {
   print('🔄 Toggle categoría: $category');
