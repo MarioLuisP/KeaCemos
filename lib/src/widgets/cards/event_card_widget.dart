@@ -62,12 +62,18 @@ class EventCardWidget extends StatelessWidget {
               colors: [cardColor, darkCardColor],
             ),
             borderRadius: BorderRadius.circular(AppDimens.borderRadius),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+              width: 0.5,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppDimens.paddingMedium),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+
+
+          children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,10 +81,11 @@ class EventCardWidget extends StatelessWidget {
                       Text(
                         eventTitle,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       
@@ -87,23 +94,60 @@ class EventCardWidget extends StatelessWidget {
                         viewModel.getCategoryWithEmoji(eventType),
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontSize: 18,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w700,
                               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
                             ),
                       ),
-                      const SizedBox(height: AppDimens.paddingMedium),  
-                      Text(
-                        formattedDateString,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
                       const SizedBox(height: AppDimens.paddingSmall),
+                      Container(
+                        height: 0.5,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                      ),
+                      const SizedBox(height: AppDimens.paddingSmall),  
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              formattedDateString,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                          Consumer<FavoritesProvider>(
+                            builder: (context, favoritesProvider, child) {
+                              final isFavorite = favoritesProvider.isFavorite(eventId);
+                              return IconButton(
+                                iconSize: 24,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                icon: Icon(
+                                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                                  color: isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
+                                ),
+                                onPressed: () => viewModel.toggleFavorite(eventId, favoritesProvider),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
                       Text(
                         '📍 $eventLocation',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 18,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: AppDimens.paddingSmall),
+                      Text(
+                        '🎟 ${event['price']?.isNotEmpty == true ? event['price']! : 'Consultar'}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 16,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
                         maxLines: 1,
@@ -111,26 +155,10 @@ class EventCardWidget extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Consumer<FavoritesProvider>(
-                    builder: (context, favoritesProvider, child) {
-                      final isFavorite = favoritesProvider.isFavorite(eventId);
-                      return IconButton(
-                        iconSize: 24,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
-                        ),
-                        onPressed: () => viewModel.toggleFavorite(eventId, favoritesProvider),
-                      );
-                    },
-                  ),
-                ),                
+                ),               
               ],
+
+
             ),
           ),
         ),

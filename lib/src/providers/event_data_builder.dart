@@ -373,17 +373,17 @@ class EventDataBuilder {
   String getCategoryWithEmoji(String type) {
     const categoryEmojis = {
       'musica': 'Música en vivo 🎵',
-      'teatro': 'Teatro y Performance🎭',
-      'standup': 'StandUp y Humor🎤',
-      'arte': 'Arte y Exposiciones🎨',
-      'cine': 'Cine y Proyecciones🎬',
-      'mic': 'Micrófono abierto y Poesía 🎙️',
-      'cursos': 'Cursos y Talleres📚',
+      'teatro': 'Teatro y Performance 🎭',
+      'standup': 'StandUp y Humor 🎤',
+      'arte': 'Arte y Exposiciones 🎨',
+      'cine': 'Cine y Proyecciones 🎬',
+      'mic': 'Mic abierto y Poesía 🎙️',
+      'cursos': 'Cursos y Talleres 📚',
       'ferias': 'Ferias artesanales 🛍️',
       'calle': 'Eventos al Aire Libre 🌳',
       'redes': 'Eventos Digitales 📱',
-      'ninos': 'Niños y Familia👶',
-      'danza': 'Danza y Movimientos💃',
+      'ninos': 'Niños y Familia 👶',
+      'danza': 'Danza y Movimientos 💃',
     };
 
     return categoryEmojis[type.toLowerCase()] ?? type;
