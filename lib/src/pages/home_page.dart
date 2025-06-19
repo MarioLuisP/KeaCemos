@@ -42,6 +42,24 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Detectar cambios en settings/providers y aplicar filtros
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _hasInitialized) {
+        final prefs = Provider.of<PreferencesProvider>(context, listen: false);
+        final viewModel = Provider.of<HomeViewModel>(context, listen: false);
+        
+        if (_needsFilterUpdate(prefs.activeFilterCategories)) {
+          print('🎯 didChangeDependencies - Aplicando filtros: ${prefs.activeFilterCategories}');
+          _lastAppliedFilters = Set.from(prefs.activeFilterCategories);
+          viewModel.applyCategoryFilters(prefs.activeFilterCategories);
+        }
+      }
+    });
+  }
+
+  @override
   void didUpdateWidget(HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedDate != oldWidget.selectedDate) {
@@ -66,7 +84,7 @@ class _HomePageState extends State<HomePage> {
         print('🧠 Eventos disponibles: ${viewModel.filteredEvents.length}');
 
         if (_needsFilterUpdate(prefs.activeFilterCategories)) {
-          print('🎯 Aplicando filtros nuevos: ${prefs.activeFilterCategories}');
+          print('🎯 Build - Aplicando filtros nuevos: ${prefs.activeFilterCategories}');
           _lastAppliedFilters = Set.from(prefs.activeFilterCategories);
           viewModel.applyCategoryFilters(prefs.activeFilterCategories);
         }
