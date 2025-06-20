@@ -45,7 +45,7 @@ dependencies:
   provider: ^6.1.2
   shared_preferences: ^2.0.0
   glass_kit: ^4.0.1
-
+  url_launcher: ^6.2.2
   
 dev_dependencies:
   flutter_test:

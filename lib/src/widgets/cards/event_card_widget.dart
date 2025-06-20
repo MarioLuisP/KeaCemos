@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
-import 'package:quehacemos_cba/src/pages/event_detail_page.dart';
+import 'package:quehacemos_cba/src/widgets/event_detail_modal.dart'; // Nueva importación
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quehacemos_cba/src/services/auth_service.dart';
 import 'package:quehacemos_cba/src/utils/dimens.dart';
@@ -38,12 +38,8 @@ class EventCardWidget extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EventDetailPage(event: event),
-          ),
-        );
+        // CAMBIO: Usar modal en lugar de Navigator.push
+        EventDetailModal.show(context, event, viewModel);
       },
       child: Card(
         margin: const EdgeInsets.symmetric(
@@ -71,9 +67,7 @@ class EventCardWidget extends StatelessWidget {
             padding: const EdgeInsets.all(AppDimens.paddingMedium),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-
-
-          children: [
+              children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,7 +121,7 @@ class EventCardWidget extends StatelessWidget {
                                   isFavorite ? Icons.favorite : Icons.favorite_border,
                                   color: isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
                                 ),
-                                onPressed: () => viewModel.toggleFavorite(eventId, favoritesProvider),
+                                onPressed: () => favoritesProvider.toggleFavorite(eventId),
                               );
                             },
                           ),
@@ -157,8 +151,6 @@ class EventCardWidget extends StatelessWidget {
                   ),
                 ),               
               ],
-
-
             ),
           ),
         ),
