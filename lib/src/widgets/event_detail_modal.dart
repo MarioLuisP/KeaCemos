@@ -86,11 +86,12 @@ class _EventDetailContentState extends State<EventDetailContent> {
 
   Future<void> _shareEvent() async {
     final formattedDate = widget.viewModel.formatEventDate(widget.event['date']!, format: 'card');
-    final message = 'Te comparto este evento que vi en la app QueHacemos Cba:\n\n'
+    final message = 'Te comparto este evento que vi en la app QuehaCeMos Cba:\n\n'
         '📌 ${widget.event['title']}\n'
-        '📅 $formattedDate\n'
+        '🗓 $formattedDate\n'
         '📍 ${widget.event['location']}\n\n'
-        '¡No te lo pierdas!';
+        '¡No te lo pierdas!'
+        '¡📲 Descargá la app desde playsore!';
     
     final uri = Uri.parse('whatsapp://send?text=${Uri.encodeComponent(message)}');
     if (await canLaunchUrl(uri)) {
@@ -299,7 +300,7 @@ class _EventDetailContentState extends State<EventDetailContent> {
       ),
       child: Column(
         children: [
-          _buildInfoRow(context, '📅', 'Fecha y Hora', formattedDate),
+          _buildInfoRow(context, '🗓 ', 'Fecha y Hora', formattedDate),
           const Divider(height: 24),
           _buildInfoRow(context, '📍', 'Ubicación', widget.event['location']!),
           const Divider(height: 24),

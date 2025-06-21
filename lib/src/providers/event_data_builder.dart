@@ -236,7 +236,7 @@ class EventDataBuilder {
     switch (format) {
       case 'card':
         // Formato para tarjetas: "📅 3 jun - 20:30 hs"
-        return "📅 ${date.day} ${_getMonthAbbrev(date.month)}${_getTimeString(date)}";
+        return "${date.day} ${_getMonthAbbrev(date.month)}${_getTimeString(date)}";
 
       case 'calendar':
         // Formato para calendario: "3/6"

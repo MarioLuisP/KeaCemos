@@ -102,7 +102,7 @@ class EventCardWidget extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              formattedDateString,
+                              '🗓  $formattedDateString',
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -127,7 +127,7 @@ class EventCardWidget extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 1),
                       Text(
                         '📍 $eventLocation',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -139,7 +139,7 @@ class EventCardWidget extends StatelessWidget {
                       ),
                       const SizedBox(height: AppDimens.paddingSmall),
                       Text(
-                        '🎟 ${event['price']?.isNotEmpty == true ? event['price']! : 'Consultar'}',
+                        '🎟  ${event['price']?.isNotEmpty == true ? event['price']! : 'Consultar'}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontSize: 16,
                               color: Theme.of(context).colorScheme.onSurface,
