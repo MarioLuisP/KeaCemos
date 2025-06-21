@@ -79,6 +79,8 @@ class _CalendarPageState extends State<CalendarPage> {
             appBar: AppBar(
               title: const Text('Elije el Día'),
               centerTitle: true,
+              toolbarHeight: 40.0,
+              elevation: 2.0,
               actions: [],
             ),
             body: Column(

@@ -50,8 +50,11 @@ class AppColors {
     'Danza': Color(0xFF7C5E48), // Madera oscura
   };
 
+
+
   static const dividerGrey = Colors.grey;
   static const textDark = Colors.black87;
+  static const textLight = Colors.white70;
 
   // Ajustes para temas
   static Color adjustForTheme(BuildContext context, Color color) {
@@ -74,8 +77,26 @@ class AppColors {
         return color.withBrightness(1.2);
       case 'harmony':
         return color.withOpacity(0.9);
+      case 'pastel':
+        return Color.lerp(color, Colors.white, 0.7)!;
       default:
         return color;
+    }
+  }
+
+  // Ajustar color de texto según el tema
+  static Color getTextColor(BuildContext context) {
+    final theme = Provider.of<PreferencesProvider>(context, listen: false).theme;
+    switch (theme) {
+      case 'dark':
+      case 'fluor':
+        return textLight;
+      case 'sepia':
+      case 'harmony':
+      case 'pastel':
+      case 'normal':
+      default:
+        return textDark;
     }
   }
 }

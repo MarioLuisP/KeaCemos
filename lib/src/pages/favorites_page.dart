@@ -12,10 +12,16 @@ class FavoritesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mis Favoritos'),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-      ),
+
+
+            appBar: AppBar(
+              title: const Text('Mis Favoritos'),
+              centerTitle: true,
+              toolbarHeight: 40.0,
+              elevation: 2.0, // 👉 Leve sombra (podés probar con 1.0 a 4.0)
+            ),
+
+
       body: FutureBuilder<List<Map<String, String>>>(
         future: EventService().getAllEvents(),
         builder: (context, snapshot) {

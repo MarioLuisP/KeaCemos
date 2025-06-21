@@ -303,7 +303,7 @@ Future<void> _openWebsite() async {
                               child: Text(
                                 _isDescriptionExpanded ? 'Ver menos' : 'Ver más...',
                                 style: TextStyle(
-                                  color: Colors.grey[600],
+                                  color: Colors.grey[500],
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

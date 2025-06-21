@@ -46,7 +46,14 @@ dependencies:
   shared_preferences: ^2.0.0
   share_plus: ^7.2.1 # (usa la última versión disponible)
   url_launcher: ^6.2.2
-  
+
+fonts:
+  - family: Nunito
+    fonts:
+      - asset: assets/fonts/Nunito-Regular.ttf
+      - asset: assets/fonts/Nunito-Bold.ttf
+        weight: 700
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

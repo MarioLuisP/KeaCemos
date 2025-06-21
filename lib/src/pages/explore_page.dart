@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/widgets/chips/filter_chips_widget.dart'; // Nuevo import
-import 'package:quehacemos_cba/src/pages/event_detail_page.dart';
 import 'package:quehacemos_cba/src/utils/utils.dart';
 import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
 
@@ -62,6 +61,8 @@ class _ExplorePageState extends State<ExplorePage> {
             appBar: AppBar(
               title: const Text('Explorar Eventos'),
               centerTitle: true,
+              toolbarHeight: 40.0,
+              elevation: 2.0,
             ),
             body: Column(
               children: [

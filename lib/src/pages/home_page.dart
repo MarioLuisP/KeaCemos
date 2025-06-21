@@ -231,13 +231,18 @@ class _HomePageState extends State<HomePage>
     return AppBar(
       title: const Text(
         'QuehaCeMos Córdoba',
-        style: TextStyle(fontWeight: FontWeight.normal),
+        style: TextStyle(
+          fontFamily: 'Nunito',
+          fontWeight: FontWeight.bold, // O FontWeight.w700
+          fontSize: 20,
+        ),
       ),
       centerTitle: true,
       toolbarHeight: 40.0,
+      elevation: 2.0, // 👉 Leve sombra (podés probar con 1.0 a 4.0)
     );
   }
-
+  
   Widget _buildLoadingScaffold() {
     return const Scaffold(
       backgroundColor: Color(0xFFD3D3D3),
@@ -247,7 +252,7 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildErrorScaffold(HomeViewModel viewModel) {
     return Scaffold(
-      backgroundColor: const Color(0xFFD3D3D3),
+      backgroundColor: const Color.fromARGB(255, 141, 25, 25),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -399,7 +404,7 @@ class _OptimizedHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: const Color(0xFFD3D3D3),
+      color: const Color.fromARGB(255, 241, 196, 136),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
         child: Column(

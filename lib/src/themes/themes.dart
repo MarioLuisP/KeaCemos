@@ -116,12 +116,37 @@ class AppThemes {
     ),
   );
 
+  // Nuevo tema pastel basado en los colores del tema normal
+  static final ThemeData pastelTheme = ThemeData(
+    brightness: Brightness.light,
+    primaryColor: Color.lerp(Colors.blue, Colors.white, 0.7)!,
+    colorScheme: ColorScheme.light(
+      primary: Color.lerp(Colors.blue, Colors.white, 0.7)!,
+      secondary: Color.lerp(Colors.blueAccent, Colors.white, 0.7)!,
+      surface: Colors.white,
+    ),
+    scaffoldBackgroundColor: Color.lerp(Color(0xFFF0E2D7), Colors.white, 0.3)!,
+    appBarTheme: AppBarTheme(
+      backgroundColor: Color.lerp(Color.fromARGB(255, 172, 111, 41), Colors.white, 0.6)!,
+      foregroundColor: Colors.black87,
+    ),
+    textTheme: const TextTheme(
+      titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+      bodyMedium: TextStyle(color: Colors.black87),
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      selectedItemColor: Color.lerp(Colors.blue, Colors.white, 0.4)!,
+      unselectedItemColor: Colors.grey,
+    ),
+  );
+
   static Map<String, ThemeData> themes = {
     'normal': normalTheme,
     'dark': darkTheme,
     'fluor': fluorTheme,
     'harmony': harmonyTheme,
     'sepia': sepiaTheme,
+    'pastel': pastelTheme,
   };
 }
 
