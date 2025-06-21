@@ -13,25 +13,33 @@ class EventDetailModal {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.3,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: EventDetailContent(
-            event: event,
-            viewModel: viewModel,
-            scrollController: scrollController,
-          ),
-        ),
-      ),
+      builder: (context) {
+        final eventType = event['type'] ?? '';
+        final cardColor = viewModel.getEventCardColor(eventType, context);
+
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.3,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Color.lerp(cardColor, Colors.white, 0.7)!,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: EventDetailContent(
+                event: event,
+                viewModel: viewModel,
+                scrollController: scrollController,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
+
 
 class EventDetailContent extends StatefulWidget {
   final Map<String, String> event;
@@ -51,6 +59,11 @@ class EventDetailContent extends StatefulWidget {
 
 class _EventDetailContentState extends State<EventDetailContent> {
   bool _isDescriptionExpanded = false;
+  
+  // Variables memoizadas (calculadas una sola vez)
+  late Color cardColor;
+  late Color darkCardColor;
+  late String truncatedDescription;
 
   // Datos hardcodeados - reemplazar cuando estén disponibles
   String get _imageUrl => 'https://res.cloudinary.com/dloaaxni6/image/upload/v1750432383/001_fg9ogq.jpg';
@@ -60,19 +73,36 @@ class _EventDetailContentState extends State<EventDetailContent> {
   double get _lat => -31.405408632866454;
   double get _lng => -64.17766983175501;
 
+  @override
+  void initState() {
+    super.initState();
+    // Calculamos los valores una sola vez al inicializar
+    final eventType = widget.event['type'] ?? '';
+    cardColor = widget.viewModel.getEventCardColor(eventType, context);
+    darkCardColor = _darkenColor(cardColor, 0.1);
+    
+    // Pre-calculamos la descripción truncada
+    const maxLength = 150;
+    truncatedDescription = _description.length > maxLength 
+        ? '${_description.substring(0, maxLength)}...'
+        : _description;
+  }
+
   Color _darkenColor(Color color, [double amount = 0.2]) {
     final hsl = HSLColor.fromColor(color);
     final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
     return hslDark.toColor();
   }
-
-  Future<void> _openMaps() async {
-    final uri = Uri.parse('geo:$_lat,$_lng?q=$_lat,$_lng(${widget.event['title']})');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
+//desde aca
+Future<void> _openMaps() async {
+  final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$_lat,$_lng');
+  try {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (e) {
+    // Fallback si no puede abrir
+    print('Error opening maps: $e');
   }
-
+}
   Future<void> _openUber() async {
     final uri = Uri.parse('uber://?action=setPickup&pickup=my_location&dropoff[latitude]=$_lat&dropoff[longitude]=$_lng&dropoff[nickname]=${widget.event['title']}');
     if (await canLaunchUrl(uri)) {
@@ -84,34 +114,40 @@ class _EventDetailContentState extends State<EventDetailContent> {
     }
   }
 
-  Future<void> _shareEvent() async {
-    final formattedDate = widget.viewModel.formatEventDate(widget.event['date']!, format: 'card');
-    final message = 'Te comparto este evento que vi en la app QuehaCeMos Cba:\n\n'
-        '📌 ${widget.event['title']}\n'
-        '🗓 $formattedDate\n'
-        '📍 ${widget.event['location']}\n\n'
-        '¡No te lo pierdas!'
-        '¡📲 Descargá la app desde playsore!';
-    
-    final uri = Uri.parse('whatsapp://send?text=${Uri.encodeComponent(message)}');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+Future<void> _shareEvent() async {
+  final formattedDate = widget.viewModel.formatEventDate(widget.event['date']!, format: 'card');
+  final message = 'Te comparto este evento que vi en la app QuehaCeMos Cba:\n\n'
+      '📌 ${widget.event['title']}\n'
+      '🗓 $formattedDate\n'
+      '📍 ${widget.event['location']}\n\n'
+      '¡No te lo pierdas!\n'
+      '¡📲 Descargá la app desde playstore!';
+  
+  try {
+    // Intenta WhatsApp primero
+    final whatsappUri = Uri.parse('whatsapp://send?text=${Uri.encodeComponent(message)}');
+    await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+  } catch (e) {
+    // Fallback a compartir nativo
+    try {
+      await launchUrl(Uri.parse('sms:?body=${Uri.encodeComponent(message)}'));
+    } catch (e2) {
+      print('Error sharing: $e2');
     }
   }
+}
 
-  Future<void> _openWebsite() async {
+Future<void> _openWebsite() async {
+  try {
     final uri = Uri.parse(_websiteUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (e) {
+    print('Error opening website: $e');
   }
-
+}
+//hasta
   @override
   Widget build(BuildContext context) {
-    final eventType = widget.event['type'] ?? '';
-    final cardColor = widget.viewModel.getEventCardColor(eventType, context);
-    final darkCardColor = _darkenColor(cardColor, 0.1);
-
     return Column(
       children: [
         // Handle indicator
@@ -220,7 +256,7 @@ class _EventDetailContentState extends State<EventDetailContent> {
                           border: Border.all(color: cardColor.withOpacity(0.5)),
                         ),
                         child: Text(
-                          widget.viewModel.getCategoryWithEmoji(eventType),
+                          widget.viewModel.getCategoryWithEmoji(widget.event['type'] ?? ''),
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: darkCardColor,
@@ -241,10 +277,7 @@ class _EventDetailContentState extends State<EventDetailContent> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _isDescriptionExpanded 
-                                ? _description
-                                // ? widget.event['description'] ?? _description // Usar cuando esté disponible
-                                : '${_description.substring(0, _description.length > 150 ? 150 : _description.length)}...',
+                              _isDescriptionExpanded ? _description : truncatedDescription,
                               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 height: 1.5,
                                 color: Theme.of(context).colorScheme.onSurface,
@@ -269,12 +302,12 @@ class _EventDetailContentState extends State<EventDetailContent> {
                       const SizedBox(height: 24),
 
                       // Información del evento
-                      _buildInfoSection(context, cardColor),
+                      _buildInfoSection(context),
 
                       const SizedBox(height: 24),
 
                       // Botones de acción
-                      _buildActionButtons(context, cardColor),
+                      _buildActionButtons(context),
 
                       const SizedBox(height: 24),
                     ],
@@ -288,7 +321,7 @@ class _EventDetailContentState extends State<EventDetailContent> {
     );
   }
 
-  Widget _buildInfoSection(BuildContext context, Color cardColor) {
+  Widget _buildInfoSection(BuildContext context) {
     final formattedDate = widget.viewModel.formatEventDate(widget.event['date']!, format: 'card');
     
     return Container(
@@ -357,7 +390,7 @@ class _EventDetailContentState extends State<EventDetailContent> {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, Color cardColor) {
+  Widget _buildActionButtons(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -386,37 +419,37 @@ class _EventDetailContentState extends State<EventDetailContent> {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required Color color,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
+Widget _buildActionButton(BuildContext context, {
+  required IconData icon,
+  required String label,
+  required VoidCallback onTap,
+  required Color color,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
-    );
-  }
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 }
