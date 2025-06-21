@@ -6,6 +6,7 @@ import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/utils/dimens.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 
 class EventDetailModal {
   static void show(BuildContext context, Map<String, String> event, HomeViewModel viewModel) {
@@ -123,18 +124,12 @@ Future<void> _shareEvent() async {
       '¡No te lo pierdas!\n'
       '¡📲 Descargá la app desde playstore!';
   
-  try {
-    // Intenta WhatsApp primero
-    final whatsappUri = Uri.parse('whatsapp://send?text=${Uri.encodeComponent(message)}');
-    await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
-  } catch (e) {
-    // Fallback a compartir nativo
-    try {
-      await launchUrl(Uri.parse('sms:?body=${Uri.encodeComponent(message)}'));
-    } catch (e2) {
-      print('Error sharing: $e2');
-    }
-  }
+try {
+  Share.share(message); // esto abre el menú de compartir del sistema
+} catch (e) {
+  print('Error sharing: $e');
+}
+
 }
 
 Future<void> _openWebsite() async {
@@ -145,6 +140,20 @@ Future<void> _openWebsite() async {
     print('Error opening website: $e');
   }
 }
+  void _openImageFullscreen(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.black,
+        child: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: InteractiveViewer(
+            child: Image.network(_imageUrl, fit: BoxFit.contain),
+          ),
+        ),
+      ),
+    );
+  }
 //hasta
   @override
   Widget build(BuildContext context) {
@@ -170,39 +179,43 @@ Future<void> _openWebsite() async {
                 // Hero Image con botón de favorito
                 Stack(
                   children: [
-                    Container(
-                      height: 250,
-                      width: double.infinity,
-                      margin: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [cardColor, darkCardColor],
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.network(
-                          // widget.event['imageUrl'] ?? _imageUrl, // Usar cuando esté disponible
-                          _imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [cardColor, darkCardColor],
-                              ),
+                    
+                Container(
+                  height: 250,
+                  width: double.infinity,
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [cardColor, darkCardColor],
+                    ),
+                  ),
+                  child: GestureDetector(
+                    onTap: () => _openImageFullscreen(context),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        _imageUrl,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [cardColor, darkCardColor],
                             ),
-                            child: const Center(
-                              child: Icon(Icons.event, size: 64, color: Colors.white70),
-                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.event, size: 64, color: Colors.white70),
                           ),
                         ),
                       ),
                     ),
+                  ),
+                ),
+
                     // Botón de favorito
                     Positioned(
                       top: 24,

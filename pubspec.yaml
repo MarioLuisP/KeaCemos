@@ -44,7 +44,7 @@ dependencies:
   intl_translation: ^0.20.1  # Asegúrate de usar la misma versión que intl
   provider: ^6.1.2
   shared_preferences: ^2.0.0
-  glass_kit: ^4.0.1
+  share_plus: ^7.2.1 # (usa la última versión disponible)
   url_launcher: ^6.2.2
   
 dev_dependencies:
