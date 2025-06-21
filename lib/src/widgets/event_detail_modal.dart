@@ -259,7 +259,7 @@ Future<void> _openWebsite() async {
                           widget.viewModel.getCategoryWithEmoji(widget.event['type'] ?? ''),
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: darkCardColor,
+                            color: Colors.grey[600],
                           ),
                         ),
                       ),
@@ -290,7 +290,7 @@ Future<void> _openWebsite() async {
                               child: Text(
                                 _isDescriptionExpanded ? 'Ver menos' : 'Ver más...',
                                 style: TextStyle(
-                                  color: cardColor,
+                                  color: Colors.grey[600],
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -350,7 +350,7 @@ Future<void> _openWebsite() async {
               'Más información', 
               'Ver sitio oficial',
               isLink: true,
-              linkColor: cardColor,
+              linkColor: Colors.grey[600],
             ),
           ),
         ],
@@ -437,12 +437,12 @@ Widget _buildActionButton(BuildContext context, {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 24),
+          Icon(icon, color: Colors.grey[600], size: 24),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: color,
+              color: Colors.grey[600], // gris medio
               fontWeight: FontWeight.w600,
               fontSize: 12,
             ),
