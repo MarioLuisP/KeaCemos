@@ -72,7 +72,7 @@ class AppColors {
     // Lógica original para otros temas
     switch (theme) {
       case 'dark':
-        return color.withOpacity(0.8);
+        return Color.lerp(color, Colors.black, 0.5)!;
       case 'fluor':
         return color.withBrightness(1.2);
       case 'harmony':

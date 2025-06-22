@@ -376,7 +376,7 @@ class _HomePageState extends State<HomePage>
             title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+//                  color: Colors.black87,
                 ),
           ),
           const Divider(

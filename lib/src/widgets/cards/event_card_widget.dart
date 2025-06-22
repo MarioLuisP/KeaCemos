@@ -23,6 +23,16 @@ class EventCardWidget extends StatelessWidget {
     return hslDark.toColor();
   }
 
+  // Función para determinar si un color es claro
+  bool _isLightColor(Color color) {
+    return color.computeLuminance() > 0.4;
+  }
+
+  // Función para obtener el color de texto que contrasta bien
+  Color _getContrastingTextColor(Color backgroundColor) {
+    return _isLightColor(backgroundColor) ? Colors.black87 : Colors.white;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Cache valores para evitar recálculos
@@ -35,6 +45,10 @@ class EventCardWidget extends StatelessWidget {
     final formattedDateString = viewModel.formatEventDate(eventDate, format: 'card');
     final cardColor = viewModel.getEventCardColor(eventType, context);
     final darkCardColor = _darkenColor(cardColor, 0.2);
+    
+    // Calculamos el color promedio del gradiente para determinar el contraste
+    final averageColor = Color.lerp(cardColor, darkCardColor, 0.5)!;
+    final textColor = _getContrastingTextColor(averageColor);
 
     return GestureDetector(
       onTap: () {
@@ -77,7 +91,7 @@ class EventCardWidget extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: textColor,
                             ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -89,13 +103,13 @@ class EventCardWidget extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                              color: textColor.withOpacity(0.9),
                             ),
                       ),
                       const SizedBox(height: AppDimens.paddingSmall),
                       Container(
                         height: 0.5,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                        color: textColor.withOpacity(0.3),
                       ),
                       const SizedBox(height: AppDimens.paddingSmall),  
                       Row(
@@ -106,7 +120,7 @@ class EventCardWidget extends StatelessWidget {
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color: textColor,
                               ),
                             ),
                           ),
@@ -119,7 +133,7 @@ class EventCardWidget extends StatelessWidget {
                                 constraints: const BoxConstraints(),
                                 icon: Icon(
                                   isFavorite ? Icons.favorite : Icons.favorite_border,
-                                  color: isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
+                                  color: isFavorite ? Colors.red : textColor,
                                 ),
                                 onPressed: () => favoritesProvider.toggleFavorite(eventId),
                               );
@@ -132,7 +146,7 @@ class EventCardWidget extends StatelessWidget {
                         '📍 $eventLocation',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontSize: 18,
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: textColor,
                             ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -142,7 +156,7 @@ class EventCardWidget extends StatelessWidget {
                         '🎟  ${event['price']?.isNotEmpty == true ? event['price']! : 'Consultar'}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontSize: 16,
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: textColor,
                             ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
