@@ -7,6 +7,8 @@ import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/utils/dimens.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
 
 class EventDetailModal {
   static void show(BuildContext context, Map<String, String> event, HomeViewModel viewModel) {
@@ -141,21 +143,30 @@ Future<void> _openWebsite() async {
     print('Error opening website: $e');
   }
 }
-  void _openImageFullscreen(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.black,
-        child: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: InteractiveViewer(
-            child: Image.network(_imageUrl, fit: BoxFit.contain),
+void _openImageFullscreen(BuildContext context) {
+  if (_imageUrl == null || _imageUrl.isEmpty) return;
+  showDialog(
+    context: context,
+    builder: (context) => Dialog.fullscreen(
+      backgroundColor: Colors.black,
+      child: Stack(
+        children: [
+          InteractiveViewer(
+            child: CachedNetworkImage(
+              imageUrl: _imageUrl,
+              fit: BoxFit.fill,
+              width: double.infinity,
+              height: double.infinity,
+              placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) => Icon(Icons.error, color: Colors.white70, size: 64),
+            ),
           ),
-        ),
+          Positioned(right: 16, top: 16, child: IconButton(icon: Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context))),
+        ],
       ),
-    );
-  }
-//hasta
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -356,8 +367,29 @@ Future<void> _openWebsite() async {
         children: [
           _buildInfoRow(context, '🗓 ', 'Fecha y Hora', formattedDate),
           const Divider(height: 24),
-          _buildInfoRow(context, '📍', 'Ubicación', '${widget.event['location'] ?? 'Sin ubicación'}\n${widget.event['district'] ?? _district}'),     
-           const Divider(height: 24),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('📍', style: TextStyle(fontSize: 20)),
+              SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Ubicación'),
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(text: widget.event['location'] ?? 'Sin ubicación', style: TextStyle(fontSize: 16, color: Colors.black)),
+                        TextSpan(text: '\n${widget.event['district'] ?? _district}', style: TextStyle(fontSize: 18, color: Colors.black)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          const Divider(height: 24),
           _buildInfoRow(context, '📫', 'Dirección', _address),
           // _buildInfoRow(context, '📫', 'Dirección', widget.event['address'] ?? _address), // Usar cuando esté disponible
           const Divider(height: 24),
