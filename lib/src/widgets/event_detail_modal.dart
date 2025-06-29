@@ -356,9 +356,8 @@ Future<void> _openWebsite() async {
         children: [
           _buildInfoRow(context, '🗓 ', 'Fecha y Hora', formattedDate),
           const Divider(height: 24),
-          _buildInfoRow(context, '📍', 'Ubicación', widget.event['location']!),
-          _buildInfoRow(context, ' ', '          ', widget.event['district']!),
-          const Divider(height: 24),
+          _buildInfoRow(context, '📍', 'Ubicación', '${widget.event['location'] ?? 'Sin ubicación'}\n${widget.event['district'] ?? _district}'),     
+           const Divider(height: 24),
           _buildInfoRow(context, '📫', 'Dirección', _address),
           // _buildInfoRow(context, '📫', 'Dirección', widget.event['address'] ?? _address), // Usar cuando esté disponible
           const Divider(height: 24),
