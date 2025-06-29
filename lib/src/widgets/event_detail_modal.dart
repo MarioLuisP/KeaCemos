@@ -67,9 +67,10 @@ class _EventDetailContentState extends State<EventDetailContent> {
   late String truncatedDescription;
 
   // Datos hardcodeados - reemplazar cuando estén disponibles
-  String get _imageUrl => 'https://res.cloudinary.com/dloaaxni6/image/upload/v1750432383/001_fg9ogq.jpg';
+  String get _imageUrl => 'https://misty-bread-5506.tester-passalia.workers.dev/cine_0001.jpg';
   String get _description => 'Una visita inesperada. Una amistad que lo cambia todo. Una mañana cualquiera, en la casa de Flora, aparece un visitante muy poco común: un Aguará guazú. Alto, peludo, misterioso. Nadie sabe muy bien de dónde vino ni por qué eligió ese lugar… pero desde ese momento, todo empieza a transformarse. Junto a su mamá, su abuela y su tía, Flora se embarca en una serie de grandes aventuras para entender a este nuevo amigo, cuidarlo y, quizás, ayudarlo a encontrar su camino de regreso. Con humor, ternura y poesía, esta obra invita a mirar lo desconocido con otros ojos, y a descubrir que, aunque cada uno siga su propio camino, siempre hay una manera de encontrarse bajo las mismas estrellas.';
   String get _address => 'Pasaje A. Perez 11';
+  String get _district => 'Centro';
   String get _websiteUrl => 'https://www.instagram.com/espacioblick/?hl=es';
   double get _lat => -31.405408632866454;
   double get _lng => -64.17766983175501;
@@ -179,7 +180,7 @@ Future<void> _openWebsite() async {
                 // Hero Image con botón de favorito
                 Stack(
                   children: [
-                    
+                    //*********************** */
                 Container(
                   height: 250,
                   width: double.infinity,
@@ -194,29 +195,36 @@ Future<void> _openWebsite() async {
                   ),
                   child: GestureDetector(
                     onTap: () => _openImageFullscreen(context),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        _imageUrl,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [cardColor, darkCardColor],
+                    child: ClipRect(
+                      child: Align(
+                        alignment: Alignment(0.0, -0.4), // Centra el recorte entre 15% y 70%
+                        heightFactor: 0.55, // Muestra el 55% de la altura (70% - 15%)
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.network(
+                            _imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [cardColor, darkCardColor],
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(Icons.event, size: 64, color: Colors.white70),
+                              ),
                             ),
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.event, size: 64, color: Colors.white70),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ),                  
                 ),
 
-                    // Botón de favorito
+                    // Botón de favorito*******************
                     Positioned(
                       top: 24,
                       right: 24,
@@ -349,6 +357,7 @@ Future<void> _openWebsite() async {
           _buildInfoRow(context, '🗓 ', 'Fecha y Hora', formattedDate),
           const Divider(height: 24),
           _buildInfoRow(context, '📍', 'Ubicación', widget.event['location']!),
+          _buildInfoRow(context, ' ', '          ', widget.event['district']!),
           const Divider(height: 24),
           _buildInfoRow(context, '📫', 'Dirección', _address),
           // _buildInfoRow(context, '📫', 'Dirección', widget.event['address'] ?? _address), // Usar cuando esté disponible
