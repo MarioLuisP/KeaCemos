@@ -154,7 +154,7 @@ void _openImageFullscreen(BuildContext context) {
           InteractiveViewer(
             child: CachedNetworkImage(
               imageUrl: _imageUrl,
-              fit: BoxFit.fill,
+              fit: BoxFit.contain,
               width: double.infinity,
               height: double.infinity,
               placeholder: (context, url) => Center(child: CircularProgressIndicator()),
