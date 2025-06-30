@@ -151,26 +151,81 @@ class _HomePageState extends State<HomePage>
       return _buildErrorScaffold(viewModel);
     }
 
-    // ✅ CORRECCIÓN: Obtener datos del ViewModel y convertir tipos
     final displayedEvents = viewModel.getHomePageEvents();
     final groupedEventsRaw = viewModel.getGroupedEvents();
     final sortedDatesRaw = viewModel.getSortedDates();
-    
-    // Convertir tipos String -> DateTime
+
     final groupedEvents = _convertGroupedEvents(groupedEventsRaw);
     final sortedDates = _convertSortedDates(sortedDatesRaw);
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: _buildAppBar(),
-      body: _buildBody(
-        viewModel: viewModel,
-        prefs: prefs,
-        displayedEvents: displayedEvents,
-        groupedEvents: groupedEvents,
-        sortedDates: sortedDates,
+      body: Column(
+        children: [
+          _buildFixedHeader(viewModel, prefs),
+          Expanded(
+            child: _buildScrollableBody(
+              viewModel: viewModel,
+              displayedEvents: displayedEvents,
+              groupedEvents: groupedEvents,
+              sortedDates: sortedDates,
+            ),
+          ),
+        ],
       ),
     );
   }
+  Widget _buildFixedHeader(HomeViewModel viewModel, PreferencesProvider prefs) {
+    return Container(
+      width: double.infinity,
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            viewModel.getPageTitle(),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                ),
+          ),
+          const SizedBox(height: 4),
+          FilterChipsRow(prefs: prefs, viewModel: viewModel),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScrollableBody({
+    required HomeViewModel viewModel,
+    required List<dynamic> displayedEvents,
+    required Map<DateTime, List<dynamic>> groupedEvents,
+    required List<DateTime> sortedDates,
+  }) {
+    if (displayedEvents.isEmpty) {
+      return _buildEmptyState(viewModel);
+    }
+
+    return ListView(
+      padding: EdgeInsets.only(top: 8.0),
+      children: sortedDates.expand((date) {
+        final eventsOnDate = groupedEvents[date]!;
+        final sectionTitle =
+            viewModel.getSectionTitle(DateFormat('yyyy-MM-dd').format(date));
+        return [
+          _buildSectionHeader(sectionTitle),
+          ...eventsOnDate.map((event) => EventCardWidget(
+                event: event,
+                viewModel: viewModel,
+                key: ValueKey(event['id']),
+              )),
+        ];
+      }).toList(),
+    );
+  }
+
 
   // ✅ NUEVO: Método para convertir Map<String, List> -> Map<DateTime, List>
   Map<DateTime, List<dynamic>> _convertGroupedEvents(Map<String, List<Map<String, String>>> rawEvents) {
