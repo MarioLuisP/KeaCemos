@@ -10,7 +10,7 @@ import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 class EventCardWidget extends StatelessWidget {
   final Map<String, String> event;
   final HomeViewModel viewModel;
-
+  String get event_district => 'Centro';
   const EventCardWidget({
     super.key,
     required this.event,
@@ -142,14 +142,40 @@ class EventCardWidget extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 1),
-                      Text(
-                        '📍 $eventLocation',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 18,
-                              color: textColor,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '📍',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          SizedBox(width: 6),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  eventLocation ?? 'Sin ubicación',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontSize: 18,
+                                    color: textColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  event_district ?? 'Sin distrito',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontSize: 14,
+                                    color: textColor.withOpacity(0.7),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                       const SizedBox(height: AppDimens.paddingSmall),
                       Text(
