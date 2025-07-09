@@ -229,6 +229,9 @@ class _HomePageState extends State<HomePage>
     }
 
     return CustomScrollView( // CAMBIO: ListView → CustomScrollView
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(), // NUEVO: Elimina micro-interrupciones
+        ),
       slivers: [ // NUEVO: Estructura con slivers
         SliverPadding( // NUEVO: Padding como sliver
           padding: EdgeInsets.only(top: 8.0),

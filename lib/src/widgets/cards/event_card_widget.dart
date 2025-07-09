@@ -103,7 +103,7 @@ class EventCardWidget extends StatelessWidget {
                       
                       const SizedBox(height: AppDimens.paddingSmall),
                       SizedBox( // NUEVO: Container con altura fija
-                        height: 22, // NUEVO: Altura específica para categoría
+                        height: 24, // NUEVO: Altura específica para categoría
                         child: Text(
                           viewModel.getCategoryWithEmoji(eventType),
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(

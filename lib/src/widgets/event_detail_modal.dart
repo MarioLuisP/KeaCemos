@@ -302,7 +302,7 @@ void _openImageFullscreen(BuildContext context) {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.grey[50],
+                          color: Theme.of(context).colorScheme.surface, // NUEVO: Respeta theme
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
@@ -359,9 +359,9 @@ void _openImageFullscreen(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface, // NUEVO: Respeta theme
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: Theme.of(context).colorScheme.outline), // NUEVO: Border temático
       ),
       child: Column(
         children: [
@@ -376,11 +376,23 @@ void _openImageFullscreen(BuildContext context) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Ubicación'),
-                  RichText(
+                    RichText(
                     text: TextSpan(
                       children: [
-                        TextSpan(text: widget.event['location'] ?? 'Sin ubicación', style: TextStyle(fontSize: 16, color: Colors.black)),
-                        TextSpan(text: '\n${widget.event['district'] ?? _district}', style: TextStyle(fontSize: 18, color: Colors.black)),
+                        TextSpan(
+                          text: widget.event['location'] ?? 'Sin ubicación', 
+                          style: TextStyle(
+                            fontSize: 16, 
+                            color: Theme.of(context).colorScheme.onSurface // NUEVO: Respeta theme
+                          )
+                        ),
+                        TextSpan(
+                          text: '\n${widget.event['district'] ?? _district}', 
+                          style: TextStyle(
+                            fontSize: 18, 
+                            color: Theme.of(context).colorScheme.onSurface // NUEVO: Respeta theme
+                          )
+                        ),
                       ],
                     ),
                   ),
