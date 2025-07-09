@@ -65,6 +65,7 @@ class EventCardWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimens.borderRadius),
         ),
         child: Container(
+          height: 235, // NUEVO: Altura fija para todas las tarjetas
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -86,25 +87,33 @@ class EventCardWidget extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        eventTitle,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: textColor,
-                            ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      SizedBox( // NUEVO: Container con altura fija
+                        height: 26, // NUEVO: Altura específica para el título
+                        child: Text(
+                          eventTitle,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: textColor,
+                              ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       
                       const SizedBox(height: AppDimens.paddingSmall),
-                      Text(
-                        viewModel.getCategoryWithEmoji(eventType),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: textColor.withOpacity(0.9),
-                            ),
+                      SizedBox( // NUEVO: Container con altura fija
+                        height: 22, // NUEVO: Altura específica para categoría
+                        child: Text(
+                          viewModel.getCategoryWithEmoji(eventType),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: textColor.withOpacity(0.9),
+                              ),
+                          maxLines: 1, // NUEVO: Forzar una línea
+                          overflow: TextOverflow.ellipsis, // NUEVO: Cortar con puntos
+                        ),
                       ),
                       const SizedBox(height: AppDimens.paddingSmall),
                       Container(

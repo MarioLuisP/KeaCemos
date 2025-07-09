@@ -197,7 +197,7 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
-
+  //NUEVO METODO DE MOSTRAR 6
   Widget _buildScrollableBody({
     required HomeViewModel viewModel,
     required List<dynamic> displayedEvents,
@@ -208,21 +208,52 @@ class _HomePageState extends State<HomePage>
       return _buildEmptyState(viewModel);
     }
 
-    return ListView(
-      padding: EdgeInsets.only(top: 8.0),
-      children: sortedDates.expand((date) {
-        final eventsOnDate = groupedEvents[date]!;
-        final sectionTitle =
-            viewModel.getSectionTitle(DateFormat('yyyy-MM-dd').format(date));
-        return [
-          _buildSectionHeader(sectionTitle),
-          ...eventsOnDate.map((event) => EventCardWidget(
-                event: event,
-                viewModel: viewModel,
-                key: ValueKey(event['id']),
-              )),
-        ];
-      }).toList(),
+    // NUEVO: Pre-calcular estructura plana (solo metadata, no widgets)
+    final List<Map<String, dynamic>> flatItems = []; // NUEVO: Lista plana de items
+    
+    for (final date in sortedDates) { // NUEVO: Construir estructura
+      final eventsOnDate = groupedEvents[date]!;
+      final sectionTitle = viewModel.getSectionTitle(DateFormat('yyyy-MM-dd').format(date));
+      
+      // NUEVO: Agregar header como metadata
+      flatItems.add({
+        'type': 'header',
+        'title': sectionTitle,
+      });
+      
+      // NUEVO: Agregar eventos como metadata
+      for (final event in eventsOnDate) {
+        flatItems.add({
+          'type': 'event',
+          'data': event,
+        });
+      }
+    }
+
+    return CustomScrollView( // CAMBIO: ListView → CustomScrollView
+      slivers: [ // NUEVO: Estructura con slivers
+        SliverPadding( // NUEVO: Padding como sliver
+          padding: EdgeInsets.only(top: 8.0),
+          sliver: SliverList( // NUEVO: Lista lazy
+            delegate: SliverChildBuilderDelegate(
+              (context, index) { // NUEVO: Builder que solo se ejecuta para items visibles
+                final item = flatItems[index];
+                
+                if (item['type'] == 'header') { // NUEVO: Construir header solo cuando es visible
+                  return _buildSectionHeader(item['title']);
+                } else { // NUEVO: Construir evento solo cuando es visible
+                  return EventCardWidget(
+                    event: item['data'],
+                    viewModel: viewModel,
+                    key: ValueKey(item['data']['id']),
+                  );
+                }
+              },
+              childCount: flatItems.length, // NUEVO: Cantidad total conocida
+            ),
+          ),
+        ),
+      ],
     );
   }
 
