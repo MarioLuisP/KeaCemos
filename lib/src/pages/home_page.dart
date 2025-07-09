@@ -152,11 +152,9 @@ class _HomePageState extends State<HomePage>
     }
 
     final displayedEvents = viewModel.getHomePageEvents();
-    final groupedEventsRaw = viewModel.getGroupedEvents();
-    final sortedDatesRaw = viewModel.getSortedDates();
-
-    final groupedEvents = _convertGroupedEvents(groupedEventsRaw);
-    final sortedDates = _convertSortedDates(sortedDatesRaw);
+    // CAMBIO: Usar métodos optimizados (sin conversión en build)
+    final groupedEvents = viewModel.getGroupedEventsDateTime(); // CAMBIO: Directo desde cache
+    final sortedDates = viewModel.getSortedDatesDateTime(); // CAMBIO: Directo desde cache
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
@@ -255,62 +253,6 @@ class _HomePageState extends State<HomePage>
         ),
       ],
     );
-  }
-
-
-  // ✅ NUEVO: Método para convertir Map<String, List> -> Map<DateTime, List>
-  Map<DateTime, List<dynamic>> _convertGroupedEvents(Map<String, List<Map<String, String>>> rawEvents) {
-    final Map<DateTime, List<dynamic>> converted = {};
-    
-    for (final entry in rawEvents.entries) {
-      final dateString = entry.key;
-      
-      // Intentar parsear la fecha desde String
-      DateTime? dateTime;
-      try {
-        // Probar diferentes formatos de fecha
-        dateTime = DateTime.tryParse(dateString) ?? 
-                  DateFormat('yyyy-MM-dd').tryParse(dateString) ??
-                  DateFormat('dd/MM/yyyy').tryParse(dateString);
-      } catch (e) {
-        print('⚠️ Error parseando fecha: $dateString - $e');
-      }
-      
-      if (dateTime != null) {
-        converted[dateTime] = entry.value;
-      } else {
-        // Fallback: usar fecha actual si no se puede parsear
-        print('⚠️ Usando fecha actual para: $dateString');
-        converted[DateTime.now()] = entry.value;
-      }
-    }
-    
-    return converted;
-  }
-
-  // ✅ NUEVO: Método para convertir List<String> -> List<DateTime>
-  List<DateTime> _convertSortedDates(List<String> rawDates) {
-    final List<DateTime> converted = [];
-    
-    for (final dateString in rawDates) {
-      DateTime? dateTime;
-      try {
-        // Probar diferentes formatos de fecha
-        dateTime = DateTime.tryParse(dateString) ?? 
-                  DateFormat('yyyy-MM-dd').tryParse(dateString) ??
-                  DateFormat('dd/MM/yyyy').tryParse(dateString);
-      } catch (e) {
-        print('⚠️ Error parseando fecha: $dateString - $e');
-      }
-      
-      if (dateTime != null) {
-        converted.add(dateTime);
-      }
-    }
-    
-    // Ordenar las fechas
-    converted.sort();
-    return converted;
   }
 
   AppBar _buildAppBar() {

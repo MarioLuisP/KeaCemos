@@ -30,6 +30,10 @@ class HomeViewModel with ChangeNotifier {
   // Eventos procesados (cache)
   List<Map<String, String>> _processedEvents = [];
   Map<String, List<Map<String, String>>> _groupedEvents = {};
+  // NUEVO: Cache de datos convertidos a DateTime para optimización
+  Map<DateTime, List<Map<String, String>>> _groupedEventsDateTime = {}; // NUEVO: Cache DateTime
+  List<DateTime> _sortedDatesDateTime = []; // NUEVO: Cache DateTime
+  bool _dateTimeCacheValid = false; // NUEVO: Flag para invalidar cache
 
   HomeViewModel() : _dataBuilder = EventDataBuilder(DateTime(2025, 6, 4));
 // Variables para control de refresh
@@ -115,7 +119,8 @@ void _processEvents() {
     
     print('✅ Procesados: ${_processedEvents.length} eventos, ${_groupedEvents.keys.length} fechas');
   }
-  
+  // NUEVO: Invalidar cache DateTime cuando se procesan eventos
+  _dateTimeCacheValid = false; // NUEVO: Cache debe actualizarse
   // ASEGURAR que siempre notifique
   notifyListeners();
 }
@@ -224,7 +229,73 @@ Future<void> clearSelectedDate() async {
   List<String> getSortedDates() {
     return _dataBuilder.getSortedDates(_groupedEvents);
   }
+/// NUEVO: Obtiene eventos agrupados como DateTime (optimizado para HomePage)
+Map<DateTime, List<Map<String, String>>> getGroupedEventsDateTime() {
+  if (!_dateTimeCacheValid) { // NUEVO: Solo convierte si el cache no es válido
+    _updateDateTimeCache();
+  }
+  return _groupedEventsDateTime;
+}
 
+/// NUEVO: Obtiene fechas ordenadas como DateTime (optimizado para HomePage)
+List<DateTime> getSortedDatesDateTime() {
+  if (!_dateTimeCacheValid) { // NUEVO: Solo convierte si el cache no es válido
+    _updateDateTimeCache();
+  }
+  return _sortedDatesDateTime;
+}
+
+/// NUEVO: Actualiza cache de DateTime (conversión una sola vez)
+void _updateDateTimeCache() {
+  print('🔄 Actualizando cache DateTime...');
+  
+  // NUEVO: Convertir Map<String, List> → Map<DateTime, List>
+  _groupedEventsDateTime = {};
+  for (final entry in _groupedEvents.entries) {
+    final dateString = entry.key;
+    DateTime? dateTime;
+    
+    try {
+      // NUEVO: Misma lógica de parsing que HomePage pero UNA sola vez
+      dateTime = DateTime.tryParse(dateString) ?? 
+                DateFormat('yyyy-MM-dd').tryParse(dateString) ??
+                DateFormat('dd/MM/yyyy').tryParse(dateString);
+    } catch (e) {
+      print('⚠️ Error parseando fecha en cache: $dateString - $e');
+    }
+    
+    if (dateTime != null) {
+      _groupedEventsDateTime[dateTime] = entry.value;
+    } else {
+      print('⚠️ Usando fecha actual para cache: $dateString');
+      _groupedEventsDateTime[DateTime.now()] = entry.value;
+    }
+  }
+  
+  // NUEVO: Convertir List<String> → List<DateTime>
+  _sortedDatesDateTime = [];
+  final rawDates = _dataBuilder.getSortedDates(_groupedEvents);
+  
+  for (final dateString in rawDates) {
+    DateTime? dateTime;
+    try {
+      dateTime = DateTime.tryParse(dateString) ?? 
+                DateFormat('yyyy-MM-dd').tryParse(dateString) ??
+                DateFormat('dd/MM/yyyy').tryParse(dateString);
+    } catch (e) {
+      print('⚠️ Error parseando fecha en sorted cache: $dateString - $e');
+    }
+    
+    if (dateTime != null) {
+      _sortedDatesDateTime.add(dateTime);
+    }
+  }
+  
+  _sortedDatesDateTime.sort(); // NUEVO: Ordenar fechas
+  _dateTimeCacheValid = true; // NUEVO: Marcar cache como válido
+  
+  print('✅ Cache DateTime actualizado: ${_groupedEventsDateTime.keys.length} fechas');
+}
   
   // ============ MÉTODOS ESPECÍFICOS PARA CALENDARIO ============
 
