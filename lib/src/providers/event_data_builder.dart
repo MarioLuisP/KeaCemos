@@ -155,7 +155,7 @@ class EventDataBuilder {
       }
     }
     // LÍMITE SOLO PARA HOMEPAGE
-    return result.take(30).toList();
+    return result.take(80).toList();
   }
 
   // ============ MÉTODOS DE FORMATEO Y PRESENTACIÓN ============

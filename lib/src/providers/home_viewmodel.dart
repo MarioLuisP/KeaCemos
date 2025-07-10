@@ -31,9 +31,13 @@ class HomeViewModel with ChangeNotifier {
   List<Map<String, dynamic>> _processedEvents = [];
   Map<String, List<Map<String, dynamic>>> _groupedEvents = {};
   // NUEVO: Cache de datos convertidos a DateTime para optimización
-  Map<DateTime, List<Map<String, dynamic>>> _groupedEventsDateTime = {}; // NUEVO: Cache DateTime
+  Map<DateTime, List<Map<String, dynamic>>> _groupedEventsDateTime = {}; 
   List<DateTime> _sortedDatesDateTime = []; // NUEVO: Cache DateTime
   bool _dateTimeCacheValid = false; // NUEVO: Flag para invalidar cache
+
+  // NUEVO: Cache para flatItems (estructura plana optimizada para HomePage)
+  List<Map<String, dynamic>> _flatItemsCache = []; // NUEVO: Cache flatItems
+  bool _flatItemsCacheValid = false; // NUEVO: Flag para invalidar cache flatItems
 
   HomeViewModel() : _dataBuilder = EventDataBuilder(DateTime.now());
 // Variables para control de refresh
@@ -121,6 +125,7 @@ void _processEvents() {
   }
   // NUEVO: Invalidar cache DateTime cuando se procesan eventos
   _dateTimeCacheValid = false; // NUEVO: Cache debe actualizarse
+  _flatItemsCacheValid = false; // NUEVO: Invalidar cache flatItems también
   // ASEGURAR que siempre notifique
   notifyListeners();
 }
@@ -244,7 +249,48 @@ List<DateTime> getSortedDatesDateTime() {
   }
   return _sortedDatesDateTime;
 }
+/// NUEVO: Obtiene estructura plana optimizada para HomePage (cacheada)
+List<Map<String, dynamic>> getFlatItemsForHomePage() {
+  if (!_flatItemsCacheValid) { // NUEVO: Solo recalcula si cache inválido
+    _updateFlatItemsCache(); // NUEVO: Actualizar cache
+  }
+  return _flatItemsCache; // NUEVO: Retornar cache
+}
 
+/// NUEVO: Actualiza cache de flatItems (se ejecuta UNA sola vez)
+void _updateFlatItemsCache() {
+  print('🔄 Actualizando cache flatItems...'); // NUEVO: Debug
+  
+  _flatItemsCache = []; // NUEVO: Limpiar cache
+  
+  // NUEVO: Obtener datos ya optimizados (desde cache DateTime)
+  final groupedEvents = getGroupedEventsDateTime(); // NUEVO: Usar cache existente
+  final sortedDates = getSortedDatesDateTime(); // NUEVO: Usar cache existente
+  
+  // NUEVO: Pre-calcular estructura completa UNA sola vez
+  for (final date in sortedDates) { // NUEVO: Loop de construcción
+    final eventsOnDate = groupedEvents[date]!; // NUEVO: Eventos de la fecha
+    final dateString = DateFormat('yyyy-MM-dd').format(date); // NUEVO: Format UNA vez
+    final sectionTitle = getSectionTitle(dateString); // NUEVO: Título UNA vez
+    
+    // NUEVO: Agregar header con título pre-calculado
+    _flatItemsCache.add({
+      'type': 'header',
+      'title': sectionTitle,
+    });
+    
+    // NUEVO: Agregar eventos como metadata
+    for (final event in eventsOnDate) { // NUEVO: Loop eventos
+      _flatItemsCache.add({
+        'type': 'event',
+        'data': event,
+      });
+    }
+  }
+  
+  _flatItemsCacheValid = true; // NUEVO: Marcar cache como válido
+  print('✅ Cache flatItems actualizado: ${_flatItemsCache.length} items'); // NUEVO: Debug
+}
 /// NUEVO: Actualiza cache de DateTime (conversión una sola vez)
 void _updateDateTimeCache() {
   print('🔄 Actualizando cache DateTime...');

@@ -153,8 +153,8 @@ class _HomePageState extends State<HomePage>
 
     final displayedEvents = viewModel.getHomePageEvents();
     // CAMBIO: Usar métodos optimizados (sin conversión en build)
-    final groupedEvents = viewModel.getGroupedEventsDateTime(); // CAMBIO: Directo desde cache
-    final sortedDates = viewModel.getSortedDatesDateTime(); // CAMBIO: Directo desde cache
+   // final groupedEvents = viewModel.getGroupedEventsDateTime(); // CAMBIO: Directo desde cache
+   // final sortedDates = viewModel.getSortedDatesDateTime(); // CAMBIO: Directo desde cache
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
@@ -165,9 +165,9 @@ class _HomePageState extends State<HomePage>
           Expanded(
             child: _buildScrollableBody(
               viewModel: viewModel,
-              displayedEvents: displayedEvents,
-              groupedEvents: groupedEvents,
-              sortedDates: sortedDates,
+              displayedEvents: displayedEvents, // CAMBIO: Parámetro mantenido pero no usado
+              groupedEvents: {}, // NUEVO: Parámetro dummy, no se usa más
+              sortedDates: [], // NUEVO: Parámetro dummy, no se usa más
             ),
           ),
         ],
@@ -195,68 +195,48 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
-  //NUEVO METODO DE MOSTRAR 6
-  Widget _buildScrollableBody({
-    required HomeViewModel viewModel,
-    required List<dynamic> displayedEvents,
-    required Map<DateTime, List<dynamic>> groupedEvents,
-    required List<DateTime> sortedDates,
-  }) {
-    if (displayedEvents.isEmpty) {
-      return _buildEmptyState(viewModel);
-    }
+Widget _buildScrollableBody({
+  required HomeViewModel viewModel,
+  required List<dynamic> displayedEvents, // CAMBIO: Parámetro mantenido para compatibilidad
+  required Map<DateTime, List<dynamic>> groupedEvents, // CAMBIO: Parámetro mantenido para compatibilidad
+  required List<DateTime> sortedDates, // CAMBIO: Parámetro mantenido para compatibilidad
+}) {
+  // NUEVO: Obtener flatItems optimizados desde cache
+  final flatItems = viewModel.getFlatItemsForHomePage();
+  
+  if (flatItems.isEmpty) { // CAMBIO: Usar flatItems en lugar de displayedEvents
+    return _buildEmptyState(viewModel);
+  }
 
-    // NUEVO: Pre-calcular estructura plana (solo metadata, no widgets)
-    final List<Map<String, dynamic>> flatItems = []; // NUEVO: Lista plana de items
-    
-    for (final date in sortedDates) { // NUEVO: Construir estructura
-      final eventsOnDate = groupedEvents[date]!;
-      final sectionTitle = viewModel.getSectionTitle(DateFormat('yyyy-MM-dd').format(date));
-      
-      // NUEVO: Agregar header como metadata
-      flatItems.add({
-        'type': 'header',
-        'title': sectionTitle,
-      });
-      
-      // NUEVO: Agregar eventos como metadata
-      for (final event in eventsOnDate) {
-        flatItems.add({
-          'type': 'event',
-          'data': event,
-        });
-      }
-    }
-
-    return CustomScrollView( // CAMBIO: ListView → CustomScrollView
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(), // NUEVO: Elimina micro-interrupciones
-        ),
-      slivers: [ // NUEVO: Estructura con slivers
-        SliverPadding( // NUEVO: Padding como sliver
-          padding: EdgeInsets.only(top: 8.0),
-          sliver: SliverList( // NUEVO: Lista lazy
-            delegate: SliverChildBuilderDelegate(
-              (context, index) { // NUEVO: Builder que solo se ejecuta para items visibles
-                final item = flatItems[index];
-                
-                if (item['type'] == 'header') { // NUEVO: Construir header solo cuando es visible
-                  return _buildSectionHeader(item['title']);
-                } else { // NUEVO: Construir evento solo cuando es visible
-                  return EventCardWidget(
-                    event: item['data'],
-                    viewModel: viewModel,
-                    key: ValueKey(item['data']['id']),
-                  );
-                }
-              },
-              childCount: flatItems.length, // NUEVO: Cantidad total conocida
-            ),
+  return CustomScrollView( // CAMBIO: Mantener CustomScrollView
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(), // CAMBIO: Mantener physics optimizadas
+      ),
+    slivers: [ // CAMBIO: Mantener estructura con slivers
+      SliverPadding( // CAMBIO: Mantener padding como sliver
+        padding: EdgeInsets.only(top: 8.0),
+        sliver: SliverList( // CAMBIO: Mantener lista lazy
+          delegate: SliverChildBuilderDelegate(
+            (context, index) { // CAMBIO: Mantener builder lazy
+              final item = flatItems[index]; // NUEVO: Usar flatItems desde cache
+              
+              if (item['type'] == 'header') { // CAMBIO: Mantener lógica de header
+                return _buildSectionHeader(item['title']);
+              } else { // CAMBIO: Mantener lógica de evento
+                return EventCardWidget(
+                  event: item['data'],
+                  viewModel: viewModel,
+                  key: ValueKey(item['data']['id']),
+                );
+              }
+            },
+            childCount: flatItems.length, // NUEVO: Usar longitud de cache
           ),
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
   AppBar _buildAppBar() {
     return AppBar(

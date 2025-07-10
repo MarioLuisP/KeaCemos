@@ -41,7 +41,7 @@ final List<Map<String, dynamic>> events = [
     "type": "ninos",
     "code": "ninos_00003",
     "location": "Casa Grote",
-    "date": "2025-07-09T14:00",
+    "date": "2025-07-23T14:00",
     "price": "A la Gorra",
     "imageUrl":
         "https://misty-bread-5506.tester-passalia.workers.dev/ninos_00003.jpg",
