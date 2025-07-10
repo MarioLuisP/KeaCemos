@@ -123,9 +123,14 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
     }
 
     if (showNotifications) {
-      actions.add(const NotificationsBell());
+      actions.add(
+        Transform.translate(
+          offset: const Offset(-8.0, 0), // NUEVO: Mover hacia la izquierda sin afectar layout
+          child: const NotificationsBell(),
+        ),
+      );
     }
-
+    
     if (showUserAvatar) {
       actions.add(
         Padding(

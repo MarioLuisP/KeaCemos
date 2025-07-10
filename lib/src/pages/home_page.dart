@@ -243,7 +243,7 @@ Widget _buildScrollableBody({
 PreferredSizeWidget _buildAppBar() {
   return const MainAppBar(
     title: 'QuehaCeMos Córdoba',
-    showUserAvatar: false,        // SIN avatar = SIN Firebase
+    showUserAvatar: true,        // SIN avatar = SIN Firebase
     showNotifications: true,      // Campanita funciona
     showContactButton: true,      // Botón + funciona
   );

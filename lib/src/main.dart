@@ -7,14 +7,14 @@ import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/themes/themes.dart';
 import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
-import 'package:quehacemos_cba/src/providers/auth_provider.dart';
+import 'package:quehacemos_cba/src/providers/mock_auth_provider.dart';  // CAMBIO: MockAuthProvider en lugar de AuthProvider
 import 'package:quehacemos_cba/src/providers/notifications_provider.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeMessages('es');
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -43,8 +43,8 @@ class MyApp extends StatelessWidget {
           return viewModel;
         },
       ),
-      // NUEVO: Agregar AuthProvider
-      ChangeNotifierProvider(create: (context) => AuthProvider()),
+      // CAMBIO: MockAuthProvider en lugar de AuthProvider
+      ChangeNotifierProvider(create: (context) => MockAuthProvider()),
       // NUEVO: Agregar NotificationsProvider  
       ChangeNotifierProvider(create: (context) => NotificationsProvider()),
     ],
