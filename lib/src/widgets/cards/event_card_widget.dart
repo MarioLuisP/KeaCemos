@@ -8,9 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 
 class EventCardWidget extends StatelessWidget {
-  final Map<String, String> event;
+  final Map<String, dynamic> event; // CAMBIO: String → dynamic
   final HomeViewModel viewModel;
-  String get event_district => 'Centro';
   const EventCardWidget({
     super.key,
     required this.event,
@@ -135,7 +134,7 @@ class EventCardWidget extends StatelessWidget {
                           ),
                           Consumer<FavoritesProvider>(
                             builder: (context, favoritesProvider, child) {
-                              final isFavorite = favoritesProvider.isFavorite(eventId);
+                              final isFavorite = favoritesProvider.isFavorite(eventId.toString());
                               return IconButton(
                                 iconSize: 24,
                                 padding: EdgeInsets.zero,
@@ -144,7 +143,7 @@ class EventCardWidget extends StatelessWidget {
                                   isFavorite ? Icons.favorite : Icons.favorite_border,
                                   color: isFavorite ? Colors.red : textColor,
                                 ),
-                                onPressed: () => favoritesProvider.toggleFavorite(eventId),
+                                onPressed: () => favoritesProvider.toggleFavorite(eventId.toString()),
                               );
                             },
                           ),
@@ -173,7 +172,7 @@ class EventCardWidget extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
-                                  event_district ?? 'Sin distrito',
+                                  event['district'] ?? 'Sin distrito',
                                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     fontSize: 14,
                                     color: textColor.withOpacity(0.7),

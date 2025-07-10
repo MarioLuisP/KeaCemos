@@ -16,8 +16,8 @@ class EventDataBuilder {
   // ============ MÉTODOS PRINCIPALES (NUEVA API) ============
 
   /// Procesa eventos completos: filtra, ordena y agrupa (SIN DUPLICADOS)
-  Map<String, List<Map<String, String>>> processEventsComplete(
-    List<Map<String, String>> allEvents,
+  Map<String, List<Map<String, dynamic>>> processEventsComplete(
+    List<Map<String, dynamic>> allEvents,
     FilterCriteria criteria,
   ) {
     final cleanEvents = _removeDuplicates(allEvents);
@@ -26,8 +26,8 @@ class EventDataBuilder {
   }
 
   /// Procesa eventos para HomePage con límite inteligente (SIN DUPLICADOS)
-  List<Map<String, String>> processEventsForHomePage(
-    List<Map<String, String>> allEvents,
+  List<Map<String, dynamic>> processEventsForHomePage(
+    List<Map<String, dynamic>> allEvents,
     FilterCriteria criteria,
   ) {
     final cleanEvents = _removeDuplicates(allEvents);
@@ -38,10 +38,10 @@ class EventDataBuilder {
   // ============ MÉTODOS DE AGRUPACIÓN Y ORGANIZACIÓN ============
 
   /// Agrupa eventos por fecha
-  Map<String, List<Map<String, String>>> groupEventsByDate(
-    List<Map<String, String>> events,
+  Map<String, List<Map<String, dynamic>>> groupEventsByDate(
+    List<Map<String, dynamic>> events,
   ) {
-    final groupedEvents = <String, List<Map<String, String>>>{};
+    final groupedEvents = <String, List<Map<String, dynamic>>>{};
 
     for (var event in events) {
       final date = event['date']!;
@@ -56,9 +56,10 @@ class EventDataBuilder {
 
     return groupedEvents;
   }
+
   /// Procesa eventos para Calendario SIN LÍMITES (SIN DUPLICADOS)
-  List<Map<String, String>> processEventsForCalendar(
-    List<Map<String, String>> allEvents,
+  List<Map<String, dynamic>> processEventsForCalendar(
+    List<Map<String, dynamic>> allEvents,
     FilterCriteria criteria,
   ) {
     final cleanEvents = _removeDuplicates(allEvents);
@@ -66,8 +67,8 @@ class EventDataBuilder {
   }
 
   /// Procesa eventos completos para vistas que necesitan agrupación (SIN DUPLICADOS)
-  Map<String, List<Map<String, String>>> processEventsCompleteForCalendar(
-    List<Map<String, String>> allEvents,
+  Map<String, List<Map<String, dynamic>>> processEventsCompleteForCalendar(
+    List<Map<String, dynamic>> allEvents,
     FilterCriteria criteria,
   ) {
     final processedEvents = processEventsForCalendar(allEvents, criteria);
@@ -76,7 +77,7 @@ class EventDataBuilder {
 
   /// Obtiene fechas ordenadas con prioridad para hoy y mañana
   List<String> getSortedDates(
-    Map<String, List<Map<String, String>>> groupedEvents,
+    Map<String, List<Map<String, dynamic>>> groupedEvents,
   ) {
     final todayString = DateFormat('yyyy-MM-dd').format(_currentDate);
     final tomorrowString = DateFormat(
@@ -103,8 +104,8 @@ class EventDataBuilder {
   }
 
   /// Obtiene eventos limitados para HomePage (SIN DUPLICADOS)
-  List<Map<String, String>> getHomePageEvents(
-    List<Map<String, String>> events,
+  List<Map<String, dynamic>> getHomePageEvents(
+    List<Map<String, dynamic>> events,
     bool hasSelectedDate,
   ) {
     // Si hay fecha seleccionada, mostrar todos los eventos de ese día
@@ -117,12 +118,12 @@ class EventDataBuilder {
 
     // USAR SETS para evitar duplicados durante la clasificación temporal
     final processedEventIds = <String>{};
-    final result = <Map<String, String>>[];
+    final result = <Map<String, dynamic>>[];
 
     // PASO 1: Eventos de hoy (prioridad más alta)
     for (final event in events) {
       if (event['date']!.startsWith(todayString)) {
-        final eventId = event['id'] ?? event['title'] ?? '';
+        final eventId = event['id']?.toString() ?? event['title'] ?? '';
         if (eventId.isNotEmpty && !processedEventIds.contains(eventId)) {
           processedEventIds.add(eventId);
           result.add(event);
@@ -133,7 +134,7 @@ class EventDataBuilder {
     // PASO 2: Eventos de mañana
     for (final event in events) {
       if (event['date']!.startsWith(tomorrowString)) {
-        final eventId = event['id'] ?? event['title'] ?? '';
+        final eventId = event['id']?.toString() ?? event['title'] ?? '';
         if (eventId.isNotEmpty && !processedEventIds.contains(eventId)) {
           processedEventIds.add(eventId);
           result.add(event);
@@ -141,12 +142,12 @@ class EventDataBuilder {
       }
     }
 
-      // PASO 3: Eventos futuros (solo posteriores a mañana)
+    // PASO 3: Eventos futuros (solo posteriores a mañana)
     final tomorrowDate = _currentDate.add(const Duration(days: 1));
     for (final event in events) {
       final eventDate = _parseDate(event['date']!);
       if (eventDate.isAfter(tomorrowDate)) {
-        final eventId = event['id'] ?? event['title'] ?? '';
+        final eventId = event['id']?.toString() ?? event['title'] ?? '';
         if (eventId.isNotEmpty && !processedEventIds.contains(eventId)) {
           processedEventIds.add(eventId);
           result.add(event);
@@ -301,7 +302,7 @@ class EventDataBuilder {
   // ============ MÉTODOS DE ANÁLISIS Y ESTADÍSTICAS ============
 
   /// Obtiene estadísticas de los eventos filtrados
-  Map<String, dynamic> getEventStatistics(List<Map<String, String>> events) {
+  Map<String, dynamic> getEventStatistics(List<Map<String, dynamic>> events) {
     final stats = <String, dynamic>{};
 
     // Conteo por categorías
@@ -337,14 +338,14 @@ class EventDataBuilder {
   // ============ MÉTODOS PRIVADOS ============
 
   /// Remueve eventos duplicados basándose en su ID
-  List<Map<String, String>> _removeDuplicates(
-    List<Map<String, String>> events,
+  List<Map<String, dynamic>> _removeDuplicates(
+    List<Map<String, dynamic>> events,
   ) {
     final seen = <String>{};
-    final deduplicated = <Map<String, String>>[];
+    final deduplicated = <Map<String, dynamic>>[];
 
     for (final event in events) {
-      final eventId = event['id'] ?? event['title'] ?? '';
+      final eventId = event['id']?.toString() ?? event['title'] ?? '';
       if (eventId.isNotEmpty && !seen.contains(eventId)) {
         seen.add(eventId);
         deduplicated.add(event);

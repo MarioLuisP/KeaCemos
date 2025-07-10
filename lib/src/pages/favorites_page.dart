@@ -22,7 +22,7 @@ class FavoritesPage extends StatelessWidget {
             ),
 
 
-      body: FutureBuilder<List<Map<String, String>>>(
+      body: FutureBuilder<List<Map<String, dynamic>>>( // CAMBIO: String → dynamic
         future: EventService().getAllEvents(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {

@@ -20,7 +20,7 @@ class HomeViewModel with ChangeNotifier {
 
   // Estado actual
   EventsLoadingState _state = EventsLoadingState.idle;
-  List<Map<String, String>> _allEvents = [];
+  List<Map<String, dynamic>> _allEvents = [];
   FilterCriteria _filterCriteria = FilterCriteria.empty;
   String? _errorMessage;
 
@@ -28,10 +28,10 @@ class HomeViewModel with ChangeNotifier {
   final DateTime _devNow = DateTime(2025, 6, 4);
 
   // Eventos procesados (cache)
-  List<Map<String, String>> _processedEvents = [];
-  Map<String, List<Map<String, String>>> _groupedEvents = {};
+  List<Map<String, dynamic>> _processedEvents = [];
+  Map<String, List<Map<String, dynamic>>> _groupedEvents = {};
   // NUEVO: Cache de datos convertidos a DateTime para optimización
-  Map<DateTime, List<Map<String, String>>> _groupedEventsDateTime = {}; // NUEVO: Cache DateTime
+  Map<DateTime, List<Map<String, dynamic>>> _groupedEventsDateTime = {}; // NUEVO: Cache DateTime
   List<DateTime> _sortedDatesDateTime = []; // NUEVO: Cache DateTime
   bool _dateTimeCacheValid = false; // NUEVO: Flag para invalidar cache
 
@@ -50,8 +50,8 @@ class HomeViewModel with ChangeNotifier {
   DateTime get currentDate => _devNow;
   
   // Getters de datos procesados
-  List<Map<String, String>> get filteredEvents => _processedEvents;
-  Map<String, List<Map<String, String>>> get groupedEvents => _groupedEvents;
+  List<Map<String, dynamic>> get filteredEvents => _processedEvents;
+  Map<String, List<Map<String, dynamic>>> get groupedEvents => _groupedEvents;
   
   // Getters derivados de FilterCriteria
   DateTime? get selectedDate => _filterCriteria.selectedDate;
@@ -75,7 +75,7 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final List<Map<String, String>> events = await _retryOperation(() async {
+      final List<Map<String, dynamic>> events = await _retryOperation(() async {
         if (_filterCriteria.selectedDate != null) {
           return await _eventService
               .getEventsForDay(_filterCriteria.selectedDate!)
@@ -97,7 +97,7 @@ class HomeViewModel with ChangeNotifier {
 // ============ MÉTODOS DE FAVORITOS ============
 
   /// Toggle favorito de un evento
-  void toggleFavorite(String eventId, FavoritesProvider favoritesProvider) {
+  void toggleFavorite(dynamic eventId, FavoritesProvider favoritesProvider) {
     favoritesProvider.toggleFavorite(eventId);
     print('🤍 Toggle favorito: $eventId');
   }
@@ -230,7 +230,7 @@ Future<void> clearSelectedDate() async {
     return _dataBuilder.getSortedDates(_groupedEvents);
   }
 /// NUEVO: Obtiene eventos agrupados como DateTime (optimizado para HomePage)
-Map<DateTime, List<Map<String, String>>> getGroupedEventsDateTime() {
+Map<DateTime, List<Map<String, dynamic>>> getGroupedEventsDateTime() {
   if (!_dateTimeCacheValid) { // NUEVO: Solo convierte si el cache no es válido
     _updateDateTimeCache();
   }
@@ -300,19 +300,19 @@ void _updateDateTimeCache() {
   // ============ MÉTODOS ESPECÍFICOS PARA CALENDARIO ============
 
 /// Obtiene TODOS los eventos para calendario (sin límites)
-List<Map<String, String>> getCalendarEvents() {
+List<Map<String, dynamic>> getCalendarEvents() {
   return _dataBuilder.processEventsForCalendar(_allEvents, _filterCriteria);
 }
 /// Obtiene TODOS los eventos sin filtros para favoritos
-List<Map<String, String>> get allEvents => _allEvents;
+List<Map<String, dynamic>> get allEvents => _allEvents;
 
 /// Obtiene eventos agrupados para calendario (sin límites)
-Map<String, List<Map<String, String>>> getCalendarGroupedEvents() {
+Map<String, List<Map<String, dynamic>>> getCalendarGroupedEvents() {
   return _dataBuilder.processEventsCompleteForCalendar(_allEvents, _filterCriteria);
 }
 
 /// Obtiene eventos de un mes específico para calendario
-  Future<List<Map<String, String>>> getEventsForMonth(DateTime month) async {
+  Future<List<Map<String, dynamic>>> getEventsForMonth(DateTime month) async {
     try {
       print('📅 Cargando eventos para: ${month.month}/${month.year}');
       
@@ -363,7 +363,7 @@ Map<String, List<Map<String, String>>> getCalendarGroupedEvents() {
   }
 
 /// Obtiene eventos de un día específico para calendario
-  List<Map<String, String>> getEventsForDay(DateTime day) {
+  List<Map<String, dynamic>> getEventsForDay(DateTime day) {
     final dayString = DateFormat('yyyy-MM-dd').format(day);
     
     // Usar los eventos ya cacheados si es el mes actual
@@ -376,12 +376,12 @@ Map<String, List<Map<String, String>>> getCalendarGroupedEvents() {
 // ============ COMPATIBILIDAD - MÉTODOS EXISTENTES PARA HOMEPAGE ============
 
 /// Obtiene eventos limitados para HomePage (mantiene límite de 30)
-List<Map<String, String>> getHomePageEvents() {
+List<Map<String, dynamic>> getHomePageEvents() {
   return _processedEvents; // Ya tiene límite aplicado
 }
 
 /// Obtiene eventos agrupados por fecha (mantiene límite)
-Map<String, List<Map<String, String>>> getGroupedEvents() {
+Map<String, List<Map<String, dynamic>>> getGroupedEvents() {
   return _groupedEvents; // Ya tiene límite aplicado
 }
 

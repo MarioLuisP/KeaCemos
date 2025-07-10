@@ -11,7 +11,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 
 class EventDetailModal {
-  static void show(BuildContext context, Map<String, String> event, HomeViewModel viewModel) {
+  static void show(BuildContext context, Map<String, dynamic> event, HomeViewModel viewModel) { // CAMBIO: String → dynamic
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -45,7 +45,7 @@ class EventDetailModal {
 
 
 class EventDetailContent extends StatefulWidget {
-  final Map<String, String> event;
+  final Map<String, dynamic> event; // CAMBIO: String → dynamic
   final HomeViewModel viewModel;
   final ScrollController scrollController;
 
@@ -68,16 +68,14 @@ class _EventDetailContentState extends State<EventDetailContent> {
   late Color darkCardColor;
   late String truncatedDescription;
 
-  // Datos hardcodeados - reemplazar cuando estén disponibles
-  String get _imageUrl => 'https://misty-bread-5506.tester-passalia.workers.dev/cine_0001.jpg';
-  String get _description => 'Una visita inesperada. Una amistad que lo cambia todo. Una mañana cualquiera, en la casa de Flora, aparece un visitante muy poco común: un Aguará guazú. Alto, peludo, misterioso. Nadie sabe muy bien de dónde vino ni por qué eligió ese lugar… pero desde ese momento, todo empieza a transformarse. Junto a su mamá, su abuela y su tía, Flora se embarca en una serie de grandes aventuras para entender a este nuevo amigo, cuidarlo y, quizás, ayudarlo a encontrar su camino de regreso. Con humor, ternura y poesía, esta obra invita a mirar lo desconocido con otros ojos, y a descubrir que, aunque cada uno siga su propio camino, siempre hay una manera de encontrarse bajo las mismas estrellas.';
-  String get _address => 'Pasaje A. Perez 11';
-  String get _district => 'Centro';
-  String get _websiteUrl => 'https://www.instagram.com/espacioblick/?hl=es';
-  double get _lat => -31.405408632866454;
-  double get _lng => -64.17766983175501;
-
-  @override
+  // Variables dinámicas del JSON
+  String get _imageUrl => widget.event['imageUrl']; // CAMBIO: Dinámico directo
+  String get _description => widget.event['description']; // CAMBIO: Dinámico directo
+  String get _address => widget.event['address']; // CAMBIO: Dinámico directo
+  String get _district => widget.event['district']; // CAMBIO: Dinámico directo
+  String get _websiteUrl => widget.event['websiteUrl']; // CAMBIO: Dinámico directo
+  double get _lat => (widget.event['lat'] as num).toDouble(); // CAMBIO: Dinámico directo
+  double get _lng => (widget.event['lng'] as num).toDouble(); // CAMBIO: Dinámico directo  @override
   void initState() {
     super.initState();
     // Calculamos los valores una sola vez al inicializar
@@ -241,7 +239,7 @@ void _openImageFullscreen(BuildContext context) {
                       right: 24,
                       child: Consumer<FavoritesProvider>(
                         builder: (context, favoritesProvider, child) {
-                          final isFavorite = favoritesProvider.isFavorite(widget.event['id']!);
+                          final isFavorite = favoritesProvider.isFavorite(widget.event['id']!.toString());
                           return Container(
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(0.3),
@@ -253,7 +251,7 @@ void _openImageFullscreen(BuildContext context) {
                                 color: isFavorite ? Colors.red : Colors.white,
                                 size: 28,
                               ),
-                              onPressed: () => favoritesProvider.toggleFavorite(widget.event['id']!),
+                              onPressed: () => favoritesProvider.toggleFavorite(widget.event['id']!.toString()),
                             ),
                           );
                         },
@@ -387,7 +385,7 @@ void _openImageFullscreen(BuildContext context) {
                           )
                         ),
                         TextSpan(
-                          text: '\n${widget.event['district'] ?? _district}', 
+                          text: '\n${widget.event['district']}',
                           style: TextStyle(
                             fontSize: 18, 
                             color: Theme.of(context).colorScheme.onSurface // NUEVO: Respeta theme

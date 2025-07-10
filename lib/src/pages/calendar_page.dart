@@ -18,7 +18,7 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   late HomeViewModel _homeViewModel;
-  final Map<DateTime, List<Map<String, String>>> _eventCache = {};
+  final Map<DateTime, List<Map<String, dynamic>>> _eventCache = {}; 
 
   @override
   void initState() {
@@ -46,7 +46,7 @@ class _CalendarPageState extends State<CalendarPage> {
     if (mounted) setState(() {});
   }
 
-  List<Map<String, String>> _getEventsForDay(DateTime day) {
+  List<Map<String, dynamic>> _getEventsForDay(DateTime day) { //
     final cacheKey = DateTime(day.year, day.month, day.day);
     return _eventCache[cacheKey] ?? [];
   }

@@ -1,254 +1,109 @@
-final List<Map<String, String>> events = [
- {
-   "id": "arte_001",
-   "title": "Concierto de Jazz",
-   "date": "2025-06-14T20:00",
-   "location": "Museo L",
-   "type": "Arte"
- },
- {
-   "id": "arte_002",
-   "title": "Obra Hamlet",
-   "date": "2025-06-27T20:00",
-   "location": "Museo Caraffa",
-   "type": "Arte"
- },
- {
-   "id": "calle_003",
-   "title": "Festival Cine Independiente",
-   "date": "2025-06-21T20:00",
-   "location": "Plaza San Martín",
-   "type": "Calle"
- },
- {
-   "id": "calle_004",
-   "title": "Feria Brotes",
-   "date": "2025-07-05T20:00",
-   "location": "Plaza España",
-   "type": "Calle"
- },
- {
-   "id": "cine_005",
-   "title": "Muestra Arte Estudiantil",
-   "date": "2025-06-05T20:00",
-   "location": "Cine C",
-   "type": "Cine"
- },
- {
-   "id": "cine_006",
-   "title": "Expo Visuales UNC",
-   "date": "2025-06-08T20:00",
-   "location": "Sala 3 INCAA",
-   "type": "Cine"
- },
- {
-   "id": "cine_007",
-   "title": "Intervención Callejera",
-   "date": "2025-06-13T20:00",
-   "location": "Cineclub Municipal",
-   "type": "Cine"
- },
- {
-   "id": "cine_008",
-   "title": "Teatro Callejero UNC",
-   "date": "2025-06-22T20:00",
-   "location": "Cine C",
-   "type": "Cine"
- },
- {
-   "id": "cine_009",
-   "title": "Maratón Cortos",
-   "date": "2025-06-29T20:00",
-   "location": "Centro Cultural Córdoba",
-   "type": "Cine"
- },
- {
-   "id": "cursos_010",
-   "title": "Documental Córdoba",
-   "date": "2025-06-10T20:00",
-   "location": "Espacio Cultural Norte",
-   "type": "Cursos"
- },
- {
-   "id": "cursos_011",
-   "title": "Cine Debate Ambiental",
-   "date": "2025-06-18T20:00",
-   "location": "FotoEspacio CBA",
-   "type": "Cursos"
- },
- {
-   "id": "cursos_012",
-   "title": "Cine Club El Rayo",
-   "date": "2025-06-30T20:00",
-   "location": "Biblioteca Rivadavia",
-   "type": "Cursos"
- },
- {
-   "id": "danza_013",
-   "title": "Proyección Al Aire Libre",
-   "date": "2025-06-14T20:00",
-   "location": "Teatro del Libertador",
-   "type": "Danza"
- },
- {
-   "id": "danza_014",
-   "title": "Cine Expandido",
-   "date": "2025-06-28T19:00",
-   "location": "Espacio Cultural Urbano",
-   "type": "Danza"
- },
- {
-   "id": "ferias_015",
-   "title": "Charla de Guión",
-   "date": "2025-06-08T20:00",
-   "location": "Paseo del Buen Pastor",
-   "type": "Ferias"
- },
- {
-   "id": "ferias_016",
-   "title": "Taller Crítica de Cine",
-   "date": "2025-06-16T20:00",
-   "location": "Patio Olmos",
-   "type": "Ferias"
- },
- {
-   "id": "ferias_017",
-   "title": "Laboratorio Cine Experimental",
-   "date": "2025-06-14T20:00",
-   "location": "Ciudad Universitaria",
-   "type": "Ferias"
- },
- {
-   "id": "mic_018",
-   "title": "Clase Abierta Danza",
-   "date": "2025-06-07T20:00",
-   "location": "Bar Cultural X",
-   "type": "Mic"
- },
- {
-   "id": "mic_019",
-   "title": "Muestra Coreográfica",
-   "date": "2025-06-20T20:00",
-   "location": "Biblioteca Córdoba",
-   "type": "Mic"
- },
- {
-   "id": "musica_020",
-   "title": "Feria Editorial Local",
-   "date": "2025-06-03T20:00",
-   "location": "Teatro A",
-   "type": "musica"
- },
- {
-   "id": "musica_021",
-   "title": "Feria Brotes",
-   "date": "2025-06-06T20:00",
-   "location": "Club del Arte",
-   "type": "musica"
- },
- {
-   "id": "musica_022",
-   "title": "Feria Intercultural",
-   "date": "2025-06-15T20:00",
-   "location": "Parque Sarmiento",
-   "type": "musica"
- },
- {
-   "id": "musica_023",
-   "title": "Micrófono Abierto",
-   "date": "2025-06-28T20:00",
-   "location": "Teatro del Libertador",
-   "type": "musica"
- },
- {
-   "id": "musica_024",
-   "title": "Poesía Nocturna",
-   "date": "2025-07-04T20:00",
-   "location": "Espacio 75",
-   "type": "musica"
- },
- {
-   "id": "ninos_025",
-   "title": "Recital Plaza",
-   "date": "2025-06-09T17:00",
-   "location": "Teatro Pequeños Sueños",
-   "type": "ninos"
- },
- {
-   "id": "ninos_026",
-   "title": "Concierto Banda Municipal",
-   "date": "2025-06-15T16:00",
-   "location": "Centro Cultural Infantil",
-   "type": "ninos"
- },
- {
-   "id": "ninos_027",
-   "title": "Jam de Improvisación",
-   "date": "2025-06-22T11:00",
-   "location": "Parque de las Infancias",
-   "type": "ninos"
- },
- {
-   "id": "redes_028",
-   "title": "Festival Sonoro",
-   "date": "2025-06-23T20:00",
-   "location": "Instagram Live",
-   "type": "Redes"
- },
- {
-   "id": "redes_029",
-   "title": "Noche Electrónica",
-   "date": "2025-06-24T20:00",
-   "location": "Espacio Digital",
-   "type": "Redes"
- },
- {
-   "id": "standup_030",
-   "title": "Títeres para Niñes",
-   "date": "2025-06-05T20:00",
-   "location": "Café Cultural V",
-   "type": "StandUp"
- },
- {
-   "id": "standup_031",
-   "title": "Cuentacuentos Musicales",
-   "date": "2025-06-21T20:00",
-   "location": "Café 1984",
-   "type": "StandUp"
- },
- {
-   "id": "standup_032",
-   "title": "Obra Infantil: Circo",
-   "date": "2025-07-04T20:00",
-   "location": "Bar El Subsuelo",
-   "type": "StandUp"
- },
- {
-   "id": "teatro_033",
-   "title": "Red Federal de Cultura",
-   "date": "2025-06-04T20:00",
-   "location": "Teatro Real",
-   "type": "Teatro"
- },
- {
-   "id": "teatro_034",
-   "title": "Presentación de Proyecto",
-   "date": "2025-06-12T20:00",
-   "location": "Teatro La Calle",
-   "type": "Teatro"
- },
- {
-   "id": "teatro_035",
-   "title": "Standup Juan Pérez",
-   "date": "2025-06-19T20:00",
-   "location": "La Luna Espacio Cultural",
-   "type": "Teatro"
- },
- {
-   "id": "teatro_036",
-   "title": "Monólogo La Tía Marta",
-   "date": "2025-07-03T20:00",
-   "location": "Teatro Breve",
-   "type": "Teatro"
- }
+final List<Map<String, dynamic>> events = [
+  {
+    "id": 1,
+    "title": "Comentario del Archivo: \"frontend Module For Save_edit Funct",
+    "type": "standup",
+    "code": "standup_00001",
+    "location": "Atenas Estadio",
+    "date": "2025-07-11T20:00",
+    "price": "Libre y Gratuita",
+    "imageUrl":
+        "https://misty-bread-5506.tester-passalia.workers.dev/cine_0004.jpg",
+    "description":
+        "El director del espacio declarado patrimonio de la humanidad por la Unesco y tres empresarios están acusados tras la investigación federal. La construcción de una cancha de fútbol también figura en la causa.",
+    "address": "Alejandro Aguado 687",
+    "district": "Gral Paz",
+    "websiteUrl": "https://www.estadioatenas.com",
+    "lat": -31.39636078064314,
+    "lng": -64.17225774519973,
+  },
+  {
+    "id": 2,
+    "title": "Estados Unidos",
+    "type": "standup",
+    "code": "standup_00002",
+    "location": "Atenas Estadio",
+    "date": "2025-07-26T16:00",
+    "price": "\$ 58.000",
+    "imageUrl":
+        "https://misty-bread-5506.tester-passalia.workers.dev/teatro_0001.jpg",
+    "description":
+        "La Estancia Jesuítica de Jesús María, un predio de gran valor patrimonial y cultural, fue escenario de una fiesta electrónica que atraajo a cerca de dos mil personas, lo que desencadenó una investigación en el fuero federal. Entre los imputados se encuentran Carlos Ferreyra, director del espacio, y tres empresarios de la zona.\n\n\"Lo que estamos investigando es la organización de un evento en un lugar protegido por una competencia especial de la Secretaría de Cultura de la Nación, que había sido solicitada y negada la autorización para realizar este tipo de eventos\", expresó el fiscal Maximiliano Hairabedian.",
+    "address": "Alejandro Aguado 687",
+    "district": "Gral Paz",
+    "websiteUrl": "https://www.estadioatenas.com",
+    "lat": -31.39636078064314,
+    "lng": -64.17225774519973,
+  },
+  {
+    "id": 3,
+    "title": "Proyecto Carayá: Un Tesoro para Visitar en Vacaciones",
+    "type": "ninos",
+    "code": "ninos_00003",
+    "location": "Casa Grote",
+    "date": "2025-07-09T14:00",
+    "price": "A la Gorra",
+    "imageUrl":
+        "https://misty-bread-5506.tester-passalia.workers.dev/ninos_00003.jpg",
+    "description": "Proyecto Carayá: un tesoro para visitar en vacaciones",
+    "address": "Padre F. Grote 1080",
+    "district": "Alta Córdoba",
+    "websiteUrl": "https://www.estadioatenas.com",
+    "lat": -31.39319638828705,
+    "lng": -64.16783225689021,
+  },
+  {
+    "id": 4,
+    "title": "fiesta latina",
+    "type": "teatro",
+    "code": "teatro_00004",
+    "location": "Atenas Estadio",
+    "date": "2025-07-19T23:45",
+    "price": "\$ 14.000",
+    "imageUrl":
+        "https://misty-bread-5506.tester-passalia.workers.dev/teatro_0002.jpg",
+    "description":
+        "Pese a contar con habilitaciones municipales, personal policial asignado y servicios de emergencias disponibles, la denuncia apunta la intervención del sitio declarado patrimonio de la humanidad por la Unesco en el 2000 sin autorización a nivel nacional.",
+    "address": "Alejandro Aguado 687",
+    "district": "Gral Paz",
+    "websiteUrl": "https://990arteclub.com",
+    "lat": -31.39636078064314,
+    "lng": -64.17225774519973,
+  },
+  {
+    "id": 5,
+    "title": "Feria piojo",
+    "type": "ferias",
+    "code": "ferias_00005",
+    "location": "Centro Cultural La Piojera",
+    "date": "2025-07-19T20:00",
+    "price": "Libre y Gratuita",
+    "imageUrl":
+        "https://misty-bread-5506.tester-passalia.workers.dev/teatro_0007.jpg",
+    "description":
+        "Acá el problema no es la realización de una fiesta sino hacerla en un lugar que es patrimonio de la humanidad, que requiere cuidados especiales y permiso especiales para cualquier intervención que pueda afectarlo\", dijo el fiscal federal a cargo de la investigación.",
+    "address": "Av. Colón 1559",
+    "district": "Alberdi",
+    "websiteUrl": "https://cultura.cordoba.gob.ar/centro-cultural-la-piojera",
+    "lat": -31.40740975245425,
+    "lng": -64.20402027408333,
+  },
+  {
+    "id": 6,
+    "title": "fiesta latina",
+    "type": "arte",
+    "code": "arte_00006",
+    "location": "Atenas Estadio",
+    "date": "2025-08-16T23:45",
+    "price": "\$ 14.000",
+    "imageUrl":
+        "https://misty-bread-5506.tester-passalia.workers.dev/teatro_0002.jpg",
+    "description":
+        "Pese a contar con habilitaciones municipales, personal policial asignado y servicios de emergencias disponibles, la denuncia apunta la intervención del sitio declarado patrimonio de la humanidad por la Unesco en el 2000 sin autorización a nivel nacional.",
+    "address": "Alejandro Aguado 687",
+    "district": "Gral Paz",
+    "websiteUrl": "https://990arteclub.com",
+    "lat": -31.39636078064314,
+    "lng": -64.17225774519973,
+  },
 ];

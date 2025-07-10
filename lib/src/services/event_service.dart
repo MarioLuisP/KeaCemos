@@ -5,7 +5,7 @@ class EventService {
   const EventService(); // Para evitar instancias innecesarias
 
   // Obtener eventos para una fecha específica
-  Future<List<Map<String, String>>> getEventsForDay(DateTime day) async {
+  Future<List<Map<String, dynamic>>> getEventsForDay(DateTime day) async {
     final dateString = DateFormat('yyyy-MM-dd').format(day);
     return events
         .where((event) => event['date']?.startsWith(dateString) ?? false)
@@ -15,12 +15,12 @@ class EventService {
   }
 
   // Obtener todos los eventos
-  Future<List<Map<String, String>>> getAllEvents() async {
+  Future<List<Map<String, dynamic>>> getAllEvents() async {
     return events.toList().take(1000).toList();
   }
 
   // Filtrar por categoría (para Prompt 4 y chips)
-  Future<List<Map<String, String>>> getEventsByCategory(String category) async {
+  Future<List<Map<String, dynamic>>> getEventsByCategory(String category) async {
     final lowerCategory = category.toLowerCase();
     return events
         .where((event) {
@@ -33,7 +33,7 @@ class EventService {
   }
 
   // Buscar por palabra clave (para 🔍 Explorar)
-  Future<List<Map<String, String>>> searchEvents(String keyword) async {
+  Future<List<Map<String, dynamic>>> searchEvents(String keyword) async {
     final lowerKeyword = keyword.toLowerCase();
     return events
         .where((event) {

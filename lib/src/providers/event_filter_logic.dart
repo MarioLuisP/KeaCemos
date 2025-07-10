@@ -9,8 +9,8 @@ class EventFilterLogic {
   final DateTime _currentDate = DateTime(2025, 6, 4); // Usar la misma fecha que HomeViewModel
   
   /// Método principal: aplica todos los filtros según criterios
-  List<Map<String, String>> applyFilters(
-    List<Map<String, String>> events,
+  List<Map<String, dynamic>> applyFilters(
+    List<Map<String, dynamic>> events,
     FilterCriteria criteria,
   ) {
     if (criteria.isEmpty) {
@@ -52,8 +52,8 @@ class EventFilterLogic {
   }
   
   /// Ordena eventos por fecha, luego por level (pago por pauta), luego por tipo
-  List<Map<String, String>> sortEvents(List<Map<String, String>> events) {
-    final sortedEvents = List<Map<String, String>>.from(events);
+  List<Map<String, dynamic>> sortEvents(List<Map<String, dynamic>> events) {
+    final sortedEvents = List<Map<String, dynamic>>.from(events);
     
     sortedEvents.sort((a, b) {
       // 1. Primero por fecha
@@ -78,8 +78,8 @@ class EventFilterLogic {
   }
   
   /// Aplica filtros y ordenamiento en un solo paso
-  List<Map<String, String>> processEvents(
-    List<Map<String, String>> events,
+  List<Map<String, dynamic>> processEvents(
+    List<Map<String, dynamic>> events,
     FilterCriteria criteria,
   ) {
     print('🔄 Procesando ${events.length} eventos con criterios: ${criteria.toString()}');
@@ -91,7 +91,7 @@ class EventFilterLogic {
   // ============ NUEVOS MÉTODOS PARA FILTRO DE EVENTOS PASADOS ============
   
   /// 🔥 NUEVO: Filtra eventos anteriores a hoy
-  List<Map<String, String>> _filterPastEvents(List<Map<String, String>> events) {
+  List<Map<String, dynamic>> _filterPastEvents(List<Map<String, dynamic>> events) {
     final todayStart = DateTime(_currentDate.year, _currentDate.month, _currentDate.day);
     
     final filteredEvents = events.where((event) {
@@ -119,7 +119,7 @@ class EventFilterLogic {
   }
   
   /// 🔥 NUEVO: Método público para filtrar eventos pasados (útil para testing)
-  List<Map<String, String>> filterPastEvents(List<Map<String, String>> events) {
+  List<Map<String, dynamic>> filterPastEvents(List<Map<String, dynamic>> events) {
     return _filterPastEvents(events);
   }
   
@@ -127,8 +127,8 @@ class EventFilterLogic {
   
   /// Método legacy - usar applyFilters() con FilterCriteria.search()
   @Deprecated('Usar applyFilters() con FilterCriteria en su lugar')
-  List<Map<String, String>> applySearchFilter(
-    List<Map<String, String>> events,
+  List<Map<String, dynamic>> applySearchFilter(
+    List<Map<String, dynamic>> events,
     String searchQuery,
   ) {
     return _applySearchFilter(events, searchQuery);
@@ -136,8 +136,8 @@ class EventFilterLogic {
 
   /// Método legacy - usar applyFilters() con FilterCriteria.categories()
   @Deprecated('Usar applyFilters() con FilterCriteria en su lugar')
-  List<Map<String, String>> applyCategoryFilter(
-    List<Map<String, String>> events,
+  List<Map<String, dynamic>> applyCategoryFilter(
+    List<Map<String, dynamic>> events,
     Set<String> activeCategories,
   ) {
     return _applyCategoryFilter(events, activeCategories);
@@ -145,8 +145,8 @@ class EventFilterLogic {
 
   /// Método legacy - usar applyFilters() directamente
   @Deprecated('Usar applyFilters() con FilterCriteria en su lugar')
-  List<Map<String, String>> applyAllFilters(
-    List<Map<String, String>> events,
+  List<Map<String, dynamic>> applyAllFilters(
+    List<Map<String, dynamic>> events,
     Set<String> activeCategories,
     String searchQuery,
   ) {
@@ -159,13 +159,13 @@ class EventFilterLogic {
 
   /// Getter legacy - usar CategoryConstants.uiToBackend
   @Deprecated('Usar CategoryConstants.uiToBackend en su lugar')
-  static Map<String, String> get categoryMapping => CategoryConstants.uiToBackend;
+  static Map<String, dynamic> get categoryMapping => CategoryConstants.uiToBackend;
   
   // ============ MÉTODOS PRIVADOS ============
   
   /// Filtro interno de búsqueda por texto
-  List<Map<String, String>> _applySearchFilter(
-    List<Map<String, String>> events,
+  List<Map<String, dynamic>> _applySearchFilter(
+    List<Map<String, dynamic>> events,
     String searchQuery,
   ) {
     if (searchQuery.isEmpty) return events;
@@ -179,8 +179,8 @@ class EventFilterLogic {
   }
 
   /// Filtro interno de categorías
-  List<Map<String, String>> _applyCategoryFilter(
-    List<Map<String, String>> events,
+  List<Map<String, dynamic>> _applyCategoryFilter(
+    List<Map<String, dynamic>> events,
     Set<String> activeCategories,
   ) {
     if (activeCategories.isEmpty) return events;
@@ -196,8 +196,8 @@ class EventFilterLogic {
   }
   
   /// Filtro interno de fecha específica
-  List<Map<String, String>> _applyDateFilter(
-    List<Map<String, String>> events,
+  List<Map<String, dynamic>> _applyDateFilter(
+    List<Map<String, dynamic>> events,
     DateTime selectedDate,
   ) {
     final targetDateString = DateFormat('yyyy-MM-dd').format(selectedDate);

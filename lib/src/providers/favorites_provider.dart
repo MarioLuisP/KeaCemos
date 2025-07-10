@@ -55,7 +55,7 @@ class FavoritesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<Map<String, String>> filterFavoriteEvents(List<Map<String, String>> allEvents) {
-    return allEvents.where((event) => isFavorite(event['id'] ?? '')).toList();
+  List<Map<String, dynamic>> filterFavoriteEvents(List<Map<String, dynamic>> allEvents) { // CAMBIO: String → dynamic
+    return allEvents.where((event) => isFavorite(event['id']?.toString() ?? '')).toList();
   }
 }
