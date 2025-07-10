@@ -7,7 +7,8 @@ import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/themes/themes.dart';
 import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
-
+import 'package:quehacemos_cba/src/providers/auth_provider.dart';
+import 'package:quehacemos_cba/src/providers/notifications_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeMessages('es');
@@ -21,29 +22,32 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) {
-            final provider = PreferencesProvider();
-            provider.init(); // Llamar init() para cargar preferencias
-            return provider;
-          },
-        ),
-        ChangeNotifierProvider(create: (context) => FavoritesProvider()..init()),
-        ChangeNotifierProvider(
-          create: (context) {
-            print('🏗️ Creando HomeViewModel...');
-            final viewModel = HomeViewModel();
-            // 🚨 SOLUCIÓN: Inicializar automáticamente al crear el provider
-            WidgetsBinding.instance.addPostFrameCallback((_) async {
-              print('🚀 Auto-inicializando HomeViewModel...');
-              await viewModel.initialize();
-              print('✅ HomeViewModel inicializado con ${viewModel.filteredEvents.length} eventos');
-            });
-            return viewModel;
-          },
-        ),
-      ],      
+    providers: [
+      ChangeNotifierProvider(
+        create: (context) {
+          final provider = PreferencesProvider();
+          provider.init();
+          return provider;
+        },
+      ),
+      ChangeNotifierProvider(create: (context) => FavoritesProvider()..init()),
+      ChangeNotifierProvider(
+        create: (context) {
+          print('🏗️ Creando HomeViewModel...');
+          final viewModel = HomeViewModel();
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            print('🚀 Auto-inicializando HomeViewModel...');
+            await viewModel.initialize();
+            print('✅ HomeViewModel inicializado con ${viewModel.filteredEvents.length} eventos');
+          });
+          return viewModel;
+        },
+      ),
+      // NUEVO: Agregar AuthProvider
+      ChangeNotifierProvider(create: (context) => AuthProvider()),
+      // NUEVO: Agregar NotificationsProvider  
+      ChangeNotifierProvider(create: (context) => NotificationsProvider()),
+    ],
       child: Consumer<PreferencesProvider>(
         builder: (context, provider, _) {
           return MaterialApp(

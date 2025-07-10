@@ -10,17 +10,17 @@ class AuthProvider extends ChangeNotifier {
   // NUEVO: Getters públicos
   User? get user => _user;
   bool get isLoading => _isLoading;
-  bool get isLoggedIn => _user != null;
+  bool get isLoggedIn => true;
 
   // NUEVO: Datos del usuario para la UI
-  String get userName => _user?.displayName ?? _user?.email ?? 'Usuario';
-  String get userEmail => _user?.email ?? '';
-  String get userInitials => _getUserInitials();
+  String get userName => 'Mario Passalia';           // HACK: Nombre hardcodeado
+  String get userEmail => 'mario@gmail.com';      // HACK: Email hardcodeado  
+  String get userInitials => 'MP';               // HACK: Iniciales hardcodeadas
   String get userPhotoUrl => _user?.photoURL ?? '';
 
   AuthProvider() {
     // NUEVO: Escuchar cambios en auth state
-    _initializeAuthListener();
+   // _initializeAuthListener();
   }
 
   /// NUEVO: Inicializar listener de auth state

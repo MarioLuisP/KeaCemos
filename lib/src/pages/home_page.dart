@@ -6,6 +6,8 @@ import 'package:quehacemos_cba/src/widgets/chips/filter_chips_widget.dart';
 import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
 import 'package:quehacemos_cba/src/providers/filter_criteria.dart';
 import 'package:intl/intl.dart';
+// Provider import
+import 'package:quehacemos_cba/src/widgets/app_bars/main_app_bar.dart';
 
 class HomePage extends StatefulWidget {
   final DateTime? selectedDate;
@@ -238,21 +240,9 @@ Widget _buildScrollableBody({
   );
 }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      title: const Text(
-        'QuehaCeMos Córdoba',
-        style: TextStyle(
-          fontFamily: 'Nunito',
-          fontWeight: FontWeight.bold, // O FontWeight.w700
-          fontSize: 20,
-        ),
-      ),
-      centerTitle: true,
-      toolbarHeight: 40.0,
-      elevation: 2.0, // 👉 Leve sombra (podés probar con 1.0 a 4.0)
-    );
-  }
+ PreferredSizeWidget _buildAppBar() {
+  return const MainAppBar.home();
+}
   
   Widget _buildLoadingScaffold() {
     return const Scaffold(
