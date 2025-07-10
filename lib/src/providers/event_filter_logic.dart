@@ -6,7 +6,7 @@ import 'category_constants.dart';
 /// Ahora usa FilterCriteria para encapsular parámetros
 class EventFilterLogic {
   // 🔥 NUEVO: Fecha actual para filtro de eventos pasados
-  final DateTime _currentDate = DateTime(2025, 6, 4); // Usar la misma fecha que HomeViewModel
+  final DateTime _currentDate = DateTime.now(); // CAMBIO: Fecha real
   
   /// Método principal: aplica todos los filtros según criterios
   List<Map<String, dynamic>> applyFilters(

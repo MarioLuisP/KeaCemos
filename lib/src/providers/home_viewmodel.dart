@@ -25,7 +25,7 @@ class HomeViewModel with ChangeNotifier {
   String? _errorMessage;
 
   // Configuración de desarrollo
-  final DateTime _devNow = DateTime(2025, 6, 4);
+  final DateTime _devNow = DateTime.now(); // CAMBIO: Fecha real
 
   // Eventos procesados (cache)
   List<Map<String, dynamic>> _processedEvents = [];
@@ -35,7 +35,7 @@ class HomeViewModel with ChangeNotifier {
   List<DateTime> _sortedDatesDateTime = []; // NUEVO: Cache DateTime
   bool _dateTimeCacheValid = false; // NUEVO: Flag para invalidar cache
 
-  HomeViewModel() : _dataBuilder = EventDataBuilder(DateTime(2025, 6, 4));
+  HomeViewModel() : _dataBuilder = EventDataBuilder(DateTime.now());
 // Variables para control de refresh
   DateTime? _lastRefreshTime;
   static const Duration _refreshInterval = Duration(minutes: 5);
