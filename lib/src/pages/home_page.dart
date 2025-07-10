@@ -11,20 +11,25 @@ import 'package:quehacemos_cba/src/widgets/app_bars/main_app_bar.dart';
 
 class HomePage extends StatefulWidget {
   final DateTime? selectedDate;
-  const HomePage({super.key, this.selectedDate});
+  final VoidCallback? onReturnToCalendar; // NUEVO
+  const HomePage({
+    super.key,
+    this.selectedDate,
+    this.onReturnToCalendar,
+  }); // NUEVO
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> 
+class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  
   // Estado local para evitar rebuilds innecesarios
   Set<String> _lastAppliedFilters = {};
   DateTime? _lastSelectedDate;
   bool _isInitialized = false;
   bool _isFilterUpdateScheduled = false;
+  bool get _isInDayFilterMode => widget.selectedDate != null;
 
   @override
   bool get wantKeepAlive => true;
@@ -44,14 +49,14 @@ class _HomePageState extends State<HomePage>
 
   Future<void> _initializeHomePage() async {
     print('🏁 HomePage inicializando...');
-    
+
     final viewModel = Provider.of<HomeViewModel>(context, listen: false);
     final prefs = Provider.of<PreferencesProvider>(context, listen: false);
-    
+
     // Inicializar filtros actuales
     _lastAppliedFilters = Set.from(prefs.activeFilterCategories);
     _lastSelectedDate = widget.selectedDate;
-    
+
     // Solo inicializar si no hay datos o si cambió la fecha
     if (!_isInitialized || viewModel.filteredEvents.isEmpty) {
       await viewModel.initialize(
@@ -62,28 +67,28 @@ class _HomePageState extends State<HomePage>
       // Cambio de fecha sin rebuild completo
       await _updateSelectedDate(widget.selectedDate);
     }
-    
+
     // Aplicar filtros iniciales
     _applyFiltersIfNeeded(prefs.activeFilterCategories);
   }
 
   Future<void> _updateSelectedDate(DateTime? newDate) async {
     if (_lastSelectedDate == newDate) return;
-    
+
     print('🗓️ Actualizando fecha: $newDate');
     final viewModel = Provider.of<HomeViewModel>(context, listen: false);
-    
+
     _lastSelectedDate = newDate;
     await viewModel.setSelectedDate(newDate);
   }
 
   void _applyFiltersIfNeeded(Set<String> currentFilters) {
     if (_isFilterUpdateScheduled) return;
-    
+
     if (_hasFiltersChanged(currentFilters)) {
       print('🎯 Aplicando filtros: $currentFilters');
       _isFilterUpdateScheduled = true;
-      
+
       // Usar microtask para evitar builds durante builds
       Future.microtask(() {
         if (mounted) {
@@ -104,7 +109,7 @@ class _HomePageState extends State<HomePage>
   @override
   void didUpdateWidget(HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.selectedDate != oldWidget.selectedDate) {
       _updateSelectedDate(widget.selectedDate);
     }
@@ -113,7 +118,7 @@ class _HomePageState extends State<HomePage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    
+
     // Refrescar cuando la app vuelve a primer plano
     if (state == AppLifecycleState.resumed && _isInitialized) {
       final viewModel = Provider.of<HomeViewModel>(context, listen: false);
@@ -125,7 +130,7 @@ class _HomePageState extends State<HomePage>
   Future<void> resetToDefaultView() async {
     print('🔄 Reseteando a vista por defecto');
     final viewModel = Provider.of<HomeViewModel>(context, listen: false);
-    
+
     _lastSelectedDate = null;
     await viewModel.setSelectedDate(null); // null = próximos eventos
   }
@@ -133,12 +138,12 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context); // Requerido para AutomaticKeepAliveClientMixin
-    
+
     return Consumer2<HomeViewModel, PreferencesProvider>(
       builder: (context, viewModel, prefs, _) {
         // Aplicar filtros solo si han cambiado
         _applyFiltersIfNeeded(prefs.activeFilterCategories);
-        
+
         return _buildContent(viewModel, prefs);
       },
     );
@@ -154,11 +159,8 @@ class _HomePageState extends State<HomePage>
     }
 
     final displayedEvents = viewModel.getHomePageEvents();
-    // CAMBIO: Usar métodos optimizados (sin conversión en build)
-   // final groupedEvents = viewModel.getGroupedEventsDateTime(); // CAMBIO: Directo desde cache
-   // final sortedDates = viewModel.getSortedDatesDateTime(); // CAMBIO: Directo desde cache
 
-    return Scaffold(
+    final scaffoldContent = Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: _buildAppBar(),
       body: Column(
@@ -167,15 +169,39 @@ class _HomePageState extends State<HomePage>
           Expanded(
             child: _buildScrollableBody(
               viewModel: viewModel,
-              displayedEvents: displayedEvents, // CAMBIO: Parámetro mantenido pero no usado
-              groupedEvents: {}, // NUEVO: Parámetro dummy, no se usa más
-              sortedDates: [], // NUEVO: Parámetro dummy, no se usa más
+              displayedEvents: displayedEvents,
+              groupedEvents: {},
+              sortedDates: [],
             ),
           ),
         ],
       ),
     );
+
+    // NUEVO: Solo agregar swipe detector si viene del calendario
+    if (_isInDayFilterMode) {
+      return GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! < -500) {
+            _returnToCalendar();
+          }
+        },
+        child: scaffoldContent,
+      );
+    }
+
+    return scaffoldContent;
   }
+
+  // NUEVO: Agregar este método al final de la clase _HomePageState
+  void _returnToCalendar() {
+    // Aquí necesito saber cómo navegas al calendario
+    print('🗓️ Volviendo al calendario...');
+    if (widget.onReturnToCalendar != null) {
+      widget.onReturnToCalendar!();
+    }
+  }
+
   Widget _buildFixedHeader(HomeViewModel viewModel, PreferencesProvider prefs) {
     return Container(
       width: double.infinity,
@@ -187,9 +213,9 @@ class _HomePageState extends State<HomePage>
           Text(
             viewModel.getPageTitle(),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSecondaryContainer,
-                ),
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSecondaryContainer,
+            ),
           ),
           const SizedBox(height: 4),
           FilterChipsRow(prefs: prefs, viewModel: viewModel),
@@ -197,58 +223,72 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
-Widget _buildScrollableBody({
-  required HomeViewModel viewModel,
-  required List<dynamic> displayedEvents, // CAMBIO: Parámetro mantenido para compatibilidad
-  required Map<DateTime, List<dynamic>> groupedEvents, // CAMBIO: Parámetro mantenido para compatibilidad
-  required List<DateTime> sortedDates, // CAMBIO: Parámetro mantenido para compatibilidad
-}) {
-  // NUEVO: Obtener flatItems optimizados desde cache
-  final flatItems = viewModel.getFlatItemsForHomePage();
-  
-  if (flatItems.isEmpty) { // CAMBIO: Usar flatItems en lugar de displayedEvents
-    return _buildEmptyState(viewModel);
-  }
 
-  return CustomScrollView( // CAMBIO: Mantener CustomScrollView
+  Widget _buildScrollableBody({
+    required HomeViewModel viewModel,
+    required List<dynamic>
+    displayedEvents, // CAMBIO: Parámetro mantenido para compatibilidad
+    required Map<DateTime, List<dynamic>>
+    groupedEvents, // CAMBIO: Parámetro mantenido para compatibilidad
+    required List<DateTime>
+    sortedDates, // CAMBIO: Parámetro mantenido para compatibilidad
+  }) {
+    // NUEVO: Obtener flatItems optimizados desde cache
+    final flatItems = viewModel.getFlatItemsForHomePage();
+
+    if (flatItems.isEmpty) {
+      // CAMBIO: Usar flatItems en lugar de displayedEvents
+      return _buildEmptyState(viewModel);
+    }
+
+    return CustomScrollView(
+      // CAMBIO: Mantener CustomScrollView
       physics: const BouncingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(), // CAMBIO: Mantener physics optimizadas
+        parent:
+            AlwaysScrollableScrollPhysics(), // CAMBIO: Mantener physics optimizadas
       ),
-    slivers: [ // CAMBIO: Mantener estructura con slivers
-      SliverPadding( // CAMBIO: Mantener padding como sliver
-        padding: EdgeInsets.only(top: 8.0),
-        sliver: SliverList( // CAMBIO: Mantener lista lazy
-          delegate: SliverChildBuilderDelegate(
-            (context, index) { // CAMBIO: Mantener builder lazy
-              final item = flatItems[index]; // NUEVO: Usar flatItems desde cache
-              
-              if (item['type'] == 'header') { // CAMBIO: Mantener lógica de header
-                return _buildSectionHeader(item['title']);
-              } else { // CAMBIO: Mantener lógica de evento
-                return EventCardWidget(
-                  event: item['data'],
-                  viewModel: viewModel,
-                  key: ValueKey(item['data']['id']),
-                );
-              }
-            },
-            childCount: flatItems.length, // NUEVO: Usar longitud de cache
+      slivers: [
+        // CAMBIO: Mantener estructura con slivers
+        SliverPadding(
+          // CAMBIO: Mantener padding como sliver
+          padding: EdgeInsets.only(top: 8.0),
+          sliver: SliverList(
+            // CAMBIO: Mantener lista lazy
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                // CAMBIO: Mantener builder lazy
+                final item =
+                    flatItems[index]; // NUEVO: Usar flatItems desde cache
+
+                if (item['type'] == 'header') {
+                  // CAMBIO: Mantener lógica de header
+                  return _buildSectionHeader(item['title']);
+                } else {
+                  // CAMBIO: Mantener lógica de evento
+                  return EventCardWidget(
+                    event: item['data'],
+                    viewModel: viewModel,
+                    key: ValueKey(item['data']['id']),
+                  );
+                }
+              },
+              childCount: flatItems.length, // NUEVO: Usar longitud de cache
+            ),
           ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
-PreferredSizeWidget _buildAppBar() {
-  return const MainAppBar(
-    title: 'QuehaCeMos Córdoba',
-    showUserAvatar: true,        // SIN avatar = SIN Firebase
-    showNotifications: true,      // Campanita funciona
-    showContactButton: true,      // Botón + funciona
-  );
-}
-  
+  PreferredSizeWidget _buildAppBar() {
+    return const MainAppBar(
+      title: 'QuehaCeMos Córdoba',
+      showUserAvatar: true, // SIN avatar = SIN Firebase
+      showNotifications: true, // Campanita funciona
+      showContactButton: true, // Botón + funciona
+    );
+  }
+
   Widget _buildLoadingScaffold() {
     return const Scaffold(
       backgroundColor: Color(0xFFD3D3D3),
@@ -323,19 +363,15 @@ PreferredSizeWidget _buildAppBar() {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              Icon(
-                Icons.event_busy,
-                size: 64,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
               const SizedBox(height: 16),
               Text(
                 viewModel.selectedDate == null
                     ? 'No hay eventos próximos.'
                     : 'No hay eventos para esta fecha.',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -357,16 +393,20 @@ PreferredSizeWidget _buildAppBar() {
     return sortedDates.map((date) {
       final eventsOnDate = groupedEvents[date]!;
       // ✅ CORRECCIÓN: Convertir DateTime a String para getSectionTitle
-      final sectionTitle = viewModel.getSectionTitle(DateFormat('yyyy-MM-dd').format(date));
+      final sectionTitle = viewModel.getSectionTitle(
+        DateFormat('yyyy-MM-dd').format(date),
+      );
 
       return SliverList(
         delegate: SliverChildListDelegate([
           _buildSectionHeader(sectionTitle),
-          ...eventsOnDate.map((event) => EventCardWidget(
-                event: event,
-                viewModel: viewModel,
-                key: ValueKey(event['id']), // ✅ CORRECCIÓN: Acceso seguro al id
-              )),
+          ...eventsOnDate.map(
+            (event) => EventCardWidget(
+              event: event,
+              viewModel: viewModel,
+              key: ValueKey(event['id']), // ✅ CORRECCIÓN: Acceso seguro al id
+            ),
+          ),
         ]),
       );
     }).toList();
@@ -381,14 +421,11 @@ PreferredSizeWidget _buildAppBar() {
           Text(
             title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-//                  color: Colors.black87,
-                ),
+              fontWeight: FontWeight.bold,
+              //                  color: Colors.black87,
+            ),
           ),
-          const Divider(
-            thickness: 0.5,
-            color: Colors.grey,
-          ),
+          const Divider(thickness: 0.5, color: Colors.grey),
         ],
       ),
     );
@@ -408,7 +445,11 @@ class _OptimizedHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: const Color.fromARGB(255, 241, 196, 136),
       child: Padding(
@@ -420,17 +461,16 @@ class _OptimizedHeaderDelegate extends SliverPersistentHeaderDelegate {
             Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
             const SizedBox(height: 4),
             // Envolver en un Consumer específico para evitar rebuilds innecesarios
             Consumer<PreferencesProvider>(
-              builder: (context, prefs, _) => FilterChipsRow(
-                prefs: prefs,
-                viewModel: viewModel,
-              ),
+              builder:
+                  (context, prefs, _) =>
+                      FilterChipsRow(prefs: prefs, viewModel: viewModel),
             ),
           ],
         ),

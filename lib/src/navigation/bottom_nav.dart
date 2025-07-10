@@ -13,7 +13,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   DateTime? _selectedDate;
 
-  void _onItemTapped(int index) {
+void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
       if (index == 0) {
@@ -23,6 +23,12 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  // NUEVO: Método para volver al calendario desde HomePage
+  void _returnToCalendar() {
+    setState(() {
+      _currentIndex = 2; // Índice del calendario
+    });
+  }
   void _onDateSelected(DateTime? selectedDate) {
     setState(() {
       _selectedDate = selectedDate;
@@ -37,6 +43,7 @@ class _MainScreenState extends State<MainScreen> {
       HomePage(
         key: ValueKey(_selectedDate?.toIso8601String() ?? 'no-date'),
         selectedDate: _selectedDate,
+        onReturnToCalendar: _returnToCalendar, // NUEVO
       ),
       const ExplorePage(),
       CalendarPage(onDateSelected: _onDateSelected),
