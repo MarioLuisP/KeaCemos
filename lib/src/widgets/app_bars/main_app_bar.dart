@@ -76,8 +76,8 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: centerTitle,
       toolbarHeight: preferredSize.height,
       elevation: elevation,
-      backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.primary,
-      foregroundColor: foregroundColor ?? Colors.white,
+      backgroundColor: backgroundColor ?? Theme.of(context).appBarTheme.backgroundColor,
+      foregroundColor: foregroundColor ?? Theme.of(context).appBarTheme.foregroundColor,
       actions: _buildActions(context),
     );
   }

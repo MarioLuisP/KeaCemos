@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:quehacemos_cba/src/services/auth_service.dart';
-import 'package:quehacemos_cba/src/services/mock_auth_service.dart';
+import 'package:quehacemos_cba/src/services/auth_service.dart';
+//import 'package:quehacemos_cba/src/services/mock_auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   //final AuthService _authService = AuthService();
-  final MockAuthService _authService = MockAuthService();
+  final AuthService _authService = AuthService();
   User? _user;
   bool _isLoading = false;
 

@@ -240,8 +240,13 @@ Widget _buildScrollableBody({
   );
 }
 
- PreferredSizeWidget _buildAppBar() {
-  return const MainAppBar.home();
+PreferredSizeWidget _buildAppBar() {
+  return const MainAppBar(
+    title: 'QuehaCeMos Córdoba',
+    showUserAvatar: false,        // SIN avatar = SIN Firebase
+    showNotifications: true,      // Campanita funciona
+    showContactButton: true,      // Botón + funciona
+  );
 }
   
   Widget _buildLoadingScaffold() {
