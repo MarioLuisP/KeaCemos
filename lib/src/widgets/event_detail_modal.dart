@@ -210,11 +210,11 @@ void _openImageFullscreen(BuildContext context) {
                         heightFactor: 0.55, // Muestra el 55% de la altura (70% - 15%)
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(16),
-                          child: Image.network(
-                            _imageUrl,
+                          child: CachedNetworkImage(
+                            imageUrl: _imageUrl,
                             fit: BoxFit.cover,
                             width: double.infinity,
-                            errorBuilder: (context, error, stackTrace) => Container(
+                            errorWidget: (context, url, error) => Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topLeft,
@@ -227,6 +227,7 @@ void _openImageFullscreen(BuildContext context) {
                               ),
                             ),
                           ),
+
                         ),
                       ),
                     ),
