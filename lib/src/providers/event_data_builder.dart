@@ -202,14 +202,6 @@ class EventDataBuilder {
     return getPageTitle(criteria.selectedDate);
   }
 
-  /// Obtiene color de card según tipo de evento
-  Color getEventCardColor(String eventType, BuildContext context) {
-    final uiCategory = CategoryConstants.getUiName(eventType.toLowerCase());
-    final color = CategoryConstants.getColor(uiCategory);
-    return AppColors.adjustForTheme(context, color);
-  }
-
-  /// Formatea fecha para mostrar en eventos
   /// Formatea fecha para mostrar en diferentes contextos
   String formatEventDate(String dateString, {String format = 'full'}) {
     // Intentar parsear la fecha en diferentes formatos

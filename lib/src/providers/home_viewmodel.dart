@@ -446,13 +446,7 @@ Map<String, List<Map<String, dynamic>>> getGroupedEvents() {
   String getPageTitle() {
     return _dataBuilder.getPageTitleFromCriteria(_filterCriteria);
   }
-
-  /// Obtiene color de card según tipo de evento
-  Color getEventCardColor(String eventType, BuildContext context) {
-    return _dataBuilder.getEventCardColor(eventType, context);
-  }
-
-  /// Formatea fecha para mostrar en eventos
+ /// Formatea fecha para mostrar en eventos
   String formatEventDate(String dateString, {String format = 'full'}) {
     return _dataBuilder.formatEventDate(dateString, format: format);
 }

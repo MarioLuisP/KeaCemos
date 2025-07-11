@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../utils/utils.dart';
 import '../../providers/preferences_provider.dart';
+import 'package:quehacemos_cba/src/utils/colors.dart'; 
+import 'package:quehacemos_cba/src/providers/category_constants.dart'; // NUEVO
 
 class EventChipWidget extends StatelessWidget {
   final String category;
@@ -14,9 +16,11 @@ class EventChipWidget extends StatelessWidget {
     final isSelected = provider.activeFilterCategories.contains(category);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final color = AppColors.categoryColors[category] ?? AppColors.defaultColor;
-    final adjustedColor = AppColors.adjustForTheme(context, color);
-
+    // NUEVO: Lookup instantáneo para chips también
+    final theme = Provider.of<PreferencesProvider>(context, listen: false).theme;
+// CAMBIO: Normalizar category también para chips
+    final uiCategory = CategoryConstants.getUiName(category.toLowerCase()); // NUEVO
+    final colors = EventCardColorPalette.getColors(theme, uiCategory); // CAMBIO    final adjustedColor = colors.base; // CAMBIO: Usar color precalculado
     final inactiveBackground = isDark ? Colors.black : Colors.white;
     final inactiveTextColor = isDark ? Colors.white : Colors.black;
     final inactiveBorderColor = inactiveTextColor;
@@ -32,10 +36,10 @@ class EventChipWidget extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          color: isSelected ? adjustedColor : inactiveBackground,
+          color: isSelected ? colors.base : inactiveBackground, 
           borderRadius: BorderRadius.circular(AppDimens.borderRadius),
           border: Border.all(
-            color: isSelected ? adjustedColor : inactiveBorderColor,
+            color: isSelected ? colors.base : inactiveBackground, 
             width: 1.0,
           ),
         ),

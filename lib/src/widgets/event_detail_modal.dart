@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
-import 'package:quehacemos_cba/src/utils/dimens.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
+import 'package:quehacemos_cba/src/providers/category_constants.dart';
+import 'package:quehacemos_cba/src/utils/colors.dart';
 
 
 class EventDetailModal {
@@ -18,8 +20,10 @@ class EventDetailModal {
       backgroundColor: Colors.transparent,
       builder: (context) {
         final eventType = event['type'] ?? '';
-        final cardColor = viewModel.getEventCardColor(eventType, context);
-
+        final theme = Provider.of<PreferencesProvider>(context, listen: false).theme;
+        final uiCategory = CategoryConstants.getUiName(eventType.toLowerCase());
+        final colors = EventCardColorPalette.getColors(theme, uiCategory);
+        final cardColor = colors.base;
         return DraggableScrollableSheet(
           initialChildSize: 0.6,
           minChildSize: 0.3,
@@ -80,7 +84,10 @@ class _EventDetailContentState extends State<EventDetailContent> {
     super.initState();
     // Calculamos los valores una sola vez al inicializar
     final eventType = widget.event['type'] ?? '';
-    cardColor = widget.viewModel.getEventCardColor(eventType, context);
+    final theme = Provider.of<PreferencesProvider>(context, listen: false).theme;
+    final uiCategory = CategoryConstants.getUiName(eventType.toLowerCase());
+    final colors = EventCardColorPalette.getColors(theme, uiCategory);
+    cardColor = colors.base;
     darkCardColor = _darkenColor(cardColor, 0.1);
     
     // Pre-calculamos la descripción truncada

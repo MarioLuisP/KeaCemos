@@ -25,67 +25,67 @@ class EventCardColorPalette {
 
 
 'normal': {
-      'Música': EventCardColors(
-        base: Color(0xFFFCA1AE),
-        dark: Color(0xFFCA818B),
-        text: Color(0xFF3D1A1F), // Chocolate bordeaux
-      ),
-      'Teatro': EventCardColors(
-        base: Color(0xFFD7D26D),
-        dark: Color(0xFFACA857),
-        text: Color(0xFF2D3D00), // Verde oliva oscuro
-      ),
-      'StandUp': EventCardColors(
-        base: Color(0xFF3CCDC7),
-        dark: Color(0xFF30A49F),
-        text: Color(0xFF002D3D), // Azul petróleo
-      ),
-      'Arte': EventCardColors(
-        base: Color(0xFFFD8977),
-        dark: Color(0xFFCA6E5F),
-        text: Color(0xFF3D1E00), // Marrón terracota
-      ),
-      'Cine': EventCardColors(
-        base: Color(0xFFEBE7A7),
-        dark: Color(0xFFBCB986),
-        text: Color(0xFF001B3D), // Azul marino
-      ),
-      'Mic': EventCardColors(
-        base: Color(0xFFE1BEE7),
-        dark: Color(0xFFB498B9),
-        text: Color(0xFF2D003D), // Púrpura oscuro
-      ),
-      'Cursos': EventCardColors(
-        base: Color(0xFFF5DD7E),
-        dark: Color(0xFFC4B165),
-        text: Color(0xFF3D2D00), // Dorado oscuro
-      ),
-      'Ferias': EventCardColors(
-        base: Color(0xFFFFCDD2),
-        dark: Color(0xFFCCA4A8),
-        text: Color(0xFF3D000F), // Rojo oscuro
-      ),
-      'Calle': EventCardColors(
-        base: Color(0xFFB3E5FC),
-        dark: Color(0xFF8FB7CA),
-        text: Color(0xFF001E3D), // Azul cielo oscuro
-      ),
-      'Redes': EventCardColors(
-        base: Color(0xFFC8E6C9),
-        dark: Color(0xFFA0B8A1),
-        text: Color(0xFF002D0F), // Verde bosque
-      ),
-      'Niños': EventCardColors(
-        base: Color(0xFFD6CBAE),
-        dark: Color(0xFFABA28B),
-        text: Color(0xFF3D2814), // Marrón suave
-      ),
-      'Danza': EventCardColors(
-        base: Color(0xFFFDA673),
-        dark: Color(0xFFCA855C),
-        text: Color(0xFF2D1400), // Naranja chocolate
-      ),
-    },
+  'Música': EventCardColors(
+    base: Color(0xFFFCA1AE), // SIN CAMBIO
+    dark: Color(0xFFE88A99), // NUEVO: _darkenColor(#FCA1AE, 0.2)
+    text: Color(0xFF3D1A1F), // SIN CAMBIO
+  ),
+  'Teatro': EventCardColors(
+    base: Color(0xFFD7D26D), // SIN CAMBIO
+    dark: Color(0xFFC5C05B), // NUEVO: _darkenColor(#D7D26D, 0.2)
+    text: Color(0xFF2D3D00), // SIN CAMBIO
+  ),
+  'StandUp': EventCardColors(
+    base: Color(0xFF3CCDC7), // SIN CAMBIO
+    dark: Color(0xFF32B8B2), // NUEVO: _darkenColor(#3CCDC7, 0.2)
+    text: Color(0xFF002D3D), // SIN CAMBIO
+  ),
+  'Arte': EventCardColors(
+    base: Color(0xFFFD8977), // SIN CAMBIO
+    dark: Color(0xFFE97566), // NUEVO: _darkenColor(#FD8977, 0.2)
+    text: Color(0xFF3D1E00), // SIN CAMBIO
+  ),
+  'Cine': EventCardColors(
+    base: Color(0xFFEBE7A7), // SIN CAMBIO
+    dark: Color(0xFFD9D595), // NUEVO: _darkenColor(#EBE7A7, 0.2)
+    text: Color(0xFF001B3D), // SIN CAMBIO
+  ),
+  'Mic': EventCardColors(
+    base: Color(0xFFE1BEE7), // SIN CAMBIO
+    dark: Color(0xFFCFACD5), // NUEVO: _darkenColor(#E1BEE7, 0.2)
+    text: Color(0xFF2D003D), // SIN CAMBIO
+  ),
+  'Cursos': EventCardColors(
+    base: Color(0xFFF5DD7E), // SIN CAMBIO
+    dark: Color(0xFFE3CB6C), // NUEVO: _darkenColor(#F5DD7E, 0.2)
+    text: Color(0xFF3D2D00), // SIN CAMBIO
+  ),
+  'Ferias': EventCardColors(
+    base: Color(0xFFFFCDD2), // SIN CAMBIO
+    dark: Color(0xFFEDBBC0), // NUEVO: _darkenColor(#FFCDD2, 0.2)
+    text: Color(0xFF3D000F), // SIN CAMBIO
+  ),
+  'Calle': EventCardColors(
+    base: Color(0xFFB3E5FC), // SIN CAMBIO
+    dark: Color(0xFFA1D3EA), // NUEVO: _darkenColor(#B3E5FC, 0.2)
+    text: Color(0xFF001E3D), // SIN CAMBIO
+  ),
+  'Redes': EventCardColors(
+    base: Color(0xFFC8E6C9), // SIN CAMBIO
+    dark: Color(0xFFB6D4B7), // NUEVO: _darkenColor(#C8E6C9, 0.2)
+    text: Color(0xFF002D0F), // SIN CAMBIO
+  ),
+  'Niños': EventCardColors(
+    base: Color(0xFFD6CBAE), // SIN CAMBIO
+    dark: Color(0xFFC4B99C), // NUEVO: _darkenColor(#D6CBAE, 0.2)
+    text: Color(0xFF3D2814), // SIN CAMBIO
+  ),
+  'Danza': EventCardColors(
+    base: Color(0xFFFDA673), // SIN CAMBIO
+    dark: Color(0xFFEB9461), // NUEVO: _darkenColor(#FDA673, 0.2)
+    text: Color(0xFF2D1400), // SIN CAMBIO
+  ),
+},
 
 'dark': {
       'Música': EventCardColors(

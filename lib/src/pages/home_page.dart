@@ -356,9 +356,8 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  SliverToBoxAdapter _buildEmptyState(HomeViewModel viewModel) {
-    return SliverToBoxAdapter(
-      child: Center(
+    Widget _buildEmptyState(HomeViewModel viewModel) {
+      return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -380,8 +379,9 @@ class _HomePageState extends State<HomePage>
               ),
             ],
           ),
+
         ),
-      ),
+      
     );
   }
 
