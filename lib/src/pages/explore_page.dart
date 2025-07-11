@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/widgets/chips/filter_chips_widget.dart'; // Nuevo import
-import 'package:quehacemos_cba/src/utils/utils.dart';
 import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
 
 class ExplorePage extends StatefulWidget {
@@ -75,17 +74,26 @@ class _ExplorePageState extends State<ExplorePage> {
                       hintText: 'Busca eventos (ej. payasos)',
                       prefixIcon: const Icon(Icons.search),
                       filled: true,
-                      fillColor: Colors.grey[200],
+                      fillColor: Theme.of(context).colorScheme.primary, // CAMBIO: Respeta theme
                       contentPadding: const EdgeInsets.symmetric(
                         vertical: 14.0,
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                        borderSide: BorderSide.none,
-                      ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                          borderSide: const BorderSide(color: Colors.black, width: 1.0), // NUEVO: Borde negro
+                        ),
+                        enabledBorder: OutlineInputBorder( // NUEVO: Borde cuando no está enfocado
+                          borderRadius: BorderRadius.circular(30.0),
+                          borderSide: const BorderSide(color: Colors.black, width: 1.0),
+                        ),
+                        focusedBorder: OutlineInputBorder( // NUEVO: Borde cuando está enfocado
+                          borderRadius: BorderRadius.circular(30.0),
+                          borderSide: const BorderSide(color: Colors.black, width: 1.5), // Más grueso al enfocar
+                        ),
+                        ),
                     ),
                   ),
-                ),
+             
 
                 // Fila de chips + refresh
                 Padding(

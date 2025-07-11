@@ -11,7 +11,7 @@ class AppThemes {
       brightness: Brightness.light,
       primaryColor: Colors.blue,
       colorScheme: ColorScheme.light(
-        primary: Colors.blue,
+        primary: const Color(0xFFF7F2DB),
         secondary: secondaryLerped,
         surface: Colors.white,
       ),
@@ -67,7 +67,7 @@ class AppThemes {
       brightness: Brightness.light,
       primaryColor: baseAppBarColor,
       colorScheme: ColorScheme.light(
-        primary: baseAppBarColor,
+        primary: const Color(0xFFF1E2C2),
         secondary: secondaryLerped,
         surface: const Color(0xFFF8F1E9),
       ),
@@ -153,7 +153,7 @@ class AppThemes {
       brightness: Brightness.light,
       primaryColor: Color(0xFFBCE0FB), // Calculado: Color.lerp(Colors.blue, Colors.white, 0.7)
       colorScheme: ColorScheme.light(
-        primary: Color(0xFFBCE0FB), // Calculado: Color.lerp(Colors.blue, Colors.white, 0.7)
+        primary: Color(0xFFFBEFBC), // Calculado: Color.lerp(Colors.blue, Colors.white, 0.7)
         secondary: secondaryLerped,
         surface: Colors.white,
       ),
