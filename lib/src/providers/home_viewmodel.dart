@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:quehacemos_cba/src/utils/colors.dart';
 import 'package:quehacemos_cba/src/services/event_service.dart';
 import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'filter_criteria.dart';
@@ -439,7 +440,7 @@ Map<String, List<Map<String, dynamic>>> getGroupedEvents() {
   }
 /// Obtiene nombre de categoría con emoji delegando a EventDataBuilder
   String getCategoryWithEmoji(String type) {
-    return _dataBuilder.getCategoryWithEmoji(type);
+    return CategoryDisplayNames.getCategoryWithEmoji(type);
   }
   /// Obtiene título principal de la página
   String getPageTitle() {

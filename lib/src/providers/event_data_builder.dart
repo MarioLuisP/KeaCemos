@@ -369,24 +369,4 @@ class EventDataBuilder {
     if (word.isEmpty) return word;
     return word[0].toUpperCase() + word.substring(1);
   }
-
-  /// Obtiene nombre de categoría con emoji
-  String getCategoryWithEmoji(String type) {
-    const categoryEmojis = {
-      'musica': 'Música en vivo 🎵',
-      'teatro': 'Teatro y Performance 🎭',
-      'standup': 'StandUp y Humor 🎤',
-      'arte': 'Arte y Exposiciones 🎨',
-      'cine': 'Cine y Proyecciones 🎬',
-      'mic': 'Mic abierto y Poesía 🎙️',
-      'cursos': 'Cursos y Talleres 📚',
-      'ferias': 'Ferias artesanales 🛍️',
-      'calle': 'Eventos al Aire Libre 🌳',
-      'redes': 'Eventos Digitales 📱',
-      'ninos': 'Niños y Familia 👶',
-      'danza': 'Danza y Movimientos 💃',
-    };
-
-    return categoryEmojis[type.toLowerCase()] ?? type;
-  }
 }
