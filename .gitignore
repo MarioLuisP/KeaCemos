@@ -1,4 +1,6 @@
-# Miscellaneous
+# ------------------------------
+# General
+# ------------------------------
 *.class
 *.log
 *.pyc
@@ -11,22 +13,28 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+*.bak
+*.tmp
+*.~
+*~
 
-# IntelliJ related
+# ------------------------------
+# IntelliJ / Android Studio
+# ------------------------------
 *.iml
 *.ipr
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
+# ------------------------------
+# VS Code
+# ------------------------------
+# La siguiente línea está comentada si querés incluir tus settings de VS Code
 #.vscode/
-*.bak
-*.tmp
-*.~ 
-*~
-# Flutter/Dart/Pub related
+
+# ------------------------------
+# Flutter / Dart / Pub
+# ------------------------------
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
@@ -36,13 +44,40 @@ migrate_working_dir/
 .pub/
 /build/
 
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
+# ------------------------------
+# Android builds
+# ------------------------------
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ------------------------------
+# Firebase
+# ------------------------------
+# NO subir archivos de configuración sensibles
+google-services.json
+GoogleService-Info.plist
+*.firebase/
+
+# Mapas y símbolos de ofuscación
+app.*.symbols
+app.*.map.json
+
+# ------------------------------
+# iOS / Xcode
+# ------------------------------
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Runner.xcworkspace/
+ios/Runner.xcworkspace/xcshareddata/
+xcuserdata/
+DerivedData/
+
+# ------------------------------
+# SO específico (por si las dudas)
+# ------------------------------
+Thumbs.db
+ehthumbs.db
+Icon?

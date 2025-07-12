@@ -150,26 +150,23 @@ class SyncService {
   /// Limpiar eventos actuales (no favoritos)
   Future<void> _clearCurrentEvents() async {
     final db = await DatabaseHelper.database;
-    await db.delete('eventos');
+    await db.delete('eventos', where: 'favorite = ?', whereArgs: [0]);  
   }
 
   // ========== LIMPIEZA AUTOMÁTICA ==========
-
   /// Realizar limpieza automática completa
   Future<CleanupResult> _performCleanup() async {
     print('🧹 Realizando limpieza automática...');
     
-    final eventsRemoved = await _eventRepository.cleanOldEvents();
-    final favoritesRemoved = await _eventRepository.cleanOldFavorites();
+    final cleanupStats = await _eventRepository.cleanOldEvents();        // CAMBIO: método único retorna Map
     
-    print('🗑️ Limpieza completada: $eventsRemoved eventos, $favoritesRemoved favoritos');
+    print('🗑️ Limpieza completada: ${cleanupStats['normalEvents']} eventos normales, ${cleanupStats['favoriteEvents']} favoritos');  // CAMBIO: usar stats detalladas
     
     return CleanupResult(
-      eventsRemoved: eventsRemoved,
-      favoritesRemoved: favoritesRemoved,
+      eventsRemoved: cleanupStats['normalEvents']!,                     // NUEVO: eventos normales
+      favoritesRemoved: cleanupStats['favoriteEvents']!,               // NUEVO: eventos favoritos
     );
   }
-
   // ========== UTILIDADES ==========
 
   /// Actualizar timestamp de última sincronización

@@ -75,31 +75,47 @@ class EventRepository {
       );
     }
 
-    await batch.commit(noResult: true);
-  }
-
-  /// Limpiar eventos vencidos según configuración
-  Future<int> cleanOldEvents() async {
+      await batch.commit(noResult: true);
+    }/// Limpiar eventos vencidos con lógica inteligente
+  Future<Map<String, int>> cleanOldEvents() async {              // CAMBIO: retorna stats detalladas
     final db = await DatabaseHelper.database;
     
-    // Obtener días de configuración
-    final cleanupDays = await _getCleanupDays('cleanup_events_days');
-    final cutoffDate = DateTime.now().subtract(Duration(days: cleanupDays));
+    // Obtener configuración
+    final eventsDays = await _getCleanupDays('cleanup_events_days');    // CAMBIO: nombre más claro
+    final favoritesDays = await _getCleanupDays('cleanup_favorites_days');
     
-    return await db.delete(
+    final events_cutoff = DateTime.now().subtract(Duration(days: eventsDays));
+    final favorites_cutoff = DateTime.now().subtract(Duration(days: favoritesDays));
+    
+    // Limpiar eventos normales (no favoritos)                    // NUEVO: lógica inteligente
+    final normalDeleted = await db.delete(
       'eventos',
-      where: 'DATE(date) < ?',
-      whereArgs: [cutoffDate.toIso8601String().split('T')[0]],
+      where: 'DATE(date) < ? AND favorite = ?',                   // NUEVO: filtro por favorite = FALSE
+      whereArgs: [events_cutoff.toIso8601String().split('T')[0], 0],
     );
+    
+    // Limpiar favoritos vencidos (más días de gracia)            // NUEVO: favoritos con más tiempo
+    final favoritesDeleted = await db.delete(
+      'eventos',
+      where: 'DATE(date) < ? AND favorite = ?',                   // NUEVO: filtro por favorite = TRUE
+      whereArgs: [favorites_cutoff.toIso8601String().split('T')[0], 1],
+    );
+    
+    return {                                                      // NUEVO: retornar estadísticas
+      'normalEvents': normalDeleted,
+      'favoriteEvents': favoritesDeleted,
+      'total': normalDeleted + favoritesDeleted,
+    };
   }
 
   // ========== FAVORITOS ==========
-
   /// Obtener todos los favoritos
   Future<List<Map<String, dynamic>>> getAllFavorites() async {
     final db = await DatabaseHelper.database;
     return await db.query(
-      'favoritos',
+      'eventos',                                        // CAMBIO: misma tabla
+      where: 'favorite = ?',                           // NUEVO: filtrar por favoritos
+      whereArgs: [1],                                  // NUEVO: true = 1 en SQLite
       orderBy: 'date ASC',
     );
   }
@@ -108,69 +124,48 @@ class EventRepository {
   Future<bool> isFavorite(int eventoId) async {
     final db = await DatabaseHelper.database;
     final results = await db.query(
-      'favoritos',
-      where: 'evento_id = ?',
+      'eventos',                                        // CAMBIO: misma tabla
+      where: 'id = ?',                                 // CAMBIO: buscar por id directamente
       whereArgs: [eventoId],
       limit: 1,
     );
-    return results.isNotEmpty;
+    if (results.isEmpty) return false;                 // NUEVO: validar que existe
+    return (results.first['favorite'] as int) == 1;   // NUEVO: revisar campo favorite
   }
-
   /// Agregar evento a favoritos
-  Future<void> addToFavorites(Map<String, dynamic> evento) async {
+  Future<void> addToFavorites(int eventoId) async {      // CAMBIO: solo necesita ID
     final db = await DatabaseHelper.database;
     
-    // Crear registro de favorito con todos los datos del evento
-    final favorito = Map<String, dynamic>.from(evento);
-    favorito['evento_id'] = evento['id'];
-    favorito['favorited_at'] = DateTime.now().toIso8601String();
-    favorito['original_created_at'] = evento['created_at'];
-    favorito.remove('id'); // Remove para que SQLite genere nuevo ID
-
-    await db.insert(
-      'favoritos',
-      favorito,
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    await db.update(                                     // CAMBIO: update en vez de insert
+      'eventos',                                         // CAMBIO: misma tabla
+      {'favorite': 1},                                   // NUEVO: marcar como favorito
+      where: 'id = ?',                                   // NUEVO: buscar por id
+      whereArgs: [eventoId],                             // NUEVO: parámetro simplificado
     );
   }
 
   /// Remover evento de favoritos
   Future<void> removeFromFavorites(int eventoId) async {
     final db = await DatabaseHelper.database;
-    await db.delete(
-      'favoritos',
-      where: 'evento_id = ?',
+    await db.update(                                     // CAMBIO: update en vez de delete
+      'eventos',                                         // CAMBIO: misma tabla
+      {'favorite': 0},                                   // NUEVO: desmarcar favorito
+      where: 'id = ?',                                   // CAMBIO: buscar por id directo
       whereArgs: [eventoId],
     );
   }
 
   /// Toggle favorito (agregar/remover)
-  Future<bool> toggleFavorite(Map<String, dynamic> evento) async {
-    final eventoId = evento['id'] as int;
+  Future<bool> toggleFavorite(int eventoId) async {      // CAMBIO: solo necesita ID
     final isFav = await isFavorite(eventoId);
     
     if (isFav) {
       await removeFromFavorites(eventoId);
       return false;
     } else {
-      await addToFavorites(evento);
+      await addToFavorites(eventoId);                     // CAMBIO: solo pasa ID
       return true;
     }
-  }
-
-  /// Limpiar favoritos vencidos según configuración
-  Future<int> cleanOldFavorites() async {
-    final db = await DatabaseHelper.database;
-    
-    // Obtener días de configuración
-    final cleanupDays = await _getCleanupDays('cleanup_favorites_days');
-    final cutoffDate = DateTime.now().subtract(Duration(days: cleanupDays));
-    
-    return await db.delete(
-      'favoritos',
-      where: 'DATE(date) < ?',
-      whereArgs: [cutoffDate.toIso8601String().split('T')[0]],
-    );
   }
 
   // ========== CONFIGURACIÓN ==========
@@ -247,17 +242,16 @@ class EventRepository {
   /// Contar total de favoritos
   Future<int> getTotalFavorites() async {
     final db = await DatabaseHelper.database;
-    final result = await db.rawQuery('SELECT COUNT(*) as count FROM favoritos');
+    final result = await db.rawQuery('SELECT COUNT(*) as count FROM eventos WHERE favorite = 1');  // CAMBIO: query en misma tabla con filtro
     return result.first['count'] as int;
   }
-
   /// Limpiar toda la base de datos (solo para debug/reset)
   Future<void> clearAllData() async {
     final db = await DatabaseHelper.database;
     final batch = db.batch();
     
-    batch.delete('eventos');
-    batch.delete('favoritos');
+    batch.delete('eventos');                                        // CAMBIO: solo una tabla
+    // ELIMINAR: batch.delete('favoritos'); - ya no existe
     batch.update('sync_info', {
       'last_sync': DateTime.now().toIso8601String(),
       'batch_version': '0.0.0',

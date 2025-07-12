@@ -33,45 +33,24 @@ class DatabaseHelper {
   static Future<void> _createTables(Database db, int version) async {
     // Tabla principal de eventos
     await db.execute('''
-      CREATE TABLE eventos (
-        id INTEGER PRIMARY KEY,
-        title TEXT NOT NULL,
-        category TEXT NOT NULL,
-        code TEXT UNIQUE,
-        location TEXT,
-        date TEXT NOT NULL,
-        price TEXT,
-        imageUrl TEXT,
-        description TEXT,
-        address TEXT,
-        district TEXT,
-        websiteUrl TEXT,
-        lat REAL,
-        lng REAL,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
-
-    // Tabla de favoritos (persiste más tiempo)
-    await db.execute('''
-      CREATE TABLE favoritos (
-        id INTEGER PRIMARY KEY,
-        evento_id INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        category TEXT NOT NULL,
-        location TEXT,
-        date TEXT NOT NULL,
-        price TEXT,
-        imageUrl TEXT,
-        description TEXT,
-        address TEXT,
-        district TEXT,
-        websiteUrl TEXT,
-        lat REAL,
-        lng REAL,
-        favorited_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        original_created_at TEXT
-      )
+    CREATE TABLE eventos (
+      id INTEGER PRIMARY KEY,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL,
+      code TEXT UNIQUE,
+      location TEXT,
+      date TEXT NOT NULL,
+      price TEXT,
+      imageUrl TEXT,
+      description TEXT,
+      address TEXT,
+      district TEXT,
+      websiteUrl TEXT,
+      lat REAL,
+      lng REAL,
+      favorite BOOLEAN DEFAULT FALSE,                   
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
     ''');
 
     // Tabla de configuración de la app
