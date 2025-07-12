@@ -5,7 +5,8 @@ class PreferencesProvider with ChangeNotifier {
   String _theme = 'normal';
   Set<String> _selectedCategories = {};
   Set<String> _activeFilterCategories = {};
-
+  int _eventCleanupDays = 3;        // NUEVO: días limpieza eventos
+  int _favoriteCleanupDays = 7;     // NUEVO: días limpieza favoritos
   PreferencesProvider();
 
   Future<void> init() async {
@@ -15,11 +16,14 @@ class PreferencesProvider with ChangeNotifier {
   String get theme => _theme;
   Set<String> get selectedCategories => _selectedCategories;
   Set<String> get activeFilterCategories => _activeFilterCategories;
-
+  int get eventCleanupDays => _eventCleanupDays;      // NUEVO: getter eventos
+  int get favoriteCleanupDays => _favoriteCleanupDays; 
+  
   Future<void> _loadPreferences() async {
     _theme = await UserPreferences.getTheme();
     _selectedCategories = await UserPreferences.getCategories();
-
+    _eventCleanupDays = await UserPreferences.getEventCleanupDays();     
+    _favoriteCleanupDays = await UserPreferences.getFavoriteCleanupDays(); 
     // Si no hay nada guardado, activar todas por defecto
     if (_selectedCategories.isEmpty) {
       _selectedCategories = {
@@ -96,6 +100,16 @@ class PreferencesProvider with ChangeNotifier {
   await UserPreferences.setActiveFilterCategories(_activeFilterCategories);
   notifyListeners();
   }
+  Future<void> setEventCleanupDays(int days) async {        // NUEVO: método completo
+    _eventCleanupDays = days;                               // NUEVO: actualizar estado local
+    await UserPreferences.setEventCleanupDays(days);        // NUEVO: persistir en SharedPrefs
+    notifyListeners();                                      // NUEVO: notificar cambios UI
+  }
 
+  Future<void> setFavoriteCleanupDays(int days) async {     // NUEVO: método completo
+    _favoriteCleanupDays = days;                            // NUEVO: actualizar estado local
+    await UserPreferences.setFavoriteCleanupDays(days);     // NUEVO: persistir en SharedPrefs
+    notifyListeners();                                      // NUEVO: notificar cambios UI
+  }
 
 }
