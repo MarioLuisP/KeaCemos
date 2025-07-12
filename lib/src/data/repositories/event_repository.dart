@@ -108,6 +108,28 @@ class EventRepository {
     };
   }
 
+  /// Remover eventos duplicados por CODE (mantener el más reciente) - NUEVO
+    Future<int> removeDuplicatesByCodes() async {                     // NUEVO: función completa
+      final db = await DatabaseHelper.database;
+      
+      // Query para encontrar y eliminar duplicados (mantener el de ID mayor = más reciente) - NUEVO
+      final deletedDuplicates = await db.rawDelete('''              // NUEVO: SQL optimizada
+        DELETE FROM eventos 
+        WHERE id NOT IN (
+          SELECT MAX(id) 
+          FROM eventos 
+          GROUP BY code
+          HAVING code IS NOT NULL
+        ) 
+        AND code IS NOT NULL
+      ''');
+      
+      if (deletedDuplicates > 0) {                                   // NUEVO: log solo si hay duplicados
+        print('🔄 Removidos $deletedDuplicates eventos duplicados por CODE');
+      }
+      
+      return deletedDuplicates;                                      // NUEVO: retorna cantidad
+    }
   // ========== FAVORITOS ==========
   /// Obtener todos los favoritos
   Future<List<Map<String, dynamic>>> getAllFavorites() async {

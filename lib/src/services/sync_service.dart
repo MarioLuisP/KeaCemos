@@ -132,21 +132,15 @@ class SyncService {
     return syncInfo?['batch_version'] as String? ?? '0.0.0';
   }
 
-  // ========== PROCESAMIENTO DE EVENTOS ==========
-
-  /// Procesar y guardar eventos en SQLite
   Future<void> _processEvents(List<Map<String, dynamic>> events) async {
-    print('⚙️ Procesando ${events.length} eventos...');
+    print('⚙️ Agregando ${events.length} eventos nuevos...'); // CAMBIO
     
-    // Limpiar eventos existentes antes de insertar nuevos
-    await _clearCurrentEvents();
-    
-    // Insertar nuevos eventos
+    // BATCH INSERT súper rápido - NO borrar nada - NUEVO
     await _eventRepository.insertEvents(events);
     
-    print('✅ ${events.length} eventos guardados en SQLite');
+    print('✅ ${events.length} eventos agregados a SQLite'); // CAMBIO
   }
-
+  
   /// Limpiar eventos actuales (no favoritos)
   Future<void> _clearCurrentEvents() async {
     final db = await DatabaseHelper.database;
@@ -158,15 +152,16 @@ class SyncService {
   Future<CleanupResult> _performCleanup() async {
     print('🧹 Realizando limpieza automática...');
     
-    final cleanupStats = await _eventRepository.cleanOldEvents();        // CAMBIO: método único retorna Map
+    final cleanupStats = await _eventRepository.cleanOldEvents();
+    final duplicatesRemoved = await _eventRepository.removeDuplicatesByCodes(); // NUEVO: limpieza duplicados
     
-    print('🗑️ Limpieza completada: ${cleanupStats['normalEvents']} eventos normales, ${cleanupStats['favoriteEvents']} favoritos');  // CAMBIO: usar stats detalladas
+    print('🗑️ Limpieza completada: ${cleanupStats['normalEvents']} eventos normales, ${cleanupStats['favoriteEvents']} favoritos, $duplicatesRemoved duplicados'); // CAMBIO: agregar duplicados
     
     return CleanupResult(
-      eventsRemoved: cleanupStats['normalEvents']!,                     // NUEVO: eventos normales
-      favoritesRemoved: cleanupStats['favoriteEvents']!,               // NUEVO: eventos favoritos
+      eventsRemoved: cleanupStats['normalEvents']! + duplicatesRemoved,        // CAMBIO: incluir duplicados
+      favoritesRemoved: cleanupStats['favoriteEvents']!,
     );
-  }
+  } 
   // ========== UTILIDADES ==========
 
   /// Actualizar timestamp de última sincronización

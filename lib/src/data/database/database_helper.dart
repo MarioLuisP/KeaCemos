@@ -93,6 +93,19 @@ class DatabaseHelper {
       'batch_version': '0.0.0',
       'total_events': 0,
     });
+ 
+  // Índices para optimizar performance - NUEVO
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_eventos_code ON eventos(code)
+    ''');
+
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_eventos_date ON eventos(date)
+    ''');
+
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_eventos_favorite ON eventos(favorite)
+    ''');
   }
 
   // Manejo de actualizaciones de esquema
