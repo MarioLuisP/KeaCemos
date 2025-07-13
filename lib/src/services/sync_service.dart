@@ -84,7 +84,7 @@ class SyncService {
       
       final querySnapshot = await FirebaseFirestore.instance
           .collection('eventos_lotes')
-          .orderBy('timestamp', descending: true)
+          .orderBy('metadata.fecha_subida', descending: true)
           .limit(1)
           .get();
 
@@ -95,10 +95,12 @@ class SyncService {
 
       final latestBatch = querySnapshot.docs.first;
       final batchData = latestBatch.data();
-      
+      print('🔍 Campos disponibles en batchData: ${batchData.keys.toList()}');
+      print('🔍 Total eventos en metadata: ${batchData['metadata']?['total_eventos']}');
+
       // Verificar si es un lote nuevo
       final currentBatchVersion = await _getCurrentBatchVersion();
-      final newBatchVersion = batchData['version'] as String? ?? 'unknown';
+      final newBatchVersion = batchData['metadata']?['nombre_lote'] as String? ?? 'unknown';
       
       if (currentBatchVersion == newBatchVersion) {
         print('📄 Mismo lote, no hay actualizaciones');
@@ -106,12 +108,10 @@ class SyncService {
       }
 
       // Extraer eventos del lote
-      final events = (batchData['events'] as List<dynamic>?)
+      final events = (batchData['eventos'] as List<dynamic>?)
           ?.map((e) => Map<String, dynamic>.from(e as Map))
-          .toList() ?? [];
-
-      print('📦 Descargados ${events.length} eventos - Versión: $newBatchVersion');
-      
+          .toList() ?? [];      print('📦 Descargados ${events.length} eventos - Versión: $newBatchVersion');
+            
       // Actualizar versión del lote
       await _eventRepository.updateSyncInfo(
         batchVersion: newBatchVersion,

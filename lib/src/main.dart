@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';          
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:quehacemos_cba/l10n/intl_messages_all.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +11,10 @@ import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/providers/mock_auth_provider.dart';  // CAMBIO: MockAuthProvider en lugar de AuthProvider
 import 'package:quehacemos_cba/src/providers/notifications_provider.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   await initializeMessages('es');
   runApp(const MyApp());
 }

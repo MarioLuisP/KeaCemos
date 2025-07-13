@@ -36,7 +36,7 @@ class DatabaseHelper {
     CREATE TABLE eventos (
       id INTEGER PRIMARY KEY,
       title TEXT NOT NULL,
-      category TEXT NOT NULL,
+      type TEXT NOT NULL,
       code TEXT UNIQUE,
       location TEXT,
       date TEXT NOT NULL,

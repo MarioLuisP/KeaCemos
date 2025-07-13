@@ -21,7 +21,13 @@ class EventService {
 
   // Obtener todos los eventos
   Future<List<Map<String, dynamic>>> getAllEvents() async {
-    return events.toList().take(1000).toList();
+    try {
+      await _syncService.syncOnAppStart();           // 👈 AGREGAR ESTA LÍNEA
+      return await _repository.getAllEvents();       // 👈 CAMBIAR ESTA LÍNEA
+    } catch (e) {
+      print('⚠️ Error obteniendo eventos, usando fallback: $e');
+      return events.toList().take(1000).toList();    // 👈 FALLBACK
+    }
   }
 
   // Filtrar por categoría (para Prompt 4 y chips)
