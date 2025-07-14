@@ -223,6 +223,22 @@ class SettingsPage extends StatelessWidget {
                     Colors.red,
                     () => _clearDatabase(context),
                   ),
+                  const SizedBox(height: AppDimens.paddingSmall),
+                  _buildDebugButton(
+                    context,
+                    'VER BASE DE DATOS',
+                    '📊 Mostrar eventos guardados y estado de sync',
+                    Colors.green,
+                    () => _showDatabaseInfo(context),
+                  ),
+                  const SizedBox(height: AppDimens.paddingSmall),
+                  _buildDebugButton(
+                    context,
+                    'ESTADÍSTICAS',
+                    '📈 Conteo por categorías y resumen',
+                    Colors.orange,
+                    () => _showEventStats(context),
+                  ),
                 ],
               ),
             ),
@@ -523,6 +539,100 @@ class SettingsPage extends StatelessWidget {
       }
     }
   }
+Future<void> _showDatabaseInfo(BuildContext context) async {
+  try {
+    final repository = EventRepository();
+    final eventos = await repository.getAllEvents();
+    final syncInfo = await repository.getSyncInfo();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('📊 Estado de la Base de Datos'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('📦 Total eventos: ${eventos.length}'),
+              Text('🕐 Última sync: ${syncInfo?['last_sync'] ?? 'Nunca'}'),
+              Text('🏷️ Versión lote: ${syncInfo?['batch_version'] ?? 'N/A'}'),
+              const SizedBox(height: 16),
+              const Text('📋 Últimos 5 eventos:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              ...eventos.take(5).map((e) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('• ${e['title']} (${e['date']})'),
+              )),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('❌ Error: $e')),
+    );
+  }
+}
+
+Future<void> _showEventStats(BuildContext context) async {
+  try {
+    final repository = EventRepository();
+    final eventos = await repository.getAllEvents();
+    final favoritos = await repository.getAllFavorites();
+    
+    final stats = <String, int>{};
+    for (var evento in eventos) {
+      final tipo = evento['type'] ?? 'sin_tipo';
+      stats[tipo] = (stats[tipo] ?? 0) + 1;
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('📈 Estadísticas'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('📊 Total eventos: ${eventos.length}'),
+              Text('⭐ Favoritos: ${favoritos.length}'),
+              const SizedBox(height: 16),
+              const Text('📋 Por categoría:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              ...stats.entries.map((entry) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('• ${entry.key}: ${entry.value} eventos'),
+              )),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('❌ Error: $e')),
+    );
+  }
+}
+
+
+
+
 }
 
 // 📋 RESEÑA PARA BORRAR EN PRODUCCIÓN:

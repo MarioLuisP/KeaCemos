@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/widgets/chips/filter_chips_widget.dart';
-import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
+//import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
 import 'package:quehacemos_cba/src/providers/filter_criteria.dart';
 import 'package:intl/intl.dart';
-// Provider import
+import 'package:quehacemos_cba/src/widgets/cards/fast_event_card.dart';
 import 'package:quehacemos_cba/src/widgets/app_bars/main_app_bar.dart';
 
 class HomePage extends StatefulWidget {
@@ -265,11 +265,12 @@ class _HomePageState extends State<HomePage>
                   return _buildSectionHeader(item['title']);
                 } else {
                   // CAMBIO: Mantener lógica de evento
-                  return EventCardWidget(
-                    event: item['data'],
-                    viewModel: viewModel,
-                    key: ValueKey(item['data']['id']),
-                  );
+                  return FastEventCard(
+                  event: item['data'],
+                  key: ValueKey(item['data']['id']),
+                  viewModel: viewModel,
+                );
+
                 }
               },
               childCount: flatItems.length, // NUEVO: Usar longitud de cache
@@ -401,12 +402,12 @@ class _HomePageState extends State<HomePage>
         delegate: SliverChildListDelegate([
           _buildSectionHeader(sectionTitle),
           ...eventsOnDate.map(
-            (event) => EventCardWidget(
-              event: event,
-              viewModel: viewModel,
-              key: ValueKey(event['id']), // ✅ CORRECCIÓN: Acceso seguro al id
+              (event) => FastEventCard(
+                event: event,
+                key: ValueKey(event['id']),
+                viewModel: viewModel,
+              ),
             ),
-          ),
         ]),
       );
     }).toList();

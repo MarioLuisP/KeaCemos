@@ -113,7 +113,7 @@ class EventRepository {
       final db = await DatabaseHelper.database;
       
       // Query para encontrar y eliminar duplicados (mantener el de ID mayor = más reciente) - NUEVO
-      final deletedDuplicates = await db.rawDelete('''              // NUEVO: SQL optimizada
+      final deletedDuplicates = await db.rawDelete('''              
         DELETE FROM eventos 
         WHERE id NOT IN (
           SELECT MAX(id) 
@@ -123,12 +123,12 @@ class EventRepository {
         ) 
         AND code IS NOT NULL
       ''');
-      
-      if (deletedDuplicates > 0) {                                   // NUEVO: log solo si hay duplicados
+
+      if (deletedDuplicates > 0) {
         print('🔄 Removidos $deletedDuplicates eventos duplicados por CODE');
       }
-      
-      return deletedDuplicates;                                      // NUEVO: retorna cantidad
+
+      return deletedDuplicates;                        // NUEVO: retorna cantidad
     }
   // ========== FAVORITOS ==========
   /// Obtener todos los favoritos
