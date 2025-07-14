@@ -5,10 +5,12 @@ import 'package:quehacemos_cba/src/utils/dimens.dart';
 import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
+import 'package:quehacemos_cba/src/providers/category_constants.dart';
 import 'event_card_painter.dart';
-import 'package:quehacemos_cba/src/providers/category_constants.dart'; // NUEVO
-import 'destacado_event_card_painter.dart'; // NUEVO
+import 'destacado_event_card_painter.dart';
 import 'silver_event_card_painter.dart';
+import 'gold_event_card_painter.dart';
+import 'gold_shimmer_manager.dart';
 
 /// Widget optimizado para renderizar tarjetas de eventos a 90Hz
 /// Reemplaza a EventCardWidget con un CustomPaint de alto rendimiento
@@ -26,7 +28,7 @@ class FastEventCard extends StatefulWidget {
   State<FastEventCard> createState() => _FastEventCardState();
 }
 
-class _FastEventCardState extends State<FastEventCard> {
+class _FastEventCardState extends State<FastEventCard> with TickerProviderStateMixin {
   // Estado local para favoritos (sin Consumer)
   late bool _isFavorite;
   late FavoritesProvider _favoritesProvider;
@@ -36,6 +38,25 @@ class _FastEventCardState extends State<FastEventCard> {
     super.initState();
     _favoritesProvider = context.read<FavoritesProvider>();
     _isFavorite = _favoritesProvider.isFavorite(widget.event['id'].toString());
+    
+    // NUEVO: Inicializar singleton solo una vez y suscribirse si es Gold
+    _initializeGoldManager();
+  }
+
+  void _initializeGoldManager() {
+    //final rating = widget.event['rating'] ?? 0;💥💥💥 descomentar los 3
+    final rating = 300; // TEMPORAL
+    
+    if (rating >= 300) {
+      // Inicializar el manager (solo se hace una vez globalmente)
+      GoldShimmerManager.instance.initialize(this);
+      // Suscribirse para recibir updates del shimmer
+      GoldShimmerManager.instance.addListener(_onShimmerUpdate);
+    }
+  }
+
+  void _onShimmerUpdate() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -57,8 +78,8 @@ class _FastEventCardState extends State<FastEventCard> {
     _favoritesProvider.toggleFavorite(widget.event['id'].toString());
   }
 
-  @override
-  Widget build(BuildContext context) {
+  /// Factory que crea el painter correcto según el rating
+  CustomPainter _createPainter(int rating) {
     // Extraer datos una sola vez
     final eventTitle = widget.event['title'] ?? '';
     final eventType = widget.event['type'] ?? '';
@@ -74,18 +95,12 @@ class _FastEventCardState extends State<FastEventCard> {
     
     final categoryWithEmoji = widget.viewModel.getCategoryWithEmoji(eventType);
     final theme = context.read<PreferencesProvider>().theme;
-    final uiCategory = CategoryConstants.getUiName(eventType.toLowerCase()); 
-    print('DEBUG - Original eventType: "$eventType"');
-    print('DEBUG - Normalized uiCategory: "$uiCategory"');
-
-    return GestureDetector(
-      onTapDown: (details) {
-        // Obtener la posición relativa del tap
-        final RenderBox box = context.findRenderObject() as RenderBox;
-        final localPosition = box.globalToLocal(details.globalPosition);
-        
-        // Crear un painter temporal para verificar el hit test
-        final painter = EventCardPainter(
+    final uiCategory = CategoryConstants.getUiName(eventType.toLowerCase());
+    
+    // Factory pattern para crear el painter correcto
+    switch (rating) {
+      case 100:
+        return DestacadoEventCardPainter(
           title: eventTitle,
           categoryWithEmoji: categoryWithEmoji,
           formattedDate: formattedDate,
@@ -96,9 +111,64 @@ class _FastEventCardState extends State<FastEventCard> {
           theme: theme,
           category: uiCategory,
         );
+      case 200:
+        return SilverEventCardPainter(
+          title: eventTitle,
+          categoryWithEmoji: categoryWithEmoji,
+          formattedDate: formattedDate,
+          location: eventLocation,
+          district: eventDistrict,
+          price: eventPrice,
+          isFavorite: _isFavorite,
+          theme: theme,
+          category: uiCategory,
+        );
+      case 300:
+        return GoldEventCardPainter(
+          title: eventTitle,
+          categoryWithEmoji: categoryWithEmoji,
+          formattedDate: formattedDate,
+          location: eventLocation,
+          district: eventDistrict,
+          price: eventPrice,
+          isFavorite: _isFavorite,
+          theme: theme,
+          category: uiCategory,
+          shimmerAnimation: GoldShimmerManager.instance.animation, // AGREGAR ESTA LÍNEA
+          
+        );
+      // case 400: return PlatinumEventCardPainter(...);  // TODO: Futuro
+      default:
+        return EventCardPainter(
+          title: eventTitle,
+          categoryWithEmoji: categoryWithEmoji,
+          formattedDate: formattedDate,
+          location: eventLocation,
+          district: eventDistrict,
+          price: eventPrice,
+          isFavorite: _isFavorite,
+          theme: theme,
+          category: uiCategory,
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    //final rating = widget.event['rating'] ?? 0;💥💥💥
+    final rating = 300; // TEMPORAL
+    
+    return GestureDetector(
+      onTapDown: (details) {
+        // Obtener la posición relativa del tap
+        final RenderBox box = context.findRenderObject() as RenderBox;
+        final localPosition = box.globalToLocal(details.globalPosition);
+        
+        // Crear un painter temporal para verificar el hit test
+        final painter = _createPainter(rating);
         
         // Si tocó el corazón, toggle favorito
-        if (painter.hitTestHeart(localPosition)) {
+        if (painter is EventCardPainter && painter.hitTestHeart(localPosition)) {
           _toggleFavorite();
         } else {
           // Si no, abrir el modal de detalles
@@ -112,44 +182,21 @@ class _FastEventCardState extends State<FastEventCard> {
         ),
         child: RepaintBoundary( // Optimización adicional
           child: CustomPaint(
-            size: const Size(double.infinity, 236), // Altura fija🔥🔥🔥
-            painter: SilverEventCardPainter(
-              title: eventTitle,
-              categoryWithEmoji: categoryWithEmoji,
-              formattedDate: formattedDate,
-              location: eventLocation,
-              district: eventDistrict,
-              price: eventPrice,
-              isFavorite: _isFavorite,
-              theme: theme,
-              category: uiCategory,
-            ),
+            size: const Size(double.infinity, 236), // Altura fija
+            painter: _createPainter(rating),
           ),
         ),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    //final rating = widget.event['rating'] ?? 0;💥💥💥
+    final rating = 300; // TEMPORAL
+    if (rating >= 300) {
+      GoldShimmerManager.instance.removeListener(_onShimmerUpdate);
+    }
+    super.dispose();
+  }
 }
-
-/// Widget para mostrar tarjetas premium con efectos especiales
-/// TODO: Implementar cuando se active el modelo de monetización
-//class PremiumEventCard extends FastEventCard {
- // const PremiumEventCard({
-  //  super.key,
- //   required super.event,
- //   required super.viewModel,
- // });
-
- // @override
-// PremiumEventCardState? premiumState;
-// TODO: Activar cuando se implemente PremiumEventCardState
-//}
-
-//class _PremiumEventCardState extends _FastEventCardState {
- // @override
- // Widget build(BuildContext context) {
-    // Por ahora, usar la misma implementación
-    // TODO: Cambiar a PremiumEventCardPainter cuando esté listo
- //   return super.build(context);
- // }
-//}

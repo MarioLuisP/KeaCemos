@@ -31,9 +31,20 @@ class SilverEventCardPainter extends DestacadoEventCardPainter {
   void _drawSilverBorder(Canvas canvas, Size size) {
     // Paint para el borde dorado adaptativo por tema
     final borderPaint = Paint()
-      ..color = _getBorderColor() // CAMBIO: Color adaptativo
+      ..color = _getBorderColor()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+      // mas grueso mover 🔥🔥🔥🔥
+      ..strokeWidth = 4.0;
+
+    // Path del borde (misma forma que la tarjeta)
+    final borderPath = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTWH(1, 1, size.width - 2, size.height - 2),
+        Radius.circular(AppDimens.borderRadius),
+      ));
+
+    // Dibujar el borde dorado
+    canvas.drawPath(borderPath, borderPaint);
   }
 
   /// Obtiene el color del borde según el tema para máxima visibilidad
@@ -52,16 +63,6 @@ class SilverEventCardPainter extends DestacadoEventCardPainter {
       default:
         return const Color(0xFFB8860B); // Fallback oro oscuro
     }
-
-    // Path del borde (misma forma que la tarjeta)
-    final borderPath = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(1, 1, size.width - 2, size.height - 2), // Ajuste para el grosor del borde
-        Radius.circular(AppDimens.borderRadius),
-      ));
-
-    // Dibujar el borde dorado
-    canvas.drawPath(borderPath, borderPaint);
   }
 
   @override
