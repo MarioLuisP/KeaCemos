@@ -14,14 +14,19 @@ class GoldShimmerManager {
   GoldShimmerManager._();
   
   /// Inicializa el manager con un TickerProvider (solo se llama una vez)
-  void initialize(TickerProvider vsync) {
-    if (_isInitialized) return; // Evitar doble inicialización
-    
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 800), // Duración del shimmer
-      vsync: vsync,
-    );
-    
+void initialize(TickerProvider vsync) {
+  print('🟡 GOLD MANAGER: Initialize llamado');
+  if (_isInitialized) {
+    print('🟡 GOLD MANAGER: Ya estaba inicializado, saliendo');
+    return;
+  }
+  
+  print('🟡 GOLD MANAGER: Creando AnimationController');
+  _controller = AnimationController(
+    duration: const Duration(milliseconds: 2800),
+    vsync: vsync,
+  );
+  
     _animation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -42,22 +47,34 @@ class GoldShimmerManager {
     });
 
     _isInitialized = true;
+    print('🟡 GOLD MANAGER: Inicialización completa, iniciando loop');
     _startShimmerLoop();
   }
   
   /// Inicia el loop infinito de shimmer
-  void _startShimmerLoop() {
-    if (!_isInitialized || _controller == null) return;
-    _controller!.forward();
-  }
+void _startShimmerLoop() {
+  if (!_isInitialized || _controller == null) return;
+  
+  Future.delayed(const Duration(milliseconds: 500), () {
+    if (_isInitialized && _controller != null) {
+      _controller!.forward().then((_) {
+        if (_isInitialized && _controller != null) {
+          _controller!.reset();
+          // QUITAR ESTA LÍNEA: _notifyListeners();
+          Future.delayed(const Duration(seconds: 3), _startShimmerLoop);
+        }
+      });
+    }
+  });
+}
   
   /// Notifica a todas las tarjetas Gold suscritas que se actualicen
-  void _notifyListeners() {
-    for (final listener in _listeners) {
-      listener();
-    }
+void _notifyListeners() {
+  print('🟡 NOTIFY: Notificando ${_listeners.length} listeners');
+  for (final listener in _listeners) {
+    listener();
   }
-  
+}  
   /// Las tarjetas Gold se suscriben para recibir updates
   void addListener(VoidCallback listener) {
     _listeners.add(listener);

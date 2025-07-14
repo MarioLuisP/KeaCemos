@@ -23,24 +23,38 @@ final Animation<double>? shimmerAnimation; // NUEVO: Declarar field
 
   @override
   void paint(Canvas canvas, Size size) {
+    print('🔴 GOLD PAINTER: paint() llamado');
     // PASO 1: Pintar tarjeta Silver completa (badge + borde)
     super.paint(canvas, size);
-    
+    print('🔴 GOLD PAINTER: super.paint() completado, llamando _drawGoldShimmer');
     // PASO 2: Agregar shimmer dorado animado usando el singleton
     _drawGoldShimmer(canvas, size);
   }
 
   /// Dibuja el efecto shimmer que cruza la tarjeta cada 3 segundos
-  void _drawGoldShimmer(Canvas canvas, Size size) {
-    final shimmerAnimation = GoldShimmerManager.instance.animation;
-    print("💥 shimmer value: ${shimmerAnimation?.value}");
-
-    // Solo dibujar si hay animación y está activa
-    if (shimmerAnimation == null || shimmerAnimation.value <= 0.0) return;
-
-    // Calcular posición del shimmer (de izquierda a derecha)
-    final shimmerProgress = shimmerAnimation.value;
-    final shimmerX = (size.width + 100) * shimmerProgress - 50; // +100 y -50 para que salga completamente
+void _drawGoldShimmer(Canvas canvas, Size size) {
+  print('🔵 GOLD PAINTER: _drawGoldShimmer llamado');
+  
+  final shimmerAnimation = GoldShimmerManager.instance.animation;
+  
+  if (shimmerAnimation == null) {
+    print('🔵 GOLD PAINTER: shimmerAnimation es null');
+    return;
+  }
+  
+  print('🔵 GOLD PAINTER: Animation value = ${shimmerAnimation.value}');
+  
+  if (shimmerAnimation.value <= 0.0) {
+    print('🔵 GOLD PAINTER: Animation value es 0, saliendo');
+    return;
+  }
+  
+  // ⬇️ HASTA AQUÍ VAN LOS PRINTS ⬇️
+  
+  // Calcular posición del shimmer (de izquierda a derecha)
+  final shimmerProgress = shimmerAnimation.value;
+  final shimmerX = (size.width + 100) * shimmerProgress - 50;
+  
 
     // Gradient del shimmer (transparente → dorado → transparente)
     final shimmerGradient = LinearGradient(
@@ -57,8 +71,11 @@ final Animation<double>? shimmerAnimation; // NUEVO: Declarar field
     // Paint del shimmer
     final shimmerPaint = Paint()
       ..shader = shimmerGradient.createShader(
-        Rect.fromLTWH(shimmerX - 25, 0, 50, size.height),
+        //Rect.fromLTWH(shimmerX - 25, 0, 50, size.height),🔥🔥
+        Rect.fromLTWH(shimmerX - 50, -50, 100, size.height + 100)
       );
+    
+
 
     // Path del shimmer (misma forma que la tarjeta para no salirse)
     final shimmerPath = Path()
@@ -96,11 +113,10 @@ final Animation<double>? shimmerAnimation; // NUEVO: Declarar field
   }
 
   @override
-  bool shouldRepaint(GoldEventCardPainter oldDelegate) {
-    // Repintar si cambia la animación del singleton o datos del padre
-    final currentValue = GoldShimmerManager.instance.animation?.value ?? 0.0;
-    final oldValue = GoldShimmerManager.instance.animation?.value ?? 0.0;
-    
-    return currentValue != oldValue || super.shouldRepaint(oldDelegate);
-  }
+bool shouldRepaint(GoldEventCardPainter oldDelegate) {
+  return true; // Siempre repintar cuando hay shimmer
+  // O si quieres ser más específico:
+  // return shimmerAnimation?.value != oldDelegate.shimmerAnimation?.value || 
+  //        super.shouldRepaint(oldDelegate);
+}
 }
