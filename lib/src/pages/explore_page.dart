@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
-import 'package:quehacemos_cba/src/widgets/chips/filter_chips_widget.dart'; // Nuevo import
-import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
+import 'package:quehacemos_cba/src/widgets/chips/filter_chips_widget.dart';
+import 'package:quehacemos_cba/src/widgets/cards/fast_event_card.dart'; // CAMBIO: FastEventCard en lugar de EventCardWidget
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -74,26 +74,25 @@ class _ExplorePageState extends State<ExplorePage> {
                       hintText: 'Busca eventos (ej. payasos)',
                       prefixIcon: const Icon(Icons.search),
                       filled: true,
-                      fillColor: Theme.of(context).colorScheme.primary, // CAMBIO: Respeta theme
+                      fillColor: Theme.of(context).colorScheme.primary,
                       contentPadding: const EdgeInsets.symmetric(
                         vertical: 14.0,
                       ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30.0),
-                          borderSide: const BorderSide(color: Colors.black, width: 1.0), // NUEVO: Borde negro
+                          borderSide: const BorderSide(color: Colors.black, width: 1.0),
                         ),
-                        enabledBorder: OutlineInputBorder( // NUEVO: Borde cuando no está enfocado
+                        enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30.0),
                           borderSide: const BorderSide(color: Colors.black, width: 1.0),
                         ),
-                        focusedBorder: OutlineInputBorder( // NUEVO: Borde cuando está enfocado
+                        focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30.0),
-                          borderSide: const BorderSide(color: Colors.black, width: 1.5), // Más grueso al enfocar
+                          borderSide: const BorderSide(color: Colors.black, width: 1.5),
                         ),
                         ),
                     ),
                   ),
-             
 
                 // Fila de chips + refresh
                 Padding(
@@ -103,7 +102,7 @@ class _ExplorePageState extends State<ExplorePage> {
 
                 const SizedBox(height: 8.0),
 
-                // Lista de eventos
+                // CAMBIO: Lista de eventos migrada al sistema optimizado
                 Expanded(
                   child: viewModel.isLoading
                       ? const Center(child: CircularProgressIndicator())
@@ -113,18 +112,71 @@ class _ExplorePageState extends State<ExplorePage> {
                             )
                           : viewModel.filteredEvents.isEmpty
                               ? const Center(child: Text('No hay eventos.'))
-                              : ListView.builder(
-                                  itemCount: viewModel.filteredEvents.take(20).length,
-                                  itemBuilder: (context, index) {
-                                    final event = viewModel.filteredEvents[index];
-                                    return EventCardWidget(event: event, viewModel: viewModel);
-                                  },
-                                ),
+                              : _buildOptimizedEventsList(viewModel), // NUEVO: Método optimizado
                 ),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  // NUEVO: Método optimizado igual que HomePage pero para explore
+  Widget _buildOptimizedEventsList(HomeViewModel viewModel) {
+    // NUEVO: Obtener flatItems optimizados desde cache (limitado a 30)
+    final allFlatItems = viewModel.getFlatItemsForHomePage();
+    final limitedFlatItems = allFlatItems.take(30).toList(); // CAMBIO: Límite a 30 eventos
+
+    return CustomScrollView(
+      // NUEVO: CustomScrollView optimizado
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
+      slivers: [
+        // NUEVO: SliverList optimizado
+        SliverPadding(
+          padding: const EdgeInsets.only(top: 8.0),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final item = limitedFlatItems[index];
+
+                if (item['type'] == 'header') {
+                  // NUEVO: Mantener headers si existen
+                  return _buildSectionHeader(item['title']);
+                } else {
+                  // CAMBIO: FastEventCard en lugar de EventCardWidget
+                  return FastEventCard(
+                    event: item['data'],
+                    key: ValueKey(item['data']['id']),
+                    viewModel: viewModel,
+                  );
+                }
+              },
+              childCount: limitedFlatItems.length,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // NUEVO: Método para headers (copiado de HomePage)
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Divider(thickness: 0.5, color: Colors.grey),
+        ],
       ),
     );
   }

@@ -3,7 +3,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
-import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
+import 'package:quehacemos_cba/src/widgets/cards/fast_event_card.dart'; 
 
 class CalendarPage extends StatefulWidget {
   final Function(DateTime)? onDateSelected;
@@ -85,9 +85,26 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
             body: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: TableCalendar(
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // CAMBIO: margin en lugar de padding
+                  decoration: BoxDecoration(
+                    color: Color(0xB3FFFFFF), // NUEVO: Fondo transparente
+                    borderRadius: BorderRadius.circular(16.0), // NUEVO: Bordes redondeados
+                    border: Border.all(
+                      color: Color(0x4DFFFFFF), // NUEVO: Borde sutil
+                      width: 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x0D000000), // NUEVO: Sombra muy sutil
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0), // NUEVO: Padding interno
+                    child: TableCalendar(
                     locale: 'es_ES',
                     firstDay: DateTime.utc(2020, 1, 1),
                     lastDay: DateTime.utc(2030, 12, 31),
@@ -293,12 +310,14 @@ calendarBuilders: CalendarBuilders(
                     },
                   ),
                 ),
+                ),
                 if (_selectedDay != null) ...[
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Divider(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0), // NUEVO: Solo padding superior mínimo
+                      child: _buildEventsForSelectedDay(),
+                    ),
                   ),
-                  Expanded(child: _buildEventsForSelectedDay()),
                 ],
               ],
             ),
@@ -308,35 +327,49 @@ calendarBuilders: CalendarBuilders(
     );
   }
 
-  Widget _buildEventsForSelectedDay() {
-    final eventsForDay = _getEventsForDay(_selectedDay!);
+Widget _buildEventsForSelectedDay() {
+  final eventsForDay = _getEventsForDay(_selectedDay!);
 
-    if (eventsForDay.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            'No hay eventos para esta fecha.',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
+  if (eventsForDay.isEmpty) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          'No hay eventos para esta fecha.',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
         ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      itemCount: eventsForDay.length,
-      itemBuilder: (context, index) {
-        final event = eventsForDay[index];
-        return Semantics(
-          label: 'Evento ${event['title']}',
-          button: true,
-          child: EventCardWidget(
-            event: event,
-            viewModel: _homeViewModel,
-          ),
-        );
-      },
+      ),
     );
   }
+
+  // CAMBIO: CustomScrollView optimizado en lugar de ListView.builder
+  return CustomScrollView(
+    physics: const BouncingScrollPhysics(
+      parent: AlwaysScrollableScrollPhysics(), // NUEVO: Physics optimizadas
+    ),
+    slivers: [
+      // NUEVO: SliverList optimizado
+      SliverPadding(
+        padding: const EdgeInsets.only(top: 1.0), //
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              final event = eventsForDay[index];
+              return Semantics(
+                label: 'Evento ${event['title']}',
+                button: true,
+                child: FastEventCard( // CAMBIO: FastEventCard en lugar de EventCardWidget
+                  event: event,
+                  key: ValueKey(event['id']), // NUEVO: Key optimizada
+                  viewModel: _homeViewModel,
+                ),
+              );
+            },
+            childCount: eventsForDay.length,
+          ),
+        ),
+      ),
+    ],
+  );
+}
 }

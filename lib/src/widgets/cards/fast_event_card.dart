@@ -56,7 +56,6 @@ class _FastEventCardState extends State<FastEventCard> with TickerProviderStateM
   }
 
  void _onShimmerUpdate() {
-  print('🟢 FAST EVENT CARD: Recibí update del shimmer');
   if (mounted) setState(() {});
 }
 

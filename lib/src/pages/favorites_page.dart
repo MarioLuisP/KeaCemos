@@ -4,8 +4,7 @@ import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/services/event_service.dart';
 import 'package:quehacemos_cba/src/utils/dimens.dart';
-import 'package:quehacemos_cba/src/widgets/cards/event_card_widget.dart';
-
+import 'package:quehacemos_cba/src/widgets/cards/fast_event_card.dart';
 class FavoritesPage extends StatelessWidget {
   const FavoritesPage({Key? key}) : super(key: key);
 
@@ -93,15 +92,29 @@ class FavoritesPage extends StatelessWidget {
                 );
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.only(top: AppDimens.paddingMedium),
-                itemCount: favoriteEvents.length,
-                itemBuilder: (context, index) {
-                  return EventCardWidget(
-                    event: favoriteEvents[index],
-                    viewModel: homeViewModel,
-                  );
-                },
+              // CAMBIO: CustomScrollView optimizado en lugar de ListView.builder
+              return CustomScrollView(
+                physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(), // NUEVO: Physics optimizadas
+                ),
+                slivers: [
+                  // NUEVO: SliverList optimizado
+                  SliverPadding(
+                    padding: const EdgeInsets.only(top: AppDimens.paddingMedium), // CAMBIO: Padding como sliver
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          return FastEventCard( // CAMBIO: FastEventCard en lugar de EventCardWidget
+                            event: favoriteEvents[index],
+                            key: ValueKey(favoriteEvents[index]['id']), // NUEVO: Key optimizada
+                            viewModel: homeViewModel,
+                          );
+                        },
+                        childCount: favoriteEvents.length,
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           );
