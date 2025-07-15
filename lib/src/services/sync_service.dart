@@ -175,7 +175,48 @@ Future<bool> shouldSync() async {
       await performAutoSync();
     }
   }
+  /// Sincronización automática (respeta shouldSync)
+    Future<SyncResult> performAutoSync() async {                    // NUEVO: método principal automático
+      if (_isSyncing) {                                            // NUEVO: verificar flag
+        print('⏭️ Sincronización ya en progreso, omitiendo...');
+        return SyncResult.notNeeded();
+      }
 
+      if (!await shouldSync()) {                                   // NUEVO: respetar verificaciones
+        print('⏭️ Sincronización no necesaria aún');
+        return SyncResult.notNeeded();
+      }
+
+      _isSyncing = true;                                           // NUEVO: activar flag
+      
+      try {
+        print('🔄 Iniciando sincronización automática...');
+        
+        final events = await _downloadLatestBatch();               // NUEVO: usar método existente
+        
+        if (events.isEmpty) {
+          print('📭 No hay eventos nuevos');
+          return SyncResult.noNewData();
+        }
+
+        await _processEvents(events);                              // NUEVO: procesar eventos
+        final cleanupResults = await _performCleanup();           // NUEVO: limpieza
+        await _updateSyncTimestamp();                              // NUEVO: actualizar timestamp
+
+        print('✅ Sincronización automática completada');
+        return SyncResult.success(                                 // NUEVO: resultado exitoso
+          eventsAdded: events.length,
+          eventsRemoved: cleanupResults.eventsRemoved,
+          favoritesRemoved: cleanupResults.favoritesRemoved,
+        );
+
+      } catch (e) {
+        print('❌ Error en sincronización automática: $e');
+        return SyncResult.error(e.toString());                     // NUEVO: manejo de errores
+      } finally {
+        _isSyncing = false;                                        // NUEVO: desactivar flag
+      }
+    }
 
   /// Reset completo (solo para debug)
   Future<void> resetSync() async {
@@ -183,7 +224,7 @@ Future<bool> shouldSync() async {
     await prefs.remove(_lastSyncKey);
     await _eventRepository.clearAllData();
   }
-  /// MÉTODO TEMPORAL PARA DEV - BORRAR EN PRODUCCIÓN 🔥
+/// MÉTODO TEMPORAL PARA DEV - BORRAR EN PRODUCCIÓN 🔥
   Future<SyncResult> forceSync() async {
     if (_isSyncing) {
       print('⏭️ Sincronización ya en progreso, omitiendo...');
@@ -195,7 +236,7 @@ Future<bool> shouldSync() async {
     try {
       print('🔄 FORZANDO sincronización (dev)...');
       
-      // Saltar verificación de shouldSync()
+      // CAMBIO: Saltar verificación de shouldSync() pero forzar descarga
       final events = await _downloadLatestBatch();
       
       if (events.isEmpty) {
