@@ -8,7 +8,7 @@ class ContactButton extends StatefulWidget {
   State<ContactButton> createState() => _ContactButtonState();
 }
 
-class _ContactButtonState extends State<ContactButton> 
+class _ContactButtonState extends State<ContactButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _pulseAnimation;
@@ -21,15 +21,11 @@ class _ContactButtonState extends State<ContactButton>
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
     // NUEVO: Repetir animación
     _animationController.repeat(reverse: true);
   }
@@ -53,12 +49,9 @@ class _ContactButtonState extends State<ContactButton>
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withAlpha(38),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
-                  width: 1,
-                ),
+                border: Border.all(color: Colors.white.withAlpha(77), width: 1),
               ),
               child: const Icon(
                 Icons.add_circle_outline, // NUEVO: Ícono de agregar
@@ -77,7 +70,7 @@ class _ContactButtonState extends State<ContactButton>
   void _showContactModal(BuildContext context) {
     // NUEVO: Parar animación mientras se muestra el modal
     _animationController.stop();
-    
+
     ContactModal.show(context).then((_) {
       // NUEVO: Reanudar animación cuando se cierre el modal
       if (mounted) {
@@ -99,12 +92,9 @@ class ContactButtonSimple extends StatelessWidget {
         width: 28,
         height: 28,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withAlpha(38),
           shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white.withAlpha(77), width: 1),
         ),
         child: const Icon(
           Icons.add_circle_outline,
@@ -125,11 +115,7 @@ class ContactButtonWithText extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton.icon(
       onPressed: () => ContactModal.show(context),
-      icon: const Icon(
-        Icons.add_circle_outline,
-        color: Colors.white,
-        size: 18,
-      ),
+      icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 18),
       label: const Text(
         'Publicar',
         style: TextStyle(
@@ -140,10 +126,8 @@ class ContactButtonWithText extends StatelessWidget {
       ),
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        backgroundColor: Colors.white.withOpacity(0.1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        backgroundColor: Colors.white.withAlpha(26),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }
@@ -180,12 +164,9 @@ class ContactButtonWithBadge extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withAlpha(38),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 1,
-              ),
+              border: Border.all(color: Colors.white.withAlpha(77), width: 1),
             ),
             child: const Icon(
               Icons.add_circle_outline,

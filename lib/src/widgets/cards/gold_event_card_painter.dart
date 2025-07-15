@@ -48,7 +48,7 @@ class GoldEventCardPainter extends SilverEventCardPainter {
       end: Alignment(0.6, 1.0),      // ← Ajusta estos valores para cambiar el ángulo
       colors: [
         Colors.transparent,
-        _getShimmerColor().withOpacity(0.6), // Color dorado adaptativo
+        _getShimmerColor().withAlpha(153), // Color dorado adaptativo
         Colors.transparent,
       ],
       stops: const [0.0, 0.5, 1.0],

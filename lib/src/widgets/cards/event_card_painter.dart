@@ -16,7 +16,7 @@ class EventCardPainter extends CustomPainter {
   final bool isFavorite;
   final String theme;
   final String category;
-  
+
   // Callbacks
   final VoidCallback? onFavoriteTap;
 
@@ -50,11 +50,12 @@ class EventCardPainter extends CustomPainter {
     EventCardColorPalette.colors.forEach((themeName, themeColors) {
       themeColors.forEach((categoryName, colors) {
         final key = '$themeName-$categoryName';
-        
+
         // Paint para la sombra (reutilizable)
-        _shadowPaints[key] = Paint()
-          ..color = Colors.black.withOpacity(0.1)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+        _shadowPaints[key] =
+            Paint()
+              ..color = Colors.black.withAlpha(26)
+              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
       });
     });
 
@@ -63,27 +64,27 @@ class EventCardPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.left,
     );
-    
+
     _textPainters['category'] = TextPainter(
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.left,
     );
-    
+
     _textPainters['date'] = TextPainter(
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.left,
     );
-    
+
     _textPainters['location'] = TextPainter(
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.left,
     );
-    
+
     _textPainters['district'] = TextPainter(
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.left,
     );
-    
+
     _textPainters['price'] = TextPainter(
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.left,
@@ -93,40 +94,50 @@ class EventCardPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     print('DEBUG - Theme: "$theme", Category: "$category"');
-    print('DEBUG - Available categories: ${EventCardColorPalette.colors['normal']!.keys.toList()}');
+    print(
+      'DEBUG - Available categories: ${EventCardColorPalette.colors['normal']!.keys.toList()}',
+    );
     final colors = EventCardColorPalette.getColors(theme, category);
-    print('DEBUG - Colors: base=${colors.base}, dark=${colors.dark}, text=${colors.text}');
+    print(
+      'DEBUG - Colors: base=${colors.base}, dark=${colors.dark}, text=${colors.text}',
+    );
     final paintKey = '$theme-$category';
-    
+
     // Crear el paint del gradiente aquí con el tamaño real
-    final gradientPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [colors.base, colors.dark],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    
+    final gradientPaint =
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [colors.base, colors.dark],
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
     // 1. Dibujar sombra
-    final shadowPath = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-        Radius.circular(AppDimens.borderRadius),
-      ));
+    final shadowPath =
+        Path()..addRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(0, 0, size.width, size.height),
+            Radius.circular(AppDimens.borderRadius),
+          ),
+        );
     canvas.drawPath(shadowPath, _shadowPaints[paintKey]!);
-    
+
     // 2. Dibujar fondo con gradiente
-    final backgroundPath = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-        Radius.circular(AppDimens.borderRadius),
-      ));
+    final backgroundPath =
+        Path()..addRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(0, 0, size.width, size.height),
+            Radius.circular(AppDimens.borderRadius),
+          ),
+        );
     canvas.drawPath(backgroundPath, gradientPaint);
-    
+
     // 3. Preparar y dibujar textos
     const leftPadding = AppDimens.paddingMedium;
     const rightPadding = AppDimens.paddingMedium;
-    final textWidth = size.width - leftPadding - rightPadding - 40; // 40 para el corazón
-    
+    final textWidth =
+        size.width - leftPadding - rightPadding - 40; // 40 para el corazón
+
     // Título
     _textPainters['title']!.text = TextSpan(
       text: title,
@@ -138,30 +149,31 @@ class EventCardPainter extends CustomPainter {
     );
     _textPainters['title']!.layout(maxWidth: textWidth);
     _textPainters['title']!.paint(canvas, const Offset(leftPadding, 16));
-    
+
     // Categoría con emoji
     _textPainters['category']!.text = TextSpan(
       text: categoryWithEmoji,
       style: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w700,
-        color: colors.text.withOpacity(0.9),
+        color: colors.text.withAlpha(230),
         height: 1.0,
       ),
     );
     _textPainters['category']!.layout(maxWidth: textWidth);
     _textPainters['category']!.paint(canvas, const Offset(leftPadding, 46));
-    
+
     // Línea divisoria
-    final linePaint = Paint()
-      ..color = colors.text.withOpacity(0.3)
-      ..strokeWidth = 1.0;
+    final linePaint =
+        Paint()
+          ..color = colors.text.withAlpha(77)
+          ..strokeWidth = 1.0;
     canvas.drawLine(
       Offset(leftPadding, 80),
       Offset(size.width - rightPadding, 80),
       linePaint,
     );
-    
+
     // Fecha
     _textPainters['date']!.text = TextSpan(
       text: '🗓  $formattedDate',
@@ -173,72 +185,76 @@ class EventCardPainter extends CustomPainter {
     );
     _textPainters['date']!.layout(maxWidth: textWidth);
     _textPainters['date']!.paint(canvas, const Offset(leftPadding, 90));
-    
+
     // Corazón de favoritos
-    final heartPaint = Paint()
-      ..color = isFavorite ? Colors.red : colors.text
-      ..style = isFavorite ? PaintingStyle.fill : PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-    
+    final heartPaint =
+        Paint()
+          ..color = isFavorite ? Colors.red : colors.text
+          ..style = isFavorite ? PaintingStyle.fill : PaintingStyle.stroke
+          ..strokeWidth = 2.0;
+
     // Dibujar corazón simple con Path
     final heartPath = Path();
     const heartX = 320.0; // Posición X del corazón
-    const heartY = 95.0;  // Posición Y del corazón
+    const heartY = 95.0; // Posición Y del corazón
     const heartSize = 20.0;
-    
+
     // Forma de corazón simplificada
     heartPath.moveTo(heartX + heartSize / 2, heartY + heartSize * 0.85);
     heartPath.cubicTo(
-      heartX + heartSize * 0.2, heartY + heartSize * 0.6,
-      heartX, heartY + heartSize * 0.3,
-      heartX, heartY + heartSize * 0.3,
+      heartX + heartSize * 0.2,
+      heartY + heartSize * 0.6,
+      heartX,
+      heartY + heartSize * 0.3,
+      heartX,
+      heartY + heartSize * 0.3,
     );
     heartPath.cubicTo(
-      heartX, heartY,
-      heartX + heartSize * 0.5, heartY,
-      heartX + heartSize / 2, heartY + heartSize * 0.3,
+      heartX,
+      heartY,
+      heartX + heartSize * 0.5,
+      heartY,
+      heartX + heartSize / 2,
+      heartY + heartSize * 0.3,
     );
     heartPath.cubicTo(
-      heartX + heartSize / 2, heartY,
-      heartX + heartSize, heartY,
-      heartX + heartSize, heartY + heartSize * 0.3,
+      heartX + heartSize / 2,
+      heartY,
+      heartX + heartSize,
+      heartY,
+      heartX + heartSize,
+      heartY + heartSize * 0.3,
     );
     heartPath.cubicTo(
-      heartX + heartSize, heartY + heartSize * 0.3,
-      heartX + heartSize * 0.8, heartY + heartSize * 0.6,
-      heartX + heartSize / 2, heartY + heartSize * 0.85,
+      heartX + heartSize,
+      heartY + heartSize * 0.3,
+      heartX + heartSize * 0.8,
+      heartY + heartSize * 0.6,
+      heartX + heartSize / 2,
+      heartY + heartSize * 0.85,
     );
     canvas.drawPath(heartPath, heartPaint);
-    
+
     // Ubicación con emoji
     _textPainters['location']!.text = TextSpan(
       text: '📍 $location',
-      style: TextStyle(
-        fontSize: 18,
-        color: colors.text,
-      ),
+      style: TextStyle(fontSize: 18, color: colors.text),
     );
     _textPainters['location']!.layout(maxWidth: textWidth);
     _textPainters['location']!.paint(canvas, const Offset(leftPadding, 125));
-    
+
     // Distrito
     _textPainters['district']!.text = TextSpan(
       text: '     $district', // Espacios para alinear con el emoji
-      style: TextStyle(
-        fontSize: 14,
-        color: colors.text.withOpacity(0.7),
-      ),
+      style: TextStyle(fontSize: 14, color: colors.text.withAlpha(179)),
     );
     _textPainters['district']!.layout(maxWidth: textWidth);
     _textPainters['district']!.paint(canvas, const Offset(leftPadding, 148));
-    
+
     // Precio
     _textPainters['price']!.text = TextSpan(
       text: '🎟  ${price.isNotEmpty ? price : 'Consultar'}',
-      style: TextStyle(
-        fontSize: 16,
-        color: colors.text,
-      ),
+      style: TextStyle(fontSize: 16, color: colors.text),
     );
     _textPainters['price']!.layout(maxWidth: textWidth);
     _textPainters['price']!.paint(canvas, const Offset(leftPadding, 180));
@@ -248,16 +264,16 @@ class EventCardPainter extends CustomPainter {
   bool shouldRepaint(EventCardPainter oldDelegate) {
     // Solo repintar si cambian datos relevantes
     return title != oldDelegate.title ||
-           categoryWithEmoji != oldDelegate.categoryWithEmoji ||
-           formattedDate != oldDelegate.formattedDate ||
-           location != oldDelegate.location ||
-           district != oldDelegate.district ||
-           price != oldDelegate.price ||
-           isFavorite != oldDelegate.isFavorite ||
-           theme != oldDelegate.theme ||
-           category != oldDelegate.category;
+        categoryWithEmoji != oldDelegate.categoryWithEmoji ||
+        formattedDate != oldDelegate.formattedDate ||
+        location != oldDelegate.location ||
+        district != oldDelegate.district ||
+        price != oldDelegate.price ||
+        isFavorite != oldDelegate.isFavorite ||
+        theme != oldDelegate.theme ||
+        category != oldDelegate.category;
   }
-  
+
   /// Método para detectar si se tocó el corazón
   bool hitTestHeart(Offset position) {
     // Área del corazón aproximada
@@ -286,7 +302,7 @@ class PremiumEventCardPainter extends EventCardPainter {
   void paint(Canvas canvas, Size size) {
     // Primero pintar la tarjeta normal
     super.paint(canvas, size);
-    
+
     // TODO: Agregar efectos premium
     // - Borde dorado animado
     // - Partículas flotantes

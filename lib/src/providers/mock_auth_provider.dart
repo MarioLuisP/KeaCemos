@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 /// NUEVO: MockAuthProvider completamente independiente de Firebase
 /// Permite desarrollo sin Firebase hasta que usuario decida loguearse
 class MockAuthProvider extends ChangeNotifier {
-  bool _isLoggedIn = false;  // NUEVO: Estado mock de autenticación
-  bool _isLoading = false;   // NUEVO: Estado de carga mock
-  
+  bool _isLoggedIn = false; // NUEVO: Estado mock de autenticación
+  bool _isLoading = false; // NUEVO: Estado de carga mock
+
   // NUEVO: Datos mock del usuario (solo cuando está logueado)
   String _mockUserName = 'Mario Passalia';
   String _mockUserEmail = 'mario@gmail.com';
@@ -19,7 +19,8 @@ class MockAuthProvider extends ChangeNotifier {
   // NUEVO: Datos del usuario solo si está logueado
   String get userName => _isLoggedIn ? _mockUserName : 'Usuario';
   String get userEmail => _isLoggedIn ? _mockUserEmail : '';
-  String get userInitials => _isLoggedIn ? _mockUserInitials : '?';  // NUEVO: "?" cuando no logueado
+  String get userInitials =>
+      _isLoggedIn ? _mockUserInitials : '?'; // NUEVO: "?" cuando no logueado
   String get userPhotoUrl => _isLoggedIn ? _mockUserPhotoUrl : '';
 
   MockAuthProvider() {
@@ -30,7 +31,7 @@ class MockAuthProvider extends ChangeNotifier {
   /// NUEVO: Simular login con Google (mock)
   Future<bool> signInWithGoogle() async {
     try {
-      _isLoading = true;  // NUEVO: Mostrar loading
+      _isLoading = true; // NUEVO: Mostrar loading
       notifyListeners();
 
       // NUEVO: Simular delay de autenticación
@@ -44,7 +45,7 @@ class MockAuthProvider extends ChangeNotifier {
       print('❌ Error en mock login: $e');
       return false;
     } finally {
-      _isLoading = false;  // NUEVO: Ocultar loading
+      _isLoading = false; // NUEVO: Ocultar loading
       notifyListeners();
     }
   }
@@ -52,18 +53,18 @@ class MockAuthProvider extends ChangeNotifier {
   /// NUEVO: Simular logout (mock)
   Future<void> signOut() async {
     try {
-      _isLoading = true;  // NUEVO: Mostrar loading
+      _isLoading = true; // NUEVO: Mostrar loading
       notifyListeners();
 
       // NUEVO: Simular delay de logout
       await Future.delayed(const Duration(milliseconds: 500));
 
-      _isLoggedIn = false;  // NUEVO: Cambiar a no logueado
+      _isLoggedIn = false; // NUEVO: Cambiar a no logueado
       print('✅ Mock Logout exitoso');
     } catch (e) {
       print('❌ Error en mock logout: $e');
     } finally {
-      _isLoading = false;  // NUEVO: Ocultar loading
+      _isLoading = false; // NUEVO: Ocultar loading
       notifyListeners();
     }
   }
@@ -86,7 +87,7 @@ class MockAuthProvider extends ChangeNotifier {
       return colors[hash.abs() % colors.length];
     } else {
       // NUEVO: Color gris para estado no logueado
-      return Colors.grey.withOpacity(0.7);
+      return Colors.grey.withAlpha(179);
     }
   }
 
@@ -94,15 +95,13 @@ class MockAuthProvider extends ChangeNotifier {
   void toggleMockAuth() {
     _isLoggedIn = !_isLoggedIn;
     notifyListeners();
-    print(_isLoggedIn ? '✅ Mock: Usuario logueado' : '❌ Mock: Usuario no logueado');
+    print(
+      _isLoggedIn ? '✅ Mock: Usuario logueado' : '❌ Mock: Usuario no logueado',
+    );
   }
 
   /// NUEVO: Cambiar datos del usuario mock (para testing)
-  void setMockUserData({
-    String? name,
-    String? email,
-    String? photoUrl,
-  }) {
+  void setMockUserData({String? name, String? email, String? photoUrl}) {
     if (name != null) {
       _mockUserName = name;
       // NUEVO: Recalcular iniciales automáticamente
@@ -110,7 +109,7 @@ class MockAuthProvider extends ChangeNotifier {
     }
     if (email != null) _mockUserEmail = email;
     if (photoUrl != null) _mockUserPhotoUrl = photoUrl;
-    
+
     notifyListeners();
   }
 
@@ -122,7 +121,7 @@ class MockAuthProvider extends ChangeNotifier {
     } else if (names.isNotEmpty) {
       return names[0][0].toUpperCase();
     }
-    return '?';  // NUEVO: Fallback a "?"
+    return '?'; // NUEVO: Fallback a "?"
   }
 
   @override

@@ -14,6 +14,7 @@ import 'package:quehacemos_cba/src/providers/notifications_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //await DatabaseHelper.deleteDatabase(); //Solo una vez para resetear db 🔥
   await Firebase.initializeApp();
   await initializeMessages('es');
   runApp(const MyApp());

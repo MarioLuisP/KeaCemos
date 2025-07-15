@@ -47,18 +47,18 @@ class _ContactModalContent extends StatelessWidget {
           // NUEVO: Título principal
           Text(
             '¿Querés publicar tu evento?',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
 
           // NUEVO: Subtítulo
           Text(
             'Contáctanos por cualquiera de estos medios:',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
 
@@ -107,9 +107,11 @@ class _ContactModalContent extends StatelessWidget {
   /// NUEVO: Abrir WhatsApp
   static Future<void> _launchWhatsApp(BuildContext context) async {
     const phoneNumber = '+5493511234567'; // NUEVO: Reemplazar con número real
-    const message = 'Hola! Me gustaría publicar un evento en QuehaCeMos Córdoba';
-    final url = 'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}';
-    
+    const message =
+        'Hola! Me gustaría publicar un evento en QuehaCeMos Córdoba';
+    final url =
+        'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}';
+
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
       if (context.mounted) Navigator.pop(context);
@@ -127,9 +129,10 @@ class _ContactModalContent extends StatelessWidget {
     const email = 'eventos@quehacemos.com'; // NUEVO: Reemplazar con email real
     const subject = 'Publicar evento en QuehaCeMos Córdoba';
     const body = 'Hola! Me gustaría publicar un evento en la plataforma.';
-    
-    final url = 'mailto:$email?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
-    
+
+    final url =
+        'mailto:$email?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
+
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
       if (context.mounted) Navigator.pop(context);
@@ -170,21 +173,19 @@ class _ContactOption extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             border: Border.all(
-              color: enabled 
-                  ? Theme.of(context).colorScheme.outline.withOpacity(0.3)
-                  : Colors.grey.withOpacity(0.3),
+              color:
+                  enabled
+                      ? Theme.of(context).colorScheme.outline.withAlpha(77)
+                      : Colors.grey.withAlpha(77),
             ),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
               // NUEVO: Ícono
-              Text(
-                icon,
-                style: const TextStyle(fontSize: 24),
-              ),
+              Text(icon, style: const TextStyle(fontSize: 24)),
               const SizedBox(width: 16),
-              
+
               // NUEVO: Textos
               Expanded(
                 child: Column(
@@ -193,27 +194,23 @@ class _ContactOption extends StatelessWidget {
                     Text(
                       title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: enabled ? null : Colors.grey,
-                          ),
+                        fontWeight: FontWeight.w600,
+                        color: enabled ? null : Colors.grey,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: enabled ? Colors.grey[600] : Colors.grey,
-                          ),
+                        color: enabled ? Colors.grey[600] : Colors.grey,
+                      ),
                     ),
                   ],
                 ),
               ),
-              
+
               // NUEVO: Flecha si está habilitado
-              if (enabled)
-                Icon(
-                  Icons.chevron_right,
-                  color: Colors.grey[400],
-                ),
+              if (enabled) Icon(Icons.chevron_right, color: Colors.grey[400]),
             ],
           ),
         ),

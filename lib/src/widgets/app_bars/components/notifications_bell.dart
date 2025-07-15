@@ -10,7 +10,8 @@ class NotificationsBell extends StatelessWidget {
     return Consumer<NotificationsProvider>(
       builder: (context, notificationsProvider, child) {
         return IconButton(
-          onPressed: () => _showNotificationsPanel(context, notificationsProvider),
+          onPressed:
+              () => _showNotificationsPanel(context, notificationsProvider),
           icon: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -55,7 +56,10 @@ class NotificationsBell extends StatelessWidget {
   }
 
   /// NUEVO: Mostrar panel de notificaciones
-  void _showNotificationsPanel(BuildContext context, NotificationsProvider provider) {
+  void _showNotificationsPanel(
+    BuildContext context,
+    NotificationsProvider provider,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -86,12 +90,13 @@ class _NotificationsPanel extends StatelessWidget {
         children: [
           // NUEVO: Header del panel
           _NotificationsPanelHeader(provider: provider),
-          
+
           // NUEVO: Lista de notificaciones
           Expanded(
-            child: provider.notifications.isEmpty
-                ? _EmptyNotificationsState()
-                : _NotificationsList(provider: provider),
+            child:
+                provider.notifications.isEmpty
+                    ? _EmptyNotificationsState()
+                    : _NotificationsList(provider: provider),
           ),
         ],
       ),
@@ -123,7 +128,7 @@ class _NotificationsPanelHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // NUEVO: Título y acciones
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -131,8 +136,8 @@ class _NotificationsPanelHeader extends StatelessWidget {
               Text(
                 'Notificaciones',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Row(
                 children: [
@@ -152,7 +157,7 @@ class _NotificationsPanelHeader extends StatelessWidget {
               ),
             ],
           ),
-          
+
           // NUEVO: Estadísticas
           if (provider.notifications.isNotEmpty)
             Padding(
@@ -161,14 +166,17 @@ class _NotificationsPanelHeader extends StatelessWidget {
                 children: [
                   Text(
                     '${provider.notifications.length} notificaciones',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                   if (provider.hasUnreadNotifications) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(10),
@@ -219,41 +227,41 @@ class _NotificationTile extends StatelessWidget {
   final Map<String, dynamic> notification;
   final NotificationsProvider provider;
 
-  const _NotificationTile({
-    required this.notification,
-    required this.provider,
-  });
+  const _NotificationTile({required this.notification, required this.provider});
 
   @override
   Widget build(BuildContext context) {
     final isRead = notification['isRead'] as bool;
     final timestamp = notification['timestamp'] as DateTime;
-    
+
     return Dismissible(
       key: Key(notification['id']),
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
         provider.removeNotification(notification['id']);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Notificación eliminada')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Notificación eliminada')));
       },
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         color: Colors.red,
-        child: const Icon(
-          Icons.delete,
-          color: Colors.white,
-        ),
+        child: const Icon(Icons.delete, color: Colors.white),
       ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: isRead ? Colors.transparent : Theme.of(context).colorScheme.primary.withOpacity(0.05),
+          color:
+              isRead
+                  ? Colors.transparent
+                  : Theme.of(context).colorScheme.primary.withAlpha(13),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isRead ? Colors.grey.withOpacity(0.2) : Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            color:
+                isRead
+                    ? Colors.grey.withAlpha(51)
+                    : Theme.of(context).colorScheme.primary.withAlpha(51),
           ),
         ),
         child: ListTile(
@@ -264,37 +272,38 @@ class _NotificationTile extends StatelessWidget {
           title: Text(
             notification['title'],
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
-                ),
+              fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+            ),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 notification['message'],
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(height: 4),
               Text(
                 provider.getNotificationTime(timestamp),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[500],
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
               ),
             ],
           ),
-          trailing: isRead
-              ? null
-              : Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
+          trailing:
+              isRead
+                  ? null
+                  : Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
           onTap: () {
             if (!isRead) {
               provider.markAsRead(notification['id']);
@@ -322,16 +331,16 @@ class _EmptyNotificationsState extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'No tenés notificaciones',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
             'Te avisaremos cuando haya eventos nuevos',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[500],
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
           ),
         ],
       ),

@@ -48,11 +48,13 @@ class DatabaseHelper {
       websiteUrl TEXT,
       lat REAL,
       lng REAL,
-      favorite BOOLEAN DEFAULT FALSE,                   
+      favorite BOOLEAN DEFAULT FALSE, 
+                        
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
     ''');
-
+      //rating INTEGER DEFAULT 0,   
+      
     // Tabla de configuración de la app
     await db.execute('''
       CREATE TABLE app_settings (

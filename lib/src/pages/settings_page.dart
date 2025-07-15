@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/preferences_provider.dart';
 import 'package:quehacemos_cba/src/utils/utils.dart';
-import 'package:quehacemos_cba/src/services/services.dart'; 
+import 'package:quehacemos_cba/src/services/services.dart';
 import 'package:quehacemos_cba/src/services/services.dart'; // EXISTENTE
 import 'package:quehacemos_cba/src/data/repositories/event_repository.dart'; // NUEVO: import repository
 
@@ -52,8 +52,8 @@ class SettingsPage extends StatelessWidget {
                   Text(
                     'Tema de la app',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: AppDimens.paddingMedium),
                   GridView.count(
@@ -68,7 +68,12 @@ class SettingsPage extends StatelessWidget {
                       _buildThemeButton(context, provider, 'Oscuro', 'dark'),
                       _buildThemeButton(context, provider, 'Sepia', 'sepia'),
                       _buildThemeButton(context, provider, 'Pastel', 'pastel'),
-                      _buildThemeButton(context, provider, 'Harmony', 'harmony'),
+                      _buildThemeButton(
+                        context,
+                        provider,
+                        'Harmony',
+                        'harmony',
+                      ),
                       _buildThemeButton(context, provider, 'Fluor', 'fluor'),
                     ],
                   ),
@@ -76,7 +81,7 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // ========== CARD 2: CATEGORÍAS ==========
           const SizedBox(height: AppDimens.paddingMedium),
           Card(
@@ -92,8 +97,8 @@ class SettingsPage extends StatelessWidget {
                   Text(
                     'Categorías favoritas',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: AppDimens.paddingSmall),
                   Text(
@@ -108,19 +113,24 @@ class SettingsPage extends StatelessWidget {
                     mainAxisSpacing: AppDimens.paddingSmall,
                     crossAxisSpacing: AppDimens.paddingSmall,
                     childAspectRatio: 4.5,
-                    children: categories.map((category) {
-                      final isSelected = provider.selectedCategories.contains(category['name']);
-                      final color = AppColors.adjustForTheme(context, category['color'] as Color);
+                    children:
+                        categories.map((category) {
+                          final isSelected = provider.selectedCategories
+                              .contains(category['name']);
+                          final color = AppColors.adjustForTheme(
+                            context,
+                            category['color'] as Color,
+                          );
 
-                      return _buildCategoryButton(
-                        context, 
-                        provider, 
-                        category['name'] as String,
-                        category['emoji'] as String,
-                        color,
-                        isSelected
-                      );
-                    }).toList(),
+                          return _buildCategoryButton(
+                            context,
+                            provider,
+                            category['name'] as String,
+                            category['emoji'] as String,
+                            color,
+                            isSelected,
+                          );
+                        }).toList(),
                   ),
                   const SizedBox(height: AppDimens.paddingMedium),
                   Align(
@@ -136,27 +146,36 @@ class SettingsPage extends StatelessWidget {
           ),
 
           // ========== CARD 3: GESTIÓN DE DATOS ========== // NUEVO: card completo
-          const SizedBox(height: AppDimens.paddingMedium),                  // NUEVO: espaciado
-          Card(                                                             // NUEVO: card gestión
-            elevation: AppDimens.cardElevation,                            // NUEVO: misma elevación
-            shape: RoundedRectangleBorder(                                  // NUEVO: mismo border
+          const SizedBox(height: AppDimens.paddingMedium), // NUEVO: espaciado
+          Card(
+            // NUEVO: card gestión
+            elevation: AppDimens.cardElevation, // NUEVO: misma elevación
+            shape: RoundedRectangleBorder(
+              // NUEVO: mismo border
               borderRadius: BorderRadius.circular(AppDimens.borderRadius),
             ),
-            child: Padding(                                                 // NUEVO: mismo padding
+            child: Padding(
+              // NUEVO: mismo padding
               padding: const EdgeInsets.all(AppDimens.paddingMedium),
-              child: Column(                                                // NUEVO: columna principal
+              child: Column(
+                // NUEVO: columna principal
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(                                                     // NUEVO: título
+                  Text(
+                    // NUEVO: título
                     '⚙️ Gestión de Datos',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: AppDimens.paddingMedium),         // NUEVO: espaciado
-                  Row(                                                      // NUEVO: layout 2 columnas
+                  const SizedBox(
+                    height: AppDimens.paddingMedium,
+                  ), // NUEVO: espaciado
+                  Row(
+                    // NUEVO: layout 2 columnas
                     children: [
-                      Expanded(                                             // NUEVO: columna izquierda
+                      Expanded(
+                        // NUEVO: columna izquierda
                         child: _buildCleanupColumn(
                           context,
                           provider,
@@ -166,13 +185,19 @@ class SettingsPage extends StatelessWidget {
                           true, // isEvents
                         ),
                       ),
-                      Container(                                            // NUEVO: divider vertical
+                      Container(
+                        // NUEVO: divider vertical
                         width: 1,
                         height: 160,
-                        color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                        margin: const EdgeInsets.symmetric(horizontal: AppDimens.paddingMedium),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.outline.withAlpha(77),
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: AppDimens.paddingMedium,
+                        ),
                       ),
-                      Expanded(                                             // NUEVO: columna derecha
+                      Expanded(
+                        // NUEVO: columna derecha
                         child: _buildCleanupColumn(
                           context,
                           provider,
@@ -190,33 +215,44 @@ class SettingsPage extends StatelessWidget {
           ),
 
           // ========== CARD 4: DESARROLLADOR ========== // NUEVO: card desarrollador completo
-          const SizedBox(height: AppDimens.paddingMedium),                  // NUEVO: espaciado
-          Card(                                                             // NUEVO: card desarrollador
-            elevation: AppDimens.cardElevation,                            // NUEVO: misma elevación
-            shape: RoundedRectangleBorder(                                  // NUEVO: mismo border
+          const SizedBox(height: AppDimens.paddingMedium), // NUEVO: espaciado
+          Card(
+            // NUEVO: card desarrollador
+            elevation: AppDimens.cardElevation, // NUEVO: misma elevación
+            shape: RoundedRectangleBorder(
+              // NUEVO: mismo border
               borderRadius: BorderRadius.circular(AppDimens.borderRadius),
             ),
-            child: Padding(                                                 // NUEVO: mismo padding
+            child: Padding(
+              // NUEVO: mismo padding
               padding: const EdgeInsets.all(AppDimens.paddingMedium),
-              child: Column(                                                // NUEVO: columna botones
+              child: Column(
+                // NUEVO: columna botones
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(                                                     // NUEVO: título desarrollador
+                  Text(
+                    // NUEVO: título desarrollador
                     '🔧 Desarrollador',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: AppDimens.paddingMedium),         // NUEVO: espaciado
-                  _buildDebugButton(                                        // NUEVO: botón sync
+                  const SizedBox(
+                    height: AppDimens.paddingMedium,
+                  ), // NUEVO: espaciado
+                  _buildDebugButton(
+                    // NUEVO: botón sync
                     context,
                     'FORZAR SINCRONIZACIÓN',
                     '🔄 Descargar lote desde Firestore ahora',
                     Colors.blue,
                     () => _forceSyncDatabase(context),
                   ),
-                  const SizedBox(height: AppDimens.paddingSmall),          // NUEVO: espaciado botones
-                  _buildDebugButton(                                        // NUEVO: botón limpiar
+                  const SizedBox(
+                    height: AppDimens.paddingSmall,
+                  ), // NUEVO: espaciado botones
+                  _buildDebugButton(
+                    // NUEVO: botón limpiar
                     context,
                     'LIMPIAR BASE DE DATOS',
                     '⚠️ Borra todos los eventos guardados',
@@ -249,16 +285,22 @@ class SettingsPage extends StatelessWidget {
   }
 
   // ========== MÉTODOS EXISTENTES ==========
-  Widget _buildThemeButton(BuildContext context, PreferencesProvider provider, String label, String theme) {
+  Widget _buildThemeButton(
+    BuildContext context,
+    PreferencesProvider provider,
+    String label,
+    String theme,
+  ) {
     final isSelected = provider.theme == theme;
-    
+
     return Container(
       width: double.infinity,
       height: double.infinity,
       child: Material(
-        color: isSelected 
-          ? Theme.of(context).colorScheme.primary 
-          : Theme.of(context).colorScheme.surface,
+        color:
+            isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -267,9 +309,10 @@ class SettingsPage extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected 
-                  ? Theme.of(context).colorScheme.primary 
-                  : Theme.of(context).colorScheme.outline,
+                color:
+                    isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outline,
                 width: 1,
               ),
             ),
@@ -277,9 +320,10 @@ class SettingsPage extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurface,
+                  color:
+                      isSelected
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : Theme.of(context).colorScheme.onSurface,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
                 textAlign: TextAlign.center,
@@ -291,11 +335,18 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryButton(BuildContext context, PreferencesProvider provider, String name, String emoji, Color color, bool isSelected) {
+  Widget _buildCategoryButton(
+    BuildContext context,
+    PreferencesProvider provider,
+    String name,
+    String emoji,
+    Color color,
+    bool isSelected,
+  ) {
     bool isLightColor(Color color) {
       return color.computeLuminance() > 0.5;
     }
-    
+
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -316,25 +367,29 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 4.0,
+              ),
               child: Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      emoji,
-                      style: const TextStyle(fontSize: 14),
-                    ),
+                    Text(emoji, style: const TextStyle(fontSize: 14)),
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
                         name,
                         style: TextStyle(
-                          color: isSelected
-                            ? (isLightColor(color) ? Colors.black : Colors.white)
-                            : Colors.black,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color:
+                              isSelected
+                                  ? (isLightColor(color)
+                                      ? Colors.black
+                                      : Colors.white)
+                                  : Colors.black,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
                           fontSize: 12,
                         ),
                         textAlign: TextAlign.center,
@@ -346,7 +401,8 @@ class SettingsPage extends StatelessWidget {
                       Icon(
                         Icons.check,
                         size: 14,
-                        color: isLightColor(color) ? Colors.black : Colors.white,
+                        color:
+                            isLightColor(color) ? Colors.black : Colors.white,
                       ),
                     ],
                   ],
@@ -360,69 +416,97 @@ class SettingsPage extends StatelessWidget {
   }
 
   // ========== NUEVOS MÉTODOS ========== // NUEVO: métodos para gestión datos
-  Widget _buildCleanupColumn(BuildContext context, PreferencesProvider provider, String title, List<int> options, int currentValue, bool isEvents) {
-    return Column(                                                          // NUEVO: columna cleanup
+  Widget _buildCleanupColumn(
+    BuildContext context,
+    PreferencesProvider provider,
+    String title,
+    List<int> options,
+    int currentValue,
+    bool isEvents,
+  ) {
+    return Column(
+      // NUEVO: columna cleanup
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(                                                               // NUEVO: título columna
+        Text(
+          // NUEVO: título columna
           title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: AppDimens.paddingSmall),                    // NUEVO: espaciado
-        ...options.map((days) => Padding(                                  // NUEVO: botones días
-          padding: const EdgeInsets.only(bottom: AppDimens.paddingSmall),
-          child: _buildCleanupButton(
-            context,
-            provider,
-            days,
-            currentValue,
-            isEvents,
-          ),
-        )).toList(),
+        const SizedBox(height: AppDimens.paddingSmall), // NUEVO: espaciado
+        ...options
+            .map(
+              (days) => Padding(
+                // NUEVO: botones días
+                padding: const EdgeInsets.only(bottom: AppDimens.paddingSmall),
+                child: _buildCleanupButton(
+                  context,
+                  provider,
+                  days,
+                  currentValue,
+                  isEvents,
+                ),
+              ),
+            )
+            .toList(),
       ],
     );
   }
 
-  Widget _buildCleanupButton(BuildContext context, PreferencesProvider provider, int days, int currentValue, bool isEvents) {
-    final isSelected = days == currentValue;                               // NUEVO: verificar selección
-    
-    return SizedBox(                                                       // NUEVO: botón días fijo
+  Widget _buildCleanupButton(
+    BuildContext context,
+    PreferencesProvider provider,
+    int days,
+    int currentValue,
+    bool isEvents,
+  ) {
+    final isSelected = days == currentValue; // NUEVO: verificar selección
+
+    return SizedBox(
+      // NUEVO: botón días fijo
       width: double.infinity,
       height: 32,
       child: Material(
-        color: isSelected 
-          ? Theme.of(context).colorScheme.primary 
-          : Theme.of(context).colorScheme.surface,
+        color:
+            isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
-          onTap: () {                                                       // NUEVO: acción click
+          onTap: () {
+            // NUEVO: acción click
             if (isEvents) {
-              provider.setEventCleanupDays(days);                          // NUEVO: actualizar eventos
+              provider.setEventCleanupDays(days); // NUEVO: actualizar eventos
             } else {
-              provider.setFavoriteCleanupDays(days);                       // NUEVO: actualizar favoritos
+              provider.setFavoriteCleanupDays(
+                days,
+              ); // NUEVO: actualizar favoritos
             }
           },
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isSelected 
-                  ? Theme.of(context).colorScheme.primary 
-                  : Theme.of(context).colorScheme.outline,
+                color:
+                    isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outline,
                 width: 1,
               ),
             ),
             child: Center(
-              child: Text(                                                  // NUEVO: texto botón
+              child: Text(
+                // NUEVO: texto botón
                 '$days días después',
                 style: TextStyle(
-                  color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurface,
+                  color:
+                      isSelected
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : Theme.of(context).colorScheme.onSurface,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   fontSize: 12,
                 ),
@@ -434,25 +518,33 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDebugButton(BuildContext context, String title, String subtitle, Color color, VoidCallback onPressed) {
-    return SizedBox(                                                       // NUEVO: botón debug completo
+  Widget _buildDebugButton(
+    BuildContext context,
+    String title,
+    String subtitle,
+    Color color,
+    VoidCallback onPressed,
+  ) {
+    return SizedBox(
+      // NUEVO: botón debug completo
       width: double.infinity,
       child: Material(
-        color: color.withOpacity(0.1),                                     // NUEVO: color suave
+        color: color.withAlpha(26), // NUEVO: color suave
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
-          onTap: onPressed,                                                 // NUEVO: acción
+          onTap: onPressed, // NUEVO: acción
           child: Container(
             padding: const EdgeInsets.all(AppDimens.paddingMedium),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: color, width: 1),                  // NUEVO: border color
+              border: Border.all(color: color, width: 1), // NUEVO: border color
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(                                                       // NUEVO: título botón
+                Text(
+                  // NUEVO: título botón
                   title,
                   style: TextStyle(
                     color: color,
@@ -460,13 +552,11 @@ class SettingsPage extends StatelessWidget {
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 4),                                 // NUEVO: espaciado
-                Text(                                                       // NUEVO: subtítulo
+                const SizedBox(height: 4), // NUEVO: espaciado
+                Text(
+                  // NUEVO: subtítulo
                   subtitle,
-                  style: TextStyle(
-                    color: color.withOpacity(0.7),
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: color.withAlpha(179), fontSize: 12),
                 ),
               ],
             ),
@@ -479,42 +569,54 @@ class SettingsPage extends StatelessWidget {
   // ========== ACCIONES DEBUG ========== // NUEVO: acciones botones
   Future<void> _forceSyncDatabase(BuildContext context) async {
     try {
-      ScaffoldMessenger.of(context).showSnackBar(                          // NUEVO: mostrar progreso
+      ScaffoldMessenger.of(context).showSnackBar(
+        // NUEVO: mostrar progreso
         const SnackBar(content: Text('🔄 Sincronizando con Firestore...')),
       );
-      
-      final syncService = SyncService();                                   // NUEVO: instancia sync
-      final result = await syncService.performAutoSync();                 // NUEVO: forzar sync
-      
-      if (result.success) {                                                // NUEVO: verificar resultado
+
+      final syncService = SyncService(); // NUEVO: instancia sync
+      final result = await syncService.performAutoSync(); // NUEVO: forzar sync
+
+      if (result.success) {
+        // NUEVO: verificar resultado
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('✅ Sincronización exitosa: ${result.eventsAdded} eventos')),
+          SnackBar(
+            content: Text(
+              '✅ Sincronización exitosa: ${result.eventsAdded} eventos',
+            ),
+          ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('❌ Error: ${result.error}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('❌ Error: ${result.error}')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(                          // NUEVO: manejo error
+      ScaffoldMessenger.of(context).showSnackBar(
+        // NUEVO: manejo error
         SnackBar(content: Text('❌ Error inesperado: $e')),
       );
     }
   }
 
   Future<void> _clearDatabase(BuildContext context) async {
-    final confirmed = await showDialog<bool>(                              // NUEVO: diálogo confirmación
+    final confirmed = await showDialog<bool>(
+      // NUEVO: diálogo confirmación
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('⚠️ Limpiar Base de Datos'),
-          content: const Text('¿Estás seguro? Se borrarán todos los eventos guardados. Esta acción no se puede deshacer.'),
+          content: const Text(
+            '¿Estás seguro? Se borrarán todos los eventos guardados. Esta acción no se puede deshacer.',
+          ),
           actions: [
-            TextButton(                                                     // NUEVO: botón cancelar
+            TextButton(
+              // NUEVO: botón cancelar
               onPressed: () => Navigator.of(context).pop(false),
               child: const Text('Cancelar'),
             ),
-            TextButton(                                                     // NUEVO: botón confirmar
+            TextButton(
+              // NUEVO: botón confirmar
               onPressed: () => Navigator.of(context).pop(true),
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('Borrar Todo'),
@@ -524,115 +626,134 @@ class SettingsPage extends StatelessWidget {
       },
     );
 
-    if (confirmed == true) {                                               // NUEVO: ejecutar si confirma
+    if (confirmed == true) {
+      // NUEVO: ejecutar si confirma
       try {
-        final repository = EventRepository();                              // CAMBIO: instancia repository
-        await repository.clearAllData();                                   // CAMBIO: método que sí existe                // NUEVO: limpiar datos
-        
-        ScaffoldMessenger.of(context).showSnackBar(                        // NUEVO: confirmar limpieza
+        final repository = EventRepository(); // CAMBIO: instancia repository
+        await repository
+            .clearAllData(); // CAMBIO: método que sí existe                // NUEVO: limpiar datos
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          // NUEVO: confirmar limpieza
           const SnackBar(content: Text('✅ Base de datos limpiada')),
         );
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(                        // NUEVO: manejo error
+        ScaffoldMessenger.of(context).showSnackBar(
+          // NUEVO: manejo error
           SnackBar(content: Text('❌ Error limpiando: $e')),
         );
       }
     }
   }
-Future<void> _showDatabaseInfo(BuildContext context) async {
-  try {
-    final repository = EventRepository();
-    final eventos = await repository.getAllEvents();
-    final syncInfo = await repository.getSyncInfo();
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('📊 Estado de la Base de Datos'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('📦 Total eventos: ${eventos.length}'),
-              Text('🕐 Última sync: ${syncInfo?['last_sync'] ?? 'Nunca'}'),
-              Text('🏷️ Versión lote: ${syncInfo?['batch_version'] ?? 'N/A'}'),
-              const SizedBox(height: 16),
-              const Text('📋 Últimos 5 eventos:', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              ...eventos.take(5).map((e) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text('• ${e['title']} (${e['date']})'),
-              )),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
-          ),
-        ],
-      ),
-    );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('❌ Error: $e')),
-    );
-  }
-}
 
-Future<void> _showEventStats(BuildContext context) async {
-  try {
-    final repository = EventRepository();
-    final eventos = await repository.getAllEvents();
-    final favoritos = await repository.getAllFavorites();
-    
-    final stats = <String, int>{};
-    for (var evento in eventos) {
-      final tipo = evento['type'] ?? 'sin_tipo';
-      stats[tipo] = (stats[tipo] ?? 0) + 1;
+  Future<void> _showDatabaseInfo(BuildContext context) async {
+    try {
+      final repository = EventRepository();
+      final eventos = await repository.getAllEvents();
+      final syncInfo = await repository.getSyncInfo();
+
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('📊 Estado de la Base de Datos'),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('📦 Total eventos: ${eventos.length}'),
+                    Text(
+                      '🕐 Última sync: ${syncInfo?['last_sync'] ?? 'Nunca'}',
+                    ),
+                    Text(
+                      '🏷️ Versión lote: ${syncInfo?['batch_version'] ?? 'N/A'}',
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      '📋 Últimos 5 eventos:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    ...eventos
+                        .take(5)
+                        .map(
+                          (e) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text('• ${e['title']} (${e['date']})'),
+                          ),
+                        ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cerrar'),
+                ),
+              ],
+            ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('❌ Error: $e')));
     }
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('📈 Estadísticas'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('📊 Total eventos: ${eventos.length}'),
-              Text('⭐ Favoritos: ${favoritos.length}'),
-              const SizedBox(height: 16),
-              const Text('📋 Por categoría:', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              ...stats.entries.map((entry) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text('• ${entry.key}: ${entry.value} eventos'),
-              )),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
-          ),
-        ],
-      ),
-    );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('❌ Error: $e')),
-    );
   }
-}
 
+  Future<void> _showEventStats(BuildContext context) async {
+    try {
+      final repository = EventRepository();
+      final eventos = await repository.getAllEvents();
+      final favoritos = await repository.getAllFavorites();
 
+      final stats = <String, int>{};
+      for (var evento in eventos) {
+        final tipo = evento['type'] ?? 'sin_tipo';
+        stats[tipo] = (stats[tipo] ?? 0) + 1;
+      }
 
-
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('📈 Estadísticas'),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('📊 Total eventos: ${eventos.length}'),
+                    Text('⭐ Favoritos: ${favoritos.length}'),
+                    const SizedBox(height: 16),
+                    const Text(
+                      '📋 Por categoría:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    ...stats.entries.map(
+                      (entry) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text('• ${entry.key}: ${entry.value} eventos'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cerrar'),
+                ),
+              ],
+            ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('❌ Error: $e')));
+    }
+  }
 }
 
 // 📋 RESEÑA PARA BORRAR EN PRODUCCIÓN:

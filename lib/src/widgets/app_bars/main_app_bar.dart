@@ -76,8 +76,10 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: centerTitle,
       toolbarHeight: preferredSize.height,
       elevation: elevation,
-      backgroundColor: backgroundColor ?? Theme.of(context).appBarTheme.backgroundColor,
-      foregroundColor: foregroundColor ?? Theme.of(context).appBarTheme.foregroundColor,
+      backgroundColor:
+          backgroundColor ?? Theme.of(context).appBarTheme.backgroundColor,
+      foregroundColor:
+          foregroundColor ?? Theme.of(context).appBarTheme.foregroundColor,
       actions: _buildActions(context),
     );
   }
@@ -85,7 +87,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// NUEVO: Construir título con estilo personalizado
   Widget _buildTitle(BuildContext context) {
     if (title == null) return const SizedBox.shrink();
-    
+
     return Text(
       title!,
       style: TextStyle(
@@ -125,12 +127,15 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
     if (showNotifications) {
       actions.add(
         Transform.translate(
-          offset: const Offset(-8.0, 0), // NUEVO: Mover hacia la izquierda sin afectar layout
+          offset: const Offset(
+            -8.0,
+            0,
+          ), // NUEVO: Mover hacia la izquierda sin afectar layout
           child: const NotificationsBell(),
         ),
       );
     }
-    
+
     if (showUserAvatar) {
       actions.add(
         Padding(
@@ -149,34 +154,29 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 /// NUEVO: AppBar especializada para calendario
 class CalendarAppBar extends MainAppBar {
-  const CalendarAppBar({
-    super.key,
-    String? title,
-    List<Widget>? customActions,
-  }) : super(
-          title: title ?? 'Calendario',
-          customActions: customActions,
-          showUserAvatar: true,
-          showNotifications: true,
-          showContactButton: false, // NUEVO: No mostrar contacto en calendario
-          centerTitle: true,
-        );
+  const CalendarAppBar({super.key, String? title, List<Widget>? customActions})
+    : super(
+        title: title ?? 'Calendario',
+        customActions: customActions,
+        showUserAvatar: true,
+        showNotifications: true,
+        showContactButton: false, // NUEVO: No mostrar contacto en calendario
+        centerTitle: true,
+      );
 }
 
 /// NUEVO: AppBar especializada para favoritos
 class FavoritesAppBar extends MainAppBar {
-  const FavoritesAppBar({
-    super.key,
-    String? title,
-    List<Widget>? customActions,
-  }) : super(
-          title: title ?? 'Mis Favoritos',
-          customActions: customActions,
-          showUserAvatar: true,
-          showNotifications: false, // NUEVO: No mostrar notificaciones en favoritos
-          showContactButton: false,
-          centerTitle: true,
-        );
+  const FavoritesAppBar({super.key, String? title, List<Widget>? customActions})
+    : super(
+        title: title ?? 'Mis Favoritos',
+        customActions: customActions,
+        showUserAvatar: true,
+        showNotifications:
+            false, // NUEVO: No mostrar notificaciones en favoritos
+        showContactButton: false,
+        centerTitle: true,
+      );
 }
 
 /// NUEVO: AppBar especializada para búsqueda
@@ -192,13 +192,13 @@ class SearchAppBar extends MainAppBar {
     this.onSearchSubmitted,
     List<Widget>? customActions,
   }) : super(
-          title: null, // NUEVO: No mostrar título, solo barra de búsqueda
-          customActions: customActions,
-          showUserAvatar: false,
-          showNotifications: false,
-          showContactButton: false,
-          centerTitle: false,
-        );
+         title: null, // NUEVO: No mostrar título, solo barra de búsqueda
+         customActions: customActions,
+         showUserAvatar: false,
+         showNotifications: false,
+         showContactButton: false,
+         centerTitle: false,
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -219,19 +219,16 @@ class SearchAppBar extends MainAppBar {
       controller: searchController,
       onChanged: onSearchChanged,
       onSubmitted: (value) => onSearchSubmitted?.call(),
-      style: TextStyle(
-        color: foregroundColor ?? Colors.white,
-        fontSize: 16,
-      ),
+      style: TextStyle(color: foregroundColor ?? Colors.white, fontSize: 16),
       decoration: InputDecoration(
         hintText: 'Buscar eventos...',
         hintStyle: TextStyle(
-          color: (foregroundColor ?? Colors.white).withOpacity(0.7),
+          color: (foregroundColor ?? Colors.white).withAlpha(179),
         ),
         border: InputBorder.none,
         prefixIcon: Icon(
           Icons.search,
-          color: (foregroundColor ?? Colors.white).withOpacity(0.7),
+          color: (foregroundColor ?? Colors.white).withAlpha(179),
         ),
       ),
     );
@@ -247,19 +244,13 @@ class SearchAppBar extends MainAppBar {
             searchController?.clear();
             onSearchChanged?.call('');
           },
-          icon: Icon(
-            Icons.clear,
-            color: foregroundColor ?? Colors.white,
-          ),
+          icon: Icon(Icons.clear, color: foregroundColor ?? Colors.white),
         ),
-      
+
       // NUEVO: Botón para cerrar búsqueda
       IconButton(
         onPressed: () => Navigator.pop(context),
-        icon: Icon(
-          Icons.close,
-          color: foregroundColor ?? Colors.white,
-        ),
+        icon: Icon(Icons.close, color: foregroundColor ?? Colors.white),
       ),
     ];
   }
