@@ -40,7 +40,7 @@ class UserPreferences {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('activeFilterCategories', categories.toList());
   }
-static Future<int> getEventCleanupDays() async {          // NUEVO: obtener días eventos
+  static Future<int> getEventCleanupDays() async {          // NUEVO: obtener días eventos
     final prefs = await SharedPreferences.getInstance();    // NUEVO: instancia SharedPrefs
     return prefs.getInt('event_cleanup_days') ?? 3;         // NUEVO: default 3 días
   }
@@ -59,6 +59,5 @@ static Future<int> getEventCleanupDays() async {          // NUEVO: obtener día
     final prefs = await SharedPreferences.getInstance();       // NUEVO: instancia SharedPrefs
     await prefs.setInt('favorite_cleanup_days', days);         // NUEVO: guardar valor
   }
-
 
 }

@@ -101,12 +101,14 @@ class HomeViewModel with ChangeNotifier {
   }
 // ============ MÉTODOS DE FAVORITOS ============
 
-  /// Toggle favorito de un evento
-  void toggleFavorite(dynamic eventId, FavoritesProvider favoritesProvider) {
-    favoritesProvider.toggleFavorite(eventId);
-    print('🤍 Toggle favorito: $eventId');
+/// Toggle favorito de un evento
+  Future<void> toggleFavorite(dynamic eventId, FavoritesProvider favoritesProvider) async {
+    await favoritesProvider.toggleFavorite(eventId.toString());
+    print('🤍 Toggle favorito completado: $eventId');
+    
+    // NUEVO: Opcional - actualizar UI inmediatamente si es necesario
+    notifyListeners();
   }
-  /// Procesa eventos usando la nueva arquitectura
 /// Procesa eventos usando la nueva arquitectura
 void _processEvents() {
   print('⚙️ Procesando eventos con filtros: ${_filterCriteria.toString()}');

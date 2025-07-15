@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/repositories/event_repository.dart';
 import '../data/database/database_helper.dart';
+import '../providers/notifications_provider.dart'; // CAMBIO: ruta corregida
+
 
 class SyncService {
   static final SyncService _instance = SyncService._internal();
@@ -9,6 +11,7 @@ class SyncService {
   SyncService._internal();
 
   final EventRepository _eventRepository = EventRepository();
+  final NotificationsProvider _notificationsProvider = NotificationsProvider();
   static const Duration _syncInterval = Duration(hours: 24);
   static const String _lastSyncKey = 'last_sync_timestamp';
 
@@ -202,6 +205,8 @@ Future<bool> shouldSync() async {
         await _processEvents(events);                              // NUEVO: procesar eventos
         final cleanupResults = await _performCleanup();           // NUEVO: limpieza
         await _updateSyncTimestamp();                              // NUEVO: actualizar timestamp
+              // NUEVO: Enviar notificaciones automáticas
+        await _sendSyncNotifications(events.length, cleanupResults);
 
         print('✅ Sincronización automática completada');
         return SyncResult.success(                                 // NUEVO: resultado exitoso
@@ -262,7 +267,51 @@ Future<bool> shouldSync() async {
       _isSyncing = false;
     }
   }
+// ========== NOTIFICACIONES AUTOMÁTICAS ========== // NUEVO
 
+  /// NUEVO: Enviar notificaciones automáticas post-sincronización
+  Future<void> _sendSyncNotifications(int newEventsCount, CleanupResult cleanupResults) async {
+    try {
+      // NUEVO: Solo notificar si hay eventos nuevos significativos
+      if (newEventsCount > 0) {
+        // NUEVO: Crear instancia de NotificationsProvider
+          final notificationsProvider = _notificationsProvider;        
+        // NUEVO: Notificación principal de eventos nuevos
+        notificationsProvider.addNotification(
+          title: '🎭 ¡Eventos nuevos en Córdoba!',
+          message: 'Se agregaron $newEventsCount eventos culturales',
+          type: 'new_events',
+          icon: '🎉',
+        );
+        
+        // NUEVO: Notificación adicional si hay muchos eventos
+        if (newEventsCount >= 10) {
+          notificationsProvider.addNotification(
+            title: '🔥 ¡Semana cargada de cultura!',
+            message: 'Más de $newEventsCount eventos esperándote',
+            type: 'high_activity',
+            icon: '🌟',
+          );
+        }
+        
+        // NUEVO: Notificación de limpieza si fue significativa
+        if (cleanupResults.eventsRemoved > 5) {
+          notificationsProvider.addNotification(
+            title: '🧹 Base de datos optimizada',
+            message: 'Se limpiaron ${cleanupResults.eventsRemoved} eventos pasados',
+            type: 'cleanup',
+            icon: '✨',
+          );
+        }
+        
+        print('📱 Notificaciones de sync enviadas: $newEventsCount eventos');
+      }
+      
+    } catch (e) {
+      print('⚠️ Error enviando notificaciones de sync: $e');
+      // NUEVO: No fallar la sincronización por errores de notificaciones
+    }
+  }
 
 
 }
