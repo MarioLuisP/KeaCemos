@@ -272,12 +272,12 @@ class EventRepository {
     final db = await DatabaseHelper.database;
     final batch = db.batch();
     
-    batch.delete('eventos');                                        // CAMBIO: solo una tabla
-    // ELIMINAR: batch.delete('favoritos'); - ya no existe
+    batch.delete('eventos');
     batch.update('sync_info', {
-      'last_sync': DateTime.now().toIso8601String(),
+      'last_sync': null,  // ✅ CAMBIO: limpiar fecha
       'batch_version': '0.0.0',
       'total_events': 0,
+      'updated_at': DateTime.now().toIso8601String(),
     }, where: 'id = ?', whereArgs: [1]);
     
     await batch.commit(noResult: true);

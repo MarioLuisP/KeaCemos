@@ -575,7 +575,7 @@ class SettingsPage extends StatelessWidget {
       );
 
       final syncService = SyncService(); // NUEVO: instancia sync
-      final result = await syncService.performAutoSync(); // NUEVO: forzar sync
+      final result = await syncService.forceSync(); // 🔥 CAMBIO TEMPORAL
 
       if (result.success) {
         // NUEVO: verificar resultado
@@ -757,7 +757,7 @@ class SettingsPage extends StatelessWidget {
 }
 
 // 📋 RESEÑA PARA BORRAR EN PRODUCCIÓN:
-// 
+// buscar "🔥" y borrar todo.
 // PARA ELIMINAR LOS BOTONES DEBUG en producción, borrar:
 // 
 // 1. Import (línea 4):

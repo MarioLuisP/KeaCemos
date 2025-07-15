@@ -12,68 +12,45 @@ class SyncService {
   static const Duration _syncInterval = Duration(hours: 24);
   static const String _lastSyncKey = 'last_sync_timestamp';
 
+  // NUEVO: Flag para evitar múltiples sincronizaciones
+  bool _isSyncing = false;
+
   // ========== SYNC PRINCIPAL ==========
 
-  /// Verificar si necesita sincronización
-  Future<bool> shouldSync() async {
-    final prefs = await SharedPreferences.getInstance();
-    final lastSyncString = prefs.getString(_lastSyncKey);
-    
-    if (lastSyncString == null) return true;
-    
-    final lastSync = DateTime.parse(lastSyncString);
-    final timeSinceLastSync = DateTime.now().difference(lastSync);
-    
-    return timeSinceLastSync >= _syncInterval;
+/// Verificar si necesita sincronización
+Future<bool> shouldSync() async {
+  final prefs = await SharedPreferences.getInstance();
+  final lastSyncString = prefs.getString(_lastSyncKey);
+  
+  final now = DateTime.now();
+  
+  // Si nunca sincronizó, sincronizar
+  if (lastSyncString == null) {
+    print('🔄 Primera sincronización');
+    return true;
   }
-
-  /// Sincronización automática completa
-  Future<SyncResult> performAutoSync() async {
-    try {
-      print('🔄 Iniciando sincronización automática...');
-      
-      // 1. Verificar si es necesario sincronizar
-      if (!await shouldSync()) {
-        print('⏭️ Sincronización no necesaria aún');
-        return SyncResult.notNeeded();
-      }
-
-      // 2. Descargar último lote de Firestore
-      final events = await _downloadLatestBatch();
-      
-      if (events.isEmpty) {
-        print('📭 No hay eventos nuevos');
-        return SyncResult.noNewData();
-      }
-
-      // 3. Procesar y guardar eventos
-      await _processEvents(events);
-
-      // 4. Limpieza automática
-      final cleanupResults = await _performCleanup();
-
-      // 5. Actualizar timestamps
-      await _updateSyncTimestamp();
-
-      print('✅ Sincronización completada exitosamente');
-      return SyncResult.success(
-        eventsAdded: events.length,
-        eventsRemoved: cleanupResults.eventsRemoved,
-        favoritesRemoved: cleanupResults.favoritesRemoved,
-      );
-
-    } catch (e) {
-      print('❌ Error en sincronización: $e');
-      return SyncResult.error(e.toString());
+  
+  final lastSync = DateTime.parse(lastSyncString);
+  
+  // Verificar si ya sincronizó hoy
+  final today = DateTime(now.year, now.month, now.day);
+  final lastSyncDay = DateTime(lastSync.year, lastSync.month, lastSync.day);
+  
+  if (today.isAfter(lastSyncDay)) {
+    // No sincronizó hoy, verificar condiciones
+    if (now.hour >= 1) {
+      print('🔄 Sincronización por horario (después de 01:00)');
+      return true;
+    } else {
+      print('🔄 Sincronización por apertura de app (antes de 01:00)');
+      return true;
     }
   }
-
-  /// Sincronización al abrir la app
-  Future<void> syncOnAppStart() async {
-    if (await shouldSync()) {
-      await performAutoSync();
-    }
-  }
+  
+  // Ya sincronizó hoy
+  print('✅ Ya sincronizó hoy, omitiendo');
+  return false;
+}
 
   // ========== DESCARGA DE FIRESTORE ==========
 
@@ -192,12 +169,61 @@ class SyncService {
     return await _performCleanup();
   }
 
+  /// Sincronización al abrir la app
+  Future<void> syncOnAppStart() async {
+    if (await shouldSync()) {
+      await performAutoSync();
+    }
+  }
+
+
   /// Reset completo (solo para debug)
   Future<void> resetSync() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_lastSyncKey);
     await _eventRepository.clearAllData();
   }
+  /// MÉTODO TEMPORAL PARA DEV - BORRAR EN PRODUCCIÓN 🔥
+  Future<SyncResult> forceSync() async {
+    if (_isSyncing) {
+      print('⏭️ Sincronización ya en progreso, omitiendo...');
+      return SyncResult.notNeeded();
+    }
+
+    _isSyncing = true;
+    
+    try {
+      print('🔄 FORZANDO sincronización (dev)...');
+      
+      // Saltar verificación de shouldSync()
+      final events = await _downloadLatestBatch();
+      
+      if (events.isEmpty) {
+        print('📭 No hay eventos nuevos');
+        return SyncResult.noNewData();
+      }
+
+      await _processEvents(events);
+      final cleanupResults = await _performCleanup();
+      await _updateSyncTimestamp();
+
+      print('✅ Sincronización FORZADA completada');
+      return SyncResult.success(
+        eventsAdded: events.length,
+        eventsRemoved: cleanupResults.eventsRemoved,
+        favoritesRemoved: cleanupResults.favoritesRemoved,
+      );
+
+    } catch (e) {
+      print('❌ Error en sincronización forzada: $e');
+      return SyncResult.error(e.toString());
+    } finally {
+      _isSyncing = false;
+    }
+  }
+
+
+
 }
 
 // ========== MODELOS DE RESULTADO ==========
