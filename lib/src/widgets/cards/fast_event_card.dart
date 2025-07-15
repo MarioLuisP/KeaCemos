@@ -44,8 +44,8 @@ class _FastEventCardState extends State<FastEventCard> with TickerProviderStateM
   }
 
   void _initializeGoldManager() {
-    //final rating = widget.event['rating'] ?? 0;💥💥💥 descomentar los 3
-    final rating = 300; // TEMPORAL
+  final rating = widget.event['rating'] ?? 0;//💥💥💥 descomentar los 3
+    //final rating = 300; // TEMPORAL
     
     if (rating >= 300) {
       // Inicializar el manager (solo se hace una vez globalmente)
@@ -155,8 +155,8 @@ class _FastEventCardState extends State<FastEventCard> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    //final rating = widget.event['rating'] ?? 0;💥💥💥
-    final rating = 300; // TEMPORAL
+    final rating = widget.event['rating'] ?? 0;//💥💥💥
+  //final rating = 300; // TEMPORAL
     
     return GestureDetector(
       onTapDown: (details) {
@@ -192,8 +192,8 @@ class _FastEventCardState extends State<FastEventCard> with TickerProviderStateM
 
   @override
   void dispose() {
-    //final rating = widget.event['rating'] ?? 0;💥💥💥
-    final rating = 300; // TEMPORAL
+  final rating = widget.event['rating'] ?? 0;//💥💥💥
+    //final rating = 300; // TEMPORAL
     if (rating >= 300) {
       GoldShimmerManager.instance.removeListener(_onShimmerUpdate);
     }

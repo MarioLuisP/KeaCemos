@@ -41,6 +41,7 @@ class DatabaseHelper {
       location TEXT,
       date TEXT NOT NULL,
       price TEXT,
+      rating INTEGER DEFAULT 0,
       imageUrl TEXT,
       description TEXT,
       address TEXT,

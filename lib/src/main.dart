@@ -10,8 +10,7 @@ import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
 import 'package:quehacemos_cba/src/providers/mock_auth_provider.dart';  // CAMBIO: MockAuthProvider en lugar de AuthProvider
 import 'package:quehacemos_cba/src/providers/notifications_provider.dart';
-
-
+import 'data/database/database_helper.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //await DatabaseHelper.deleteDatabase(); //Solo una vez para resetear db 🔥

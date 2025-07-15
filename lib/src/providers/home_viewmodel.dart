@@ -77,7 +77,7 @@ class HomeViewModel with ChangeNotifier {
   Future<void> loadEvents() async {
     _state = EventsLoadingState.loading;
     _errorMessage = null;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
 
     try {
       final List<Map<String, dynamic>> events = await _retryOperation(() async {
