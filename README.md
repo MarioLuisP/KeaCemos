@@ -42,3 +42,12 @@ para android
 android/
 └── app/
     └── google-services.json  ← Aquí va tu JSON
+
+    🎯 SECUENCIA MAÑANA:
+
+Abrir CloudShell
+source ~/setup-flutter.sh ← OBLIGATORIO
+Ver los mensajes de confirmación
+
+source ~/setup-flutter.sh
+flutter run -t lib/src/main.dart

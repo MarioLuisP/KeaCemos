@@ -1,37 +1,18 @@
 import 'package:flutter/material.dart';
-import 'silver_event_card_painter.dart';
 import 'gold_shimmer_manager.dart';
 import 'package:quehacemos_cba/src/utils/dimens.dart';
 
-/// Painter para eventos Gold (Rating 300)
-/// Hereda badge + borde de SilverEventCardPainter y agrega shimmer animado
-class GoldEventCardPainter extends SilverEventCardPainter {
-  final Animation<double>? shimmerAnimation;
+/// Painter minimalista que SOLO dibuja el efecto shimmer dorado
+/// Se usa como segunda capa sobre SilverEventCardPainter para crear Gold
+class GoldShimmerPainter extends CustomPainter {
+  final String theme;
   
-  GoldEventCardPainter({
-    required super.title,
-    required super.categoryWithEmoji,
-    required super.formattedDate,
-    required super.location,
-    required super.district,
-    required super.price,
-    required super.isFavorite,
-    required super.theme,
-    required super.category,
-    this.shimmerAnimation,
-    super.onFavoriteTap,
-  });
-
+  GoldShimmerPainter({
+    required this.theme,
+  }) : super(repaint: GoldShimmerManager.instance.animation);
+  
   @override
   void paint(Canvas canvas, Size size) {
-    // PASO 1: Pintar tarjeta Silver completa (badge + borde)
-    super.paint(canvas, size);
-    // PASO 2: Agregar shimmer dorado animado usando el singleton
-    _drawGoldShimmer(canvas, size);
-  }
-
-  /// Dibuja el efecto shimmer que cruza la tarjeta cada 3 segundos
-  void _drawGoldShimmer(Canvas canvas, Size size) {
     final shimmerAnimation = GoldShimmerManager.instance.animation;
     
     if (shimmerAnimation == null || shimmerAnimation.value <= 0.0) {
@@ -44,11 +25,11 @@ class GoldEventCardPainter extends SilverEventCardPainter {
 
     // Gradient del shimmer inclinado (transparente → dorado → transparente)
     final shimmerGradient = LinearGradient(
-      begin: Alignment(-0.6, -1.0),  // ← Inclina el gradient
-      end: Alignment(0.6, 1.0),      // ← Ajusta estos valores para cambiar el ángulo
+      begin: Alignment(-0.6, -1.0),  // Inclina el gradient
+      end: Alignment(0.6, 1.0),      
       colors: [
         Colors.transparent,
-        _getShimmerColor().withAlpha(153), // Color dorado adaptativo
+        _getShimmerColor().withOpacity(0.6), // Color dorado adaptativo
         Colors.transparent,
       ],
       stops: const [0.0, 0.5, 1.0],
@@ -96,7 +77,5 @@ class GoldEventCardPainter extends SilverEventCardPainter {
   }
 
   @override
-  bool shouldRepaint(GoldEventCardPainter oldDelegate) {
-    return true; // Siempre repintar cuando hay shimmer
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

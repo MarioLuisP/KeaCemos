@@ -9,8 +9,10 @@ import 'package:quehacemos_cba/src/providers/category_constants.dart';
 import 'event_card_painter.dart';
 import 'destacado_event_card_painter.dart';
 import 'silver_event_card_painter.dart';
-import 'gold_event_card_painter.dart';
 import 'gold_shimmer_manager.dart';
+import 'gold_shimmer_painter.dart';
+import 'platinum_particles_painter.dart';
+import 'platinum_particles_manager.dart';
 
 /// Widget optimizado para renderizar tarjetas de eventos a 90Hz
 /// Reemplaza a EventCardWidget con un CustomPaint de alto rendimiento
@@ -52,6 +54,11 @@ class _FastEventCardState extends State<FastEventCard> with TickerProviderStateM
       GoldShimmerManager.instance.initialize(this);
       // Suscribirse para recibir updates del shimmer
       GoldShimmerManager.instance.addListener(_onShimmerUpdate);
+          
+      // NUEVO: Para testing con 300, después cambiar a >= 400
+      PlatinumParticlesManager.instance.initialize(this);
+      PlatinumParticlesManager.instance.addListener(_onShimmerUpdate);
+
     }
   }
 
@@ -123,20 +130,6 @@ class _FastEventCardState extends State<FastEventCard> with TickerProviderStateM
           theme: theme,
           category: uiCategory,
         );
-      case 300:
-        return GoldEventCardPainter(
-          title: eventTitle,
-          categoryWithEmoji: categoryWithEmoji,
-          formattedDate: formattedDate,
-          location: eventLocation,
-          district: eventDistrict,
-          price: eventPrice,
-          isFavorite: _isFavorite,
-          theme: theme,
-          category: uiCategory,
-          shimmerAnimation: GoldShimmerManager.instance.animation, // AGREGAR ESTA LÍNEA
-          
-        );
       // case 400: return PlatinumEventCardPainter(...);  // TODO: Futuro
       default:
         return EventCardPainter(
@@ -153,50 +146,114 @@ class _FastEventCardState extends State<FastEventCard> with TickerProviderStateM
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final rating = widget.event['rating'] ?? 0;//💥💥💥
-  //final rating = 300; // TEMPORAL
-    
-    return GestureDetector(
-      onTapDown: (details) {
-        // Obtener la posición relativa del tap
-        final RenderBox box = context.findRenderObject() as RenderBox;
-        final localPosition = box.globalToLocal(details.globalPosition);
-        
-        // Crear un painter temporal para verificar el hit test
-        final painter = _createPainter(rating);
-        
-        // Si tocó el corazón, toggle favorito
-        if (painter is EventCardPainter && painter.hitTestHeart(localPosition)) {
-          _toggleFavorite();
-        } else {
-          // Si no, abrir el modal de detalles
-          EventDetailModal.show(context, widget.event, widget.viewModel);
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimens.paddingMedium,
-          vertical: AppDimens.paddingSmall,
-        ),
-        child: RepaintBoundary( // Optimización adicional
-          child: CustomPaint(
-            size: const Size(double.infinity, 236), // Altura fija
-            painter: _createPainter(rating),
-          ),
-        ),
+/// Crea un SilverEventCardPainter para usar como base en Gold
+SilverEventCardPainter _createSilverPainter() {
+  final eventTitle = widget.event['title'] ?? '';
+  final eventType = widget.event['type'] ?? '';
+  final eventLocation = widget.event['location'] ?? '';
+  final eventDistrict = widget.event['district'] ?? '';
+  final eventDate = widget.event['date'] ?? '';
+  final eventPrice = widget.event['price'] ?? '';
+  
+  final formattedDate = widget.viewModel.formatEventDate(
+    eventDate,
+    format: 'card',
+  );
+  
+  final categoryWithEmoji = widget.viewModel.getCategoryWithEmoji(eventType);
+  final theme = context.read<PreferencesProvider>().theme;
+  final uiCategory = CategoryConstants.getUiName(eventType.toLowerCase());
+  
+  return SilverEventCardPainter(
+    title: eventTitle,
+    categoryWithEmoji: categoryWithEmoji,
+    formattedDate: formattedDate,
+    location: eventLocation,
+    district: eventDistrict,
+    price: eventPrice,
+    isFavorite: _isFavorite,
+    theme: theme,
+    category: uiCategory,
+  );
+}
+
+
+
+@override
+Widget build(BuildContext context) {
+  final rating = widget.event['rating'] ?? 0;
+  final theme = context.read<PreferencesProvider>().theme;
+  
+  return GestureDetector(
+    onTapDown: (details) {
+      // Obtener la posición relativa del tap
+      final RenderBox box = context.findRenderObject() as RenderBox;
+      final localPosition = box.globalToLocal(details.globalPosition);
+      
+      // Crear un painter temporal para verificar el hit test
+      final painter = rating == 300 ? _createSilverPainter() : _createPainter(rating);
+      
+      // Si tocó el corazón, toggle favorito
+      if (painter is EventCardPainter && painter.hitTestHeart(localPosition)) {
+        _toggleFavorite();
+      } else {
+        // Si no, abrir el modal de detalles
+        EventDetailModal.show(context, widget.event, widget.viewModel);
+      }
+    },
+    child: Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimens.paddingMedium,
+        vertical: AppDimens.paddingSmall,
       ),
-    );
-  }
+child: RepaintBoundary(
+  child: rating == 300  // TEMPORAL: después cambiar a 400 para Platinum
+    ? Stack(
+        children: [
+          // CAPA 1: Tarjeta Silver
+          CustomPaint(
+            size: const Size(double.infinity, 236),
+            painter: _createSilverPainter(),
+            isComplex: true,
+            willChange: false,
+          ),
+          // CAPA 2: Shimmer dorado
+          RepaintBoundary(
+            child: CustomPaint(
+              size: const Size(double.infinity, 236),
+              painter: GoldShimmerPainter(theme: theme),
+            ),
+          ),
+          // CAPA 3: Partículas brillantes ✨
+          RepaintBoundary(
+            child: CustomPaint(
+              size: const Size(double.infinity, 236),
+              painter: PlatinumParticlesPainter(
+                animation: PlatinumParticlesManager.instance.animation!,
+                theme: theme,
+              ),
+            ),
+          ),
+        ],
+      )
+    // Para el resto de ratings, usar el painter simple
+    : CustomPaint(
+        size: const Size(double.infinity, 236),
+        painter: _createPainter(rating),
+      ),
+),
+    ),
+  );
+}
 
   @override
   void dispose() {
   final rating = widget.event['rating'] ?? 0;//💥💥💥
     //final rating = 300; // TEMPORAL
-    if (rating >= 300) {
-      GoldShimmerManager.instance.removeListener(_onShimmerUpdate);
-    }
+if (rating >= 300) {  // TEMPORAL: después cambiar a >= 400
+  GoldShimmerManager.instance.removeListener(_onShimmerUpdate);
+  PlatinumParticlesManager.instance.removeListener(_onShimmerUpdate);
+}
     super.dispose();
   }
 }
