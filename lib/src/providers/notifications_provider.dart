@@ -14,7 +14,7 @@ class NotificationsProvider extends ChangeNotifier {
 
   NotificationsProvider() {
     // NUEVO: Inicializar con datos mock para desarrollo
-    _initializeMockNotifications();
+    //_initializeMockNotifications();
   }
 
   /// NUEVO: Inicializar con notificaciones mock para desarrollo

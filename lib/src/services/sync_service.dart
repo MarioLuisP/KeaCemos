@@ -203,10 +203,19 @@ Future<bool> shouldSync() async {
         
         final events = await _downloadLatestBatch();               // NUEVO: usar método existente
         
-        if (events.isEmpty) {
-          print('📭 No hay eventos nuevos');
-          return SyncResult.noNewData();
-        }
+      if (events.isEmpty) {
+        print('📭 No hay eventos nuevos');
+        
+        // NUEVO: Notificar que sync completó sin eventos nuevos
+        _notificationsProvider.addNotification(
+          title: '✅ Todo actualizado',
+          message: 'No hay eventos nuevos en este momento',
+          type: 'sync_no_new_data',
+          icon: '📱',
+        );
+        
+        return SyncResult.noNewData();
+      }
 
         await _processEvents(events);                              // NUEVO: procesar eventos
         final cleanupResults = await _performCleanup();           // NUEVO: limpieza
