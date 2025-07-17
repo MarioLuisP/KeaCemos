@@ -250,33 +250,35 @@ class _HomePageState extends State<HomePage>
       slivers: [
         // CAMBIO: Mantener estructura con slivers
         SliverPadding(
-          // CAMBIO: Mantener padding como sliver
           padding: EdgeInsets.only(top: 8.0),
           sliver: SliverList(
-            // CAMBIO: Mantener lista lazy
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                // CAMBIO: Mantener builder lazy
-                final item =
-                    flatItems[index]; // NUEVO: Usar flatItems desde cache
+                final item = flatItems[index];
 
                 if (item['type'] == 'header') {
-                  // CAMBIO: Mantener lógica de header
-                  return _buildSectionHeader(item['title']);
+                  return SizedBox(
+                    height: 60.0,  // ✅ Altura fija para headers
+                    child: _buildSectionHeader(item['title']),
+                  );
                 } else {
-                  // CAMBIO: Mantener lógica de evento
-                  return FastEventCard(
-                  event: item['data'],
-                  key: ValueKey(item['data']['id']),
-                  viewModel: viewModel,
-                );
-
+                  return SizedBox(
+                    height: 230.0,  // ✅ Altura fija para tarjetas
+                    child: FastEventCard(
+                      event: item['data'],
+                      key: ValueKey(item['data']['id']),
+                      viewModel: viewModel,
+                    ),
+                  );
                 }
               },
-              childCount: flatItems.length, // NUEVO: Usar longitud de cache
+              childCount: flatItems.length,
             ),
           ),
         ),
+
+ 
+ 
       ],
     );
   }

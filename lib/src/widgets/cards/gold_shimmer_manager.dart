@@ -78,6 +78,12 @@ class GoldShimmerManager {
   /// Las tarjetas Gold se desuscriben al destruirse
   void removeListener(VoidCallback listener) {
     _listeners.remove(listener);
+    if (_listeners.isEmpty) {
+  _controller?.dispose();
+  _controller = null;
+  _animation = null;
+  _isInitialized = false;
+}
   }
   
   /// Getter para la animación (usado por GoldEventCardPainter)

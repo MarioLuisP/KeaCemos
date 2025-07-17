@@ -52,6 +52,12 @@ class PlatinumParticlesManager {
   
   void removeListener(VoidCallback listener) {
     _listeners.remove(listener);
+    if (_listeners.isEmpty) {
+  _controller?.dispose();
+  _controller = null;
+  _animation = null;
+  _isInitialized = false;
+}
   }
   
   Animation<double>? get animation => _animation;

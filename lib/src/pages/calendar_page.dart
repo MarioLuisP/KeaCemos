@@ -3,7 +3,9 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:quehacemos_cba/src/providers/home_viewmodel.dart';
-import 'package:quehacemos_cba/src/widgets/cards/fast_event_card.dart'; 
+import 'package:quehacemos_cba/src/widgets/cards/fast_event_card.dart';
+import 'package:quehacemos_cba/src/services/event_service.dart';
+import 'package:quehacemos_cba/src/data/repositories/event_repository.dart';
 
 class CalendarPage extends StatefulWidget {
   final Function(DateTime)? onDateSelected;
@@ -18,7 +20,8 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   late HomeViewModel _homeViewModel;
-  final Map<DateTime, List<Map<String, dynamic>>> _eventCache = {}; 
+  late EventRepository _eventRepository;  
+  final Map<DateTime, int> _eventCountsCache = {};
 
   @override
   void initState() {
@@ -31,24 +34,37 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _initializeViewModel() async {
     await _homeViewModel.initialize();
-    await _preloadEvents();
+    _eventRepository = EventRepository();
+
+    await _preloadEventCounts();
   }
 
-  Future<void> _preloadEvents() async {
-    final events = await _homeViewModel.getEventsForMonth(_focusedDay);
-    _eventCache.clear();
-    for (var event in events) {
-      final eventDate = DateFormat('yyyy-MM-dd').parse(event['date']!);
-      final cacheKey = DateTime(eventDate.year, eventDate.month, eventDate.day);
-      _eventCache[cacheKey] ??= [];
-      _eventCache[cacheKey]!.add(event);
+  Future<void> _preloadEventCounts() async {
+    // Calcular rango: mes anterior, actual, siguiente
+    final now = _focusedDay;
+    final startMonth = DateTime(now.year, now.month - 1, 1);
+    final endMonth = DateTime(now.year, now.month + 2, 0); // Último día del mes siguiente
+    
+    final startDate = DateFormat('yyyy-MM-dd').format(startMonth);
+    final endDate = DateFormat('yyyy-MM-dd').format(endMonth);
+    
+    // Obtener counts desde DB
+    final counts = await _eventRepository.getEventCountsForDateRange(startDate, endDate);
+    
+    // Limpiar cache y cargar nuevos counts
+    _eventCountsCache.clear();
+    for (final entry in counts.entries) {
+      final date = DateFormat('yyyy-MM-dd').parse(entry.key);
+      final cacheKey = DateTime(date.year, date.month, date.day);
+      _eventCountsCache[cacheKey] = entry.value;
     }
+    
     if (mounted) setState(() {});
   }
 
-  List<Map<String, dynamic>> _getEventsForDay(DateTime day) { //
-    final cacheKey = DateTime(day.year, day.month, day.day);
-    return _eventCache[cacheKey] ?? [];
+  Future<List<Map<String, dynamic>>> _getEventsForDay(DateTime day) async {
+    final dateString = DateFormat('yyyy-MM-dd').format(day);
+    return await _eventRepository.getEventsByDate(dateString);
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -83,28 +99,98 @@ class _CalendarPageState extends State<CalendarPage> {
               elevation: 2.0,
               actions: [],
             ),
-            body: Column(
+            body: Stack(
               children: [
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // CAMBIO: margin en lugar de padding
-                  decoration: BoxDecoration(
-                    color: Color(0xB3FFFFFF), // NUEVO: Fondo transparente
-                    borderRadius: BorderRadius.circular(16.0), // NUEVO: Bordes redondeados
-                    border: Border.all(
-                      color: Color(0x4DFFFFFF), // NUEVO: Borde sutil
-                      width: 1.0,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x0D000000), // NUEVO: Sombra muy sutil
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
+                // ✅ CONTENIDO SCROLLEABLE (tarjetas) - va detrás
+                _buildScrollableContent(),
+                
+                // ✅ CALENDAR FLOTANTE - va adelante
+                _buildFloatingCalendar(),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ✅ CORREGIDO: FutureBuilder limpio sin duplicación
+  Widget _buildEventsForSelectedDay() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _getEventsForDay(_selectedDay!),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        
+        final eventsForDay = snapshot.data ?? [];
+        
+        if (eventsForDay.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'No hay eventos para esta fecha.',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            ),
+          );
+        }
+
+        // POR ESTE CustomScrollView optimizado:
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final event = eventsForDay[index];
+                    return SizedBox(
+                      height: 230.0, // ✅ Altura fija optimizada
+                      child: FastEventCard(
+                        event: event,
+                        viewModel: _homeViewModel,
+                        key: ValueKey(event['id']),
                       ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0), // NUEVO: Padding interno
-                    child: TableCalendar(
+                    );
+                  },
+                  childCount: eventsForDay.length,
+                ),
+              ),
+            ),
+          ],
+        );       
+      },
+    );
+  }
+Widget _buildScrollableContent() {
+  if (_selectedDay == null) {
+    return Container(); // Sin día seleccionado
+  }
+  
+  return Padding(
+    padding: const EdgeInsets.only(top: 250.0), // Espacio para calendar flotante
+    child: _buildEventsForSelectedDay(),
+  );
+}
+
+Widget _buildFloatingCalendar() {
+  return Positioned(
+    top: 8.0,
+    left: 20.0,
+    right: 20.0,
+    child: Container(
+      decoration: BoxDecoration(
+        color: Color.fromRGBO(255, 255, 255, 0.7),
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+                  child: TableCalendar(
                     locale: 'es_ES',
                     firstDay: DateTime.utc(2020, 1, 1),
                     lastDay: DateTime.utc(2030, 12, 31),
@@ -120,10 +206,11 @@ class _CalendarPageState extends State<CalendarPage> {
                     onPageChanged: (focusedDay) {
                       print('Mes cambiado: $focusedDay');
                       setState(() => _focusedDay = focusedDay);
-                      _preloadEvents();
+                      _preloadEventCounts(); // ✅ CORREGIDO
                     },
                     daysOfWeekHeight: 20,
-                    rowHeight: 40,
+                    rowHeight: 30,
+                    sixWeekMonthsEnforced: false,
                     calendarStyle: CalendarStyle(
                       todayDecoration: BoxDecoration(
                         color: Colors.blue[200],
@@ -167,101 +254,95 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                     ),
 
-// ARREGLO MÍNIMO para calendar_page.dart
-// SOLO CAMBIAR EL calendarBuilders:
+                    calendarBuilders: CalendarBuilders(
+                      // ✅ CORREGIDO: Today builder con eventCount
+                      todayBuilder: (context, day, focusedDay) {
+                        final isSelected = isSameDay(_selectedDay, day);
+                        final eventCount = _eventCountsCache[DateTime(day.year, day.month, day.day)] ?? 0;
+                        
+                        return Center(
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            margin: const EdgeInsets.only(bottom: 1),
+                            decoration: BoxDecoration(
+                              color: isSelected 
+                                  ? Colors.blue[400] 
+                                  : (eventCount > 0 ? Colors.orange[300] : Colors.blue[200]), // ✅ CORREGIDO
+                              borderRadius: BorderRadius.circular(8.0),
+                              border: isSelected ? null : Border.all(color: Colors.blue[600]!, width: 2),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '${day.day}',
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      
+                      // ✅ CORREGIDO: Selected builder con eventCount
+                      selectedBuilder: (context, day, focusedDay) {
+                        if (isSameDay(day, DateTime.now())) {
+                          return null; // Dejar que todayBuilder maneje
+                        }
+                        
+                        final eventCount = _eventCountsCache[DateTime(day.year, day.month, day.day)] ?? 0;
+                        return Center(
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            margin: const EdgeInsets.only(bottom: 1),
+                            decoration: BoxDecoration(
+                              color: eventCount > 0 ? Colors.purple[300] : Colors.blue[400], // ✅ CORREGIDO
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '${day.day}',
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      
+                      // ✅ CORREGIDO: Default builder con eventCount
+                      defaultBuilder: (context, day, focusedDay) {
+                        final eventCount = _eventCountsCache[DateTime(day.year, day.month, day.day)] ?? 0;
+                        if (eventCount > 0) { // ✅ CORREGIDO
+                          return Center(
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              margin: const EdgeInsets.only(bottom: 1),
+                              decoration: BoxDecoration(
+                                color: Colors.green[200], // Días con eventos
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                '${day.day}',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        return null;
+                      },
 
-calendarBuilders: CalendarBuilders(
-  // ✅ ARREGLO: Today builder que respeta si está seleccionado
-  todayBuilder: (context, day, focusedDay) {
-    final isSelected = isSameDay(_selectedDay, day);
-    final eventsForDay = _getEventsForDay(day);
-    
-    return Center(
-      child: Container(
-        width: 28,
-        height: 28,
-        margin: const EdgeInsets.only(bottom: 1),
-        decoration: BoxDecoration(
-          // Si está seleccionado, usar color de selección
-          // Si no, usar color de "today"
-          color: isSelected 
-              ? Colors.blue[400] 
-              : (eventsForDay.isNotEmpty ? Colors.orange[300] : Colors.blue[200]),
-          borderRadius: BorderRadius.circular(8.0),
-          // Borde extra para "today" cuando no está seleccionado
-          border: isSelected ? null : Border.all(color: Colors.blue[600]!, width: 2),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          '${day.day}',
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  },
-  
-  // ✅ ARREGLO: Selected builder que NO interfiere con today
-  selectedBuilder: (context, day, focusedDay) {
-    // Solo actuar si NO es today (today builder se encarga)
-    if (isSameDay(day, DateTime.now())) {
-      return null; // Dejar que todayBuilder maneje
-    }
-    
-    final eventsForDay = _getEventsForDay(day);
-    return Center(
-      child: Container(
-        width: 28,
-        height: 28,
-        margin: const EdgeInsets.only(bottom: 1),
-        decoration: BoxDecoration(
-          color: eventsForDay.isNotEmpty ? Colors.purple[300] : Colors.blue[400],
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          '${day.day}',
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  },
-  
-  // Mantener el resto igual...
-  defaultBuilder: (context, day, focusedDay) {
-    final eventsForDay = _getEventsForDay(day);
-    if (eventsForDay.isNotEmpty) {
-      return Center(
-        child: Container(
-          width: 28,
-          height: 28,
-          margin: const EdgeInsets.only(bottom: 1),
-          decoration: BoxDecoration(
-            color: Colors.green[200], // Días con eventos
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            '${day.day}',
-            style: const TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      );
-    }
-    return null;
-  },
-
+                      // ✅ CORREGIDO: Marker builder usando cache
                       markerBuilder: (context, date, events) {
-                        final eventsForDay = _getEventsForDay(date);
-                        if (eventsForDay.isNotEmpty) {
+                        final eventCount = _eventCountsCache[DateTime(date.year, date.month, date.day)] ?? 0;
+                        if (eventCount > 0) { // ✅ CORREGIDO
                           return Positioned(
                             left: 0,
                             bottom: 2,
@@ -270,14 +351,15 @@ calendarBuilders: CalendarBuilders(
                                 shape: BoxShape.circle,
                                 border: Border.all(color: Colors.deepPurple[700]!, width: 1),
                               ),
-                              width: 16,
-                              height: 16,
+                              width: 18,
+                              height: 18,
                               child: Center(
                                 child: Text(
-                                  eventsForDay.length.toString(),
+                                  //eventCount.toString(), // ✅ CORREGIDO
+                                  '${eventCount > 0 ? 68 : 0}', 
                                   style: TextStyle(
                                     color: Colors.deepPurple[700],
-                                    fontSize: 10,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -289,7 +371,11 @@ calendarBuilders: CalendarBuilders(
                       },
                     ),
                   
-                    eventLoader: _getEventsForDay,
+                    eventLoader: (day) {
+                      // ✅ CORREGIDO: Simple loader para TableCalendar
+                      final eventCount = _eventCountsCache[DateTime(day.year, day.month, day.day)] ?? 0;
+                      return List.generate(eventCount, (index) => 'evento_$index');
+                    },
                     headerStyle: HeaderStyle(
                       formatButtonVisible: true,
                       formatButtonShowsNext: false,
@@ -309,67 +395,9 @@ calendarBuilders: CalendarBuilders(
                       CalendarFormat.week: 'Semana',
                     },
                   ),
-                ),
-                ),
-                if (_selectedDay != null) ...[
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0), // NUEVO: Solo padding superior mínimo
-                      child: _buildEventsForSelectedDay(),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          );
-        },
       ),
-    );
-  }
-
-Widget _buildEventsForSelectedDay() {
-  final eventsForDay = _getEventsForDay(_selectedDay!);
-
-  if (eventsForDay.isEmpty) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text(
-          'No hay eventos para esta fecha.',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
-      ),
-    );
-  }
-
-  // CAMBIO: CustomScrollView optimizado en lugar de ListView.builder
-  return CustomScrollView(
-    physics: const BouncingScrollPhysics(
-      parent: AlwaysScrollableScrollPhysics(), // NUEVO: Physics optimizadas
     ),
-    slivers: [
-      // NUEVO: SliverList optimizado
-      SliverPadding(
-        padding: const EdgeInsets.only(top: 1.0), //
-        sliver: SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              final event = eventsForDay[index];
-              return Semantics(
-                label: 'Evento ${event['title']}',
-                button: true,
-                child: FastEventCard( // CAMBIO: FastEventCard en lugar de EventCardWidget
-                  event: event,
-                  key: ValueKey(event['id']), // NUEVO: Key optimizada
-                  viewModel: _homeViewModel,
-                ),
-              );
-            },
-            childCount: eventsForDay.length,
-          ),
-        ),
-      ),
-    ],
   );
 }
+
 }

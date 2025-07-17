@@ -49,6 +49,23 @@ class EventRepository {
       orderBy: 'date ASC',
     );
   }
+  /// Obtiene conteos de eventos por fecha en un rango
+  Future<Map<String, int>> getEventCountsForDateRange(String startDate, String endDate) async {
+    final db = await DatabaseHelper.database;
+    final results = await db.rawQuery('''
+      SELECT DATE(date) as day, COUNT(*) as count 
+      FROM eventos 
+      WHERE DATE(date) BETWEEN ? AND ? 
+      GROUP BY DATE(date)
+    ''', [startDate, endDate]);
+    
+    final Map<String, int> counts = {};
+    for (final row in results) {
+      counts[row['day'] as String] = row['count'] as int;
+    }
+    
+    return counts;
+  }
 
   /// Obtener evento por ID
   Future<Map<String, dynamic>?> getEventById(int id) async {

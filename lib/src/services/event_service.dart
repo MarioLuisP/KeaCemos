@@ -1,76 +1,92 @@
 import 'package:intl/intl.dart';
 import 'package:quehacemos_cba/src/models/models.dart';
-import '../data/repositories/event_repository.dart';    // NUEVO: import repository
-import 'sync_service.dart';                            // NUEVO: import sync service
+import '../data/repositories/event_repository.dart';
+import 'sync_service.dart';
 
 class EventService {
-  const EventService(); // Para evitar instancias innecesarias
-  EventRepository get _repository => EventRepository();   // NUEVO
-  SyncService get _syncService => SyncService();         // NUEVO
+  const EventService();
+  EventRepository get _repository => EventRepository();
+  SyncService get _syncService => SyncService();
 
-
-  // Obtener eventos para una fecha específica
+  // ✅ MIGRADO: Obtener eventos para una fecha específica
   Future<List<Map<String, dynamic>>> getEventsForDay(DateTime day) async {
-    final dateString = DateFormat('yyyy-MM-dd').format(day);
-    return events
-        .where((event) => event['date']?.startsWith(dateString) ?? false)
-        .toList()
-        .take(1000)
-        .toList();
-  }
-
-  // Obtener todos los eventos
-  Future<List<Map<String, dynamic>>> getAllEvents() async {
     try {
-      await _syncService.syncOnAppStart();           // 👈 AGREGAR ESTA LÍNEA
-      return await _repository.getAllEvents();       // 👈 CAMBIAR ESTA LÍNEA
+      await _syncService.syncOnAppStart();
+      final dateString = DateFormat('yyyy-MM-dd').format(day);
+      return await _repository.getEventsByDate(dateString);
     } catch (e) {
-      print('⚠️ Error obteniendo eventos, usando fallback: $e');
-      return events.toList().take(1000).toList();    // 👈 FALLBACK
+      print('⚠️ Error obteniendo eventos del día, usando fallback: $e');
+      final dateString = DateFormat('yyyy-MM-dd').format(day);
+      return events
+          .where((event) => event['date']?.startsWith(dateString) ?? false)
+          .toList()
+          .take(1000)
+          .toList();
     }
   }
 
-  // Filtrar por categoría (para Prompt 4 y chips)
+  // ✅ YA MIGRADO: Obtener todos los eventos
+  Future<List<Map<String, dynamic>>> getAllEvents() async {
+    try {
+      await _syncService.syncOnAppStart();
+      return await _repository.getAllEvents();
+    } catch (e) {
+      print('⚠️ Error obteniendo eventos, usando fallback: $e');
+      return events.toList().take(1000).toList();
+    }
+  }
+
+  // ✅ MIGRADO: Filtrar por categoría
   Future<List<Map<String, dynamic>>> getEventsByCategory(String category) async {
-    final lowerCategory = category.toLowerCase();
-    return events
-        .where((event) {
-          final type = event['type']?.toLowerCase() ?? '';
-          return type == lowerCategory;
-        })
-        .toList()
-        .take(1000)
-        .toList();
+    try {
+      await _syncService.syncOnAppStart();
+      return await _repository.getEventsByCategory(category);
+    } catch (e) {
+      print('⚠️ Error obteniendo eventos por categoría, usando fallback: $e');
+      final lowerCategory = category.toLowerCase();
+      return events
+          .where((event) {
+            final type = event['type']?.toLowerCase() ?? '';
+            return type == lowerCategory;
+          })
+          .toList()
+          .take(1000)
+          .toList();
+    }
   }
 
-  // Buscar por palabra clave (para 🔍 Explorar)
+  // ✅ MIGRADO: Buscar por palabra clave
   Future<List<Map<String, dynamic>>> searchEvents(String keyword) async {
-    final lowerKeyword = keyword.toLowerCase();
-    return events
-        .where((event) {
-          final title = event['title']?.toLowerCase() ?? '';
-          final location = event['location']?.toLowerCase() ?? '';
-          return title.contains(lowerKeyword) ||
-              location.contains(lowerKeyword);
-        })
-        .toList()
-        .take(1000)
-        .toList();
+    try {
+      await _syncService.syncOnAppStart();
+      return await _repository.searchEvents(keyword);
+    } catch (e) {
+      print('⚠️ Error buscando eventos, usando fallback: $e');
+      final lowerKeyword = keyword.toLowerCase();
+      return events
+          .where((event) {
+            final title = event['title']?.toLowerCase() ?? '';
+            final location = event['location']?.toLowerCase() ?? '';
+            return title.contains(lowerKeyword) ||
+                location.contains(lowerKeyword);
+          })
+          .toList()
+          .take(1000)
+          .toList();
+    }
   }
-  // ========== MÉTODOS DE FAVORITOS (NUEVO) ==========
 
-  /// Obtener todos los favoritos                                  // NUEVO: método completo
+  // ✅ YA MIGRADO: Métodos de favoritos
   Future<List<Map<String, dynamic>>> getFavorites() async {
     try {
       await _syncService.syncOnAppStart();
       return await _repository.getAllFavorites();
     } catch (e) {
       print('⚠️ Error obteniendo favoritos, usando fallback: $e');
-      return []; // Sin favoritos en fallback
+      return [];
     }
   }
 
-  /// Verificar si es favorito                                     // NUEVO: método completo
   Future<bool> isFavorite(int eventId) async {
     try {
       return await _repository.isFavorite(eventId);
@@ -80,7 +96,6 @@ class EventService {
     }
   }
 
-  /// Toggle favorito                                              // NUEVO: método completo
   Future<bool> toggleFavorite(int eventId) async {
     try {
       return await _repository.toggleFavorite(eventId);
@@ -88,6 +103,5 @@ class EventService {
       print('⚠️ Error toggle favorito: $e');
       return false;
     }
-}
-
+  }
 }
