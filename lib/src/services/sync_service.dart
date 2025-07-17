@@ -23,6 +23,7 @@ class SyncService {
 
   // NUEVO: Flag para evitar múltiples sincronizaciones
   bool _isSyncing = false;
+  static bool _globalSyncInProgress = false;
 
   // ========== SYNC PRINCIPAL ==========
 
@@ -203,7 +204,8 @@ Future<bool> shouldSync() async {
         return SyncResult.notNeeded();
       }
 
-      _isSyncing = true;                                           // NUEVO: activar flag
+      _isSyncing = true;  
+      _globalSyncInProgress = true; // NUEVO: Activar flag global                                         // NUEVO: activar flag
       
       try {
         print('🔄 Iniciando sincronización automática...');
@@ -261,6 +263,7 @@ Future<bool> shouldSync() async {
     }
 
     _isSyncing = true;
+    _globalSyncInProgress = true; // NUEVO: Activar flag global
     
     try {
       print('🔄 FORZANDO sincronización (dev)...');
@@ -291,6 +294,7 @@ Future<bool> shouldSync() async {
       return SyncResult.error(e.toString());
     } finally {
       _isSyncing = false;
+      _globalSyncInProgress = false; // NUEVO: Liberar flag global
     }
   }
 // ========== NOTIFICACIONES AUTOMÁTICAS ========== // NUEVO

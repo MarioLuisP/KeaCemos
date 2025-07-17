@@ -21,7 +21,7 @@ class NotificationsProvider extends ChangeNotifier {
 
   NotificationsProvider._internal() {  // CAMBIO: constructor privado
     // NUEVO: Inicializar con datos mock para desarrollo
-    _initializeMockNotifications();
+    //_initializeMockNotifications();
   }
   
   // NUEVO: Constructor factory que usa singleton
