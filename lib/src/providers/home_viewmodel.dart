@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:quehacemos_cba/src/utils/colors.dart';
 import 'package:quehacemos_cba/src/services/event_service.dart';
+import 'package:quehacemos_cba/src/services/sync_service.dart';
 import 'package:quehacemos_cba/src/providers/favorites_provider.dart';
 import 'filter_criteria.dart';
 import 'category_constants.dart';
@@ -18,6 +19,7 @@ class HomeViewModel with ChangeNotifier {
   final EventService _eventService = EventService();
   final EventDataBuilder _dataBuilder;
   final EventFilterLogic _filterLogic = EventFilterLogic();
+  StreamSubscription<SyncResult>? _syncListener;
 
   // Estado actual
   EventsLoadingState _state = EventsLoadingState.idle;
@@ -70,6 +72,7 @@ class HomeViewModel with ChangeNotifier {
     if (initialCriteria != null) {
       _filterCriteria = initialCriteria;
     }
+    _listenToSyncUpdates();
     await loadEvents();
   }
 
@@ -561,4 +564,12 @@ Map<String, List<Map<String, dynamic>>> getGroupedEvents() {
     // Cleanup si es necesario
     super.dispose();
   }
+  void _listenToSyncUpdates() {
+  _syncListener = SyncService.onSyncComplete.listen((syncResult) {
+    if (syncResult.success && syncResult.eventsAdded > 0) {
+      print('🔄 HomeViewModel: Nuevos eventos detectados (${syncResult.eventsAdded}), recargando...');
+      loadEvents(); // Recargar eventos desde SQLite actualizada
+    }
+  });
+}
 }

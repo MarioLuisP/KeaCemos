@@ -22,6 +22,8 @@ class _CalendarPageState extends State<CalendarPage> {
   late HomeViewModel _homeViewModel;
   late EventRepository _eventRepository;  
   final Map<DateTime, int> _eventCountsCache = {};
+  final GlobalKey _calendarKey = GlobalKey();
+  double _calendarHeight = 0.0; // Altura por defecto
 
   @override
   void initState() {
@@ -29,6 +31,10 @@ class _CalendarPageState extends State<CalendarPage> {
     _selectedDay = _focusedDay;
     _homeViewModel = HomeViewModel();
     _initializeViewModel();
+      // ✅ CRÍTICO: Medir altura real inicial
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateCalendarHeight();
+    });
     print('Calendario inicializado: $_focusedDay');
   }
 
@@ -62,6 +68,22 @@ class _CalendarPageState extends State<CalendarPage> {
     if (mounted) setState(() {});
   }
 
+  // ✅ NUEVO: Método para obtener altura real del calendario
+void _updateCalendarHeight() {
+  // ✅ Delay más largo para asegurar que TableCalendar terminó de renderizar
+  Future.delayed(Duration(milliseconds: 150), () {
+    final RenderBox? renderBox = _calendarKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      final newHeight = renderBox.size.height + 16.0;
+      if ((newHeight - _calendarHeight).abs() > 1.0) {
+        setState(() {
+          _calendarHeight = newHeight;
+        });
+      }
+    }
+  });
+}
+  
   Future<List<Map<String, dynamic>>> _getEventsForDay(DateTime day) async {
     final dateString = DateFormat('yyyy-MM-dd').format(day);
     return await _eventRepository.getEventsByDate(dateString);
@@ -115,67 +137,71 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   // ✅ CORREGIDO: FutureBuilder limpio sin duplicación
-  Widget _buildEventsForSelectedDay() {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _getEventsForDay(_selectedDay!),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        
-        final eventsForDay = snapshot.data ?? [];
-        
-        if (eventsForDay.isEmpty) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'No hay eventos para esta fecha.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
+Widget _buildEventsForSelectedDay() {
+  return FutureBuilder<List<Map<String, dynamic>>>(
+    future: _getEventsForDay(_selectedDay!),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      
+      final eventsForDay = snapshot.data ?? [];
+      
+      if (eventsForDay.isEmpty) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'No hay eventos para esta fecha.',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
-          );
-        }
-
-        // POR ESTE CustomScrollView optimizado:
-        return CustomScrollView(
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
           ),
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final event = eventsForDay[index];
-                    return SizedBox(
-                      height: 230.0, // ✅ Altura fija optimizada
-                      child: FastEventCard(
-                        event: event,
-                        viewModel: _homeViewModel,
-                        key: ValueKey(event['id']),
-                      ),
-                    );
-                  },
-                  childCount: eventsForDay.length,
-                ),
+        );
+      }
+
+      // ✅ SOLUCIÓN: CustomScrollView con padding inicial como SliverToBoxAdapter
+      return CustomScrollView(
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        slivers: [
+          // ✅ Espacio inicial fijo que permite overscroll
+          SliverToBoxAdapter(
+            child: SizedBox(height: _calendarHeight + 24.0),
+          ),
+          
+          // ✅ Lista con solo padding horizontal
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final event = eventsForDay[index];
+                  return SizedBox(
+                    height: 230.0,
+                    child: FastEventCard(
+                      event: event,
+                      viewModel: _homeViewModel,
+                      key: ValueKey(event['id']),
+                    ),
+                  );
+                },
+                childCount: eventsForDay.length,
               ),
             ),
-          ],
-        );       
-      },
-    );
-  }
+          ),
+        ],
+      );       
+    },
+  );
+}
 Widget _buildScrollableContent() {
   if (_selectedDay == null) {
-    return Container(); // Sin día seleccionado
+    return Container();
   }
   
-  return Padding(
-    padding: const EdgeInsets.only(top: 250.0), // Espacio para calendar flotante
-    child: _buildEventsForSelectedDay(),
-  );
+  // ✅ CustomScrollView directo sin padding del padre
+  return _buildEventsForSelectedDay();
 }
 
 Widget _buildFloatingCalendar() {
@@ -192,6 +218,7 @@ Widget _buildFloatingCalendar() {
         padding: const EdgeInsets.all(12.0),
                   child: TableCalendar(
                     locale: 'es_ES',
+                    key: _calendarKey, // ✅ AGREGAR esto
                     firstDay: DateTime.utc(2020, 1, 1),
                     lastDay: DateTime.utc(2030, 12, 31),
                     focusedDay: _focusedDay,
@@ -201,12 +228,19 @@ Widget _buildFloatingCalendar() {
                     onFormatChanged: (format) {
                       if (_calendarFormat != format) {
                         setState(() => _calendarFormat = format);
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _updateCalendarHeight();
+                      });
                       }
                     },
                     onPageChanged: (focusedDay) {
                       print('Mes cambiado: $focusedDay');
                       setState(() => _focusedDay = focusedDay);
                       _preloadEventCounts(); // ✅ CORREGIDO
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _updateCalendarHeight();
+                        setState(() {}); // Fuerza rebuild completo
+                      });
                     },
                     daysOfWeekHeight: 20,
                     rowHeight: 30,
@@ -355,8 +389,8 @@ Widget _buildFloatingCalendar() {
                               height: 18,
                               child: Center(
                                 child: Text(
-                                  //eventCount.toString(), // ✅ CORREGIDO
-                                  '${eventCount > 0 ? 68 : 0}', 
+                                  eventCount.toString(), // ✅ CORREGIDO
+                                  //'${eventCount > 0 ? 68 : 0}', 
                                   style: TextStyle(
                                     color: Colors.deepPurple[700],
                                     fontSize: 11,

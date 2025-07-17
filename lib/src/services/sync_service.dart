@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async'; 
 import '../data/repositories/event_repository.dart';
 import '../data/database/database_helper.dart';
 import '../providers/notifications_provider.dart'; // CAMBIO: ruta corregida
@@ -9,7 +10,12 @@ class SyncService {
   static final SyncService _instance = SyncService._internal();
   factory SyncService() => _instance;
   SyncService._internal();
-
+  // NUEVO: StreamController para notificar cuando termina sync
+  static final StreamController<SyncResult> _syncCompleteController = 
+      StreamController<SyncResult>.broadcast();
+  
+  // NUEVO: Stream público para escuchar completions de sync
+  static Stream<SyncResult> get onSyncComplete => _syncCompleteController.stream;
   final EventRepository _eventRepository = EventRepository();
   final NotificationsProvider _notificationsProvider = NotificationsProvider();
   static const Duration _syncInterval = Duration(hours: 24);
@@ -45,8 +51,8 @@ Future<bool> shouldSync() async {
       print('🔄 Sincronización por horario (después de 01:00)');
       return true;
     } else {
-      print('🔄 Sincronización por apertura de app (antes de 01:00)');
-      return true;
+      print('⏰ Esperando hasta la 1 AM para sincronizar');
+      return false;
     }
   }
   
@@ -209,11 +215,13 @@ Future<bool> shouldSync() async {
         await _sendSyncNotifications(events.length, cleanupResults);
 
         print('✅ Sincronización automática completada');
-        return SyncResult.success(                                 // NUEVO: resultado exitoso
+        final result = SyncResult.success(                                     // NUEVO: resultado exitoso
           eventsAdded: events.length,
           eventsRemoved: cleanupResults.eventsRemoved,
           favoritesRemoved: cleanupResults.favoritesRemoved,
         );
+        _syncCompleteController.add(result);                               // NUEVO: notificar completion
+        return result;    
 
       } catch (e) {
         print('❌ Error en sincronización automática: $e');
@@ -254,11 +262,13 @@ Future<bool> shouldSync() async {
       await _updateSyncTimestamp();
 
       print('✅ Sincronización FORZADA completada');
-      return SyncResult.success(
+      final result = SyncResult.success(        
         eventsAdded: events.length,
         eventsRemoved: cleanupResults.eventsRemoved,
         favoritesRemoved: cleanupResults.favoritesRemoved,
       );
+      _syncCompleteController.add(result);                                 // NUEVO: notificar completion
+      return result;        
 
     } catch (e) {
       print('❌ Error en sincronización forzada: $e');
