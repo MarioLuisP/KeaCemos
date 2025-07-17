@@ -17,7 +17,7 @@ class SyncService {
   // NUEVO: Stream público para escuchar completions de sync
   static Stream<SyncResult> get onSyncComplete => _syncCompleteController.stream;
   final EventRepository _eventRepository = EventRepository();
-  final NotificationsProvider _notificationsProvider = NotificationsProvider();
+  NotificationsProvider get _notificationsProvider => NotificationsProvider.instance;
   static const Duration _syncInterval = Duration(hours: 24);
   static const String _lastSyncKey = 'last_sync_timestamp';
 
@@ -90,6 +90,13 @@ Future<bool> shouldSync() async {
       
       if (currentBatchVersion == newBatchVersion) {
         print('📄 Mismo lote, no hay actualizaciones');
+        // NUEVO: Notificar que la app está actualizada
+        _notificationsProvider.addNotification(
+          title: '✅ Todo actualizado',
+          message: 'La app está al día, no hay eventos nuevos',
+          type: 'sync_up_to_date',
+          icon: '📱',
+        );
         return [];
       }
 

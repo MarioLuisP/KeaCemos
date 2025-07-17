@@ -103,7 +103,34 @@ class _NotificationsPanel extends StatelessWidget {
     );
   }
 }
-
+/// NUEVO: Mostrar dialog de confirmación para limpiar
+void _showClearAllDialog(BuildContext context, NotificationsProvider provider) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Limpiar historial'),
+        content: const Text('¿Estás seguro de que querés eliminar todas las notificaciones?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(), // NUEVO: cancelar
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () { // NUEVO: confirmar
+              provider.clearAllNotifications();
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Historial limpiado')),
+              );
+            },
+            child: const Text('Limpiar', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      );
+    },
+  );
+}
 /// NUEVO: Header del panel de notificaciones
 class _NotificationsPanelHeader extends StatelessWidget {
   final NotificationsProvider provider;
@@ -141,20 +168,28 @@ class _NotificationsPanelHeader extends StatelessWidget {
               ),
               Row(
                 children: [
-                  // NUEVO: Botón para marcar todas como leídas
+                  // CAMBIO: Botón para marcar todas como leídas con nuevo texto y color
                   if (provider.hasUnreadNotifications)
                     TextButton(
                       onPressed: () => provider.markAllAsRead(),
-                      child: const Text('Marcar todas'),
+                      child: Text(
+                        '✔️Todas leídas', // CAMBIO: nuevo texto
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.headlineSmall?.color, // NUEVO: mismo color que título
+                        ),
+                      ),
                     ),
-                  // NUEVO: Botón para simular nueva notificación (desarrollo)
+                  // CAMBIO: Botón de limpiar historial en lugar de simular
                   IconButton(
-                    onPressed: () => provider.simulateNewNotification(),
-                    icon: const Icon(Icons.add_circle_outline),
-                    tooltip: 'Simular notificación',
+                    onPressed: () => _showClearAllDialog(context, provider), // NUEVO: dialog de confirmación
+                    icon: const Icon(Icons.delete_outline), // CAMBIO: ícono basurita
+                    color: Theme.of(context).textTheme.headlineSmall?.color,
+                    tooltip: 'Limpiar historial', // CAMBIO: nuevo tooltip
                   ),
                 ],
               ),
+
+
             ],
           ),
 

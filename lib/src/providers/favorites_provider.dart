@@ -96,7 +96,7 @@ class FavoritesProvider with ChangeNotifier {
   /// NUEVO: Enviar notificaciones relacionadas con favoritos
   Future<void> _sendFavoriteNotification(String eventId, bool isAdded) async {
     try {
-      final notificationsProvider = NotificationsProvider();
+      final notificationsProvider = NotificationsProvider.instance; // CAMBIO: usar singleton
       
       if (isAdded) {
         // NUEVO: Obtener detalles del evento para notificación personalizada

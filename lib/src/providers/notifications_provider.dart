@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
 class NotificationsProvider extends ChangeNotifier {
+  // NUEVO: Singleton pattern
+  static NotificationsProvider? _instance;
+  static NotificationsProvider get instance {
+    _instance ??= NotificationsProvider._internal();
+    return _instance!;
+  }
+  
   // NUEVO: Estado de notificaciones
   List<Map<String, dynamic>> _notifications = [];
   int _unreadCount = 0;
@@ -12,10 +19,13 @@ class NotificationsProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get hasUnreadNotifications => _unreadCount > 0;
 
-  NotificationsProvider() {
+  NotificationsProvider._internal() {  // CAMBIO: constructor privado
     // NUEVO: Inicializar con datos mock para desarrollo
-    //_initializeMockNotifications();
+    _initializeMockNotifications();
   }
+  
+  // NUEVO: Constructor factory que usa singleton
+  factory NotificationsProvider() => instance;
 
   /// NUEVO: Inicializar con notificaciones mock para desarrollo
   void _initializeMockNotifications() {
