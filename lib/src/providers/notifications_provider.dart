@@ -23,50 +23,29 @@ class NotificationsProvider extends ChangeNotifier {
   int get unreadCount => _unreadCount;
   bool get isLoading => _isLoading;
   bool get hasUnreadNotifications => _unreadCount > 0;
-
-  NotificationsProvider._internal() {  // CAMBIO: constructor privado
-    // NUEVO: Inicializar con datos mock para desarrollo
-    //_initializeMockNotifications();
-  }
   
+  NotificationsProvider._internal() {  // CAMBIO: constructor privado
+      // NUEVO: Cargar notificaciones automáticamente al inicializar
+      _initializeNotifications();
+    }
+    
+    /// NUEVO: Inicialización automática de notificaciones
+    void _initializeNotifications() {                 // CAMBIO: void en vez de Future
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        try {
+          await loadNotifications();                  // NUEVO: carga desde SQLite
+          print('✅ NotificationsProvider inicializado con ${_notifications.length} notificaciones');
+        } catch (e) {
+          print('❌ Error inicializando NotificationsProvider: $e');
+          // NUEVO: Fallback silencioso - continúa sin notificaciones
+        }
+      });
+    }
   // NUEVO: Constructor factory que usa singleton
   factory NotificationsProvider() => instance;
 
   /// NUEVO: Inicializar con notificaciones mock para desarrollo
-  void _initializeMockNotifications() {
-    _notifications = [
-      {
-        'id': '1',
-        'title': 'Nuevos eventos agregados',
-        'message': 'Se agregaron 5 eventos nuevos en tu zona',
-        'timestamp': DateTime.now().subtract(const Duration(hours: 2)),
-        'isRead': false,
-        'type': 'new_events',
-        'icon': '🎉',
-      },
-      {
-        'id': '2',
-        'title': 'Evento favorito mañana',
-        'message': 'Tu evento favorito "Concierto en el Parque" es mañana',
-        'timestamp': DateTime.now().subtract(const Duration(days: 1)),
-        'isRead': true,
-        'type': 'favorite_reminder',
-        'icon': '❤️',
-      },
-      {
-        'id': '3',
-        'title': 'Evento cancelado',
-        'message': 'El evento "Teatro Municipal" ha sido cancelado',
-        'timestamp': DateTime.now().subtract(const Duration(days: 2)),
-        'isRead': false,
-        'type': 'event_cancelled',
-        'icon': '⚠️',
-      },
-    ];
 
-    // NUEVO: Calcular notificaciones no leídas
-    _updateUnreadCount();
-  }
 
 /// CAMBIO: Actualizar contador con fuente de verdad en SQLite
   Future<void> _updateUnreadCount() async {

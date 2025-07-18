@@ -54,6 +54,7 @@ class FavoritesProvider with ChangeNotifier {
       } else {
         _favoriteIds.remove(eventId);
         print('💔 Favorito removido: $eventId');
+        await _sendFavoriteNotification(eventId, false);
       }
       
       notifyListeners();
@@ -91,7 +92,7 @@ class FavoritesProvider with ChangeNotifier {
       print('❌ Error limpiando favoritos: $e');
     }
   }
-  // ========== NOTIFICACIONES DE FAVORITOS ========== // NUEVO
+// ========== NOTIFICACIONES DE FAVORITOS ========== // NUEVO
 
   /// NUEVO: Enviar notificaciones relacionadas con favoritos
   Future<void> _sendFavoriteNotification(String eventId, bool isAdded) async {
@@ -108,6 +109,14 @@ class FavoritesProvider with ChangeNotifier {
             message: '${eventDetails['title']} - ${eventDetails['date']}',
             type: 'favorite_added',
             icon: '⭐',
+          );
+        } else {
+          // NUEVO: Notificación al remover favorito
+          notificationsProvider.addNotification(
+            title: '💔 Favorito removido',
+            message: '${eventDetails?['title'] ?? 'Evento'} removido de favoritos',
+            type: 'favorite_removed',
+            icon: '🗑️',
           );
         }
       }

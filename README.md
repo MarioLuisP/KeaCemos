@@ -50,4 +50,6 @@ source ~/setup-flutter.sh ← OBLIGATORIO
 Ver los mensajes de confirmación
 
 source ~/setup-flutter.sh
+fc
+
 flutter run -t lib/src/main.dart
