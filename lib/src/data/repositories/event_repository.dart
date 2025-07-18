@@ -324,7 +324,7 @@ class EventRepository {
       whereArgs = [0];
     }
     
-    return await db.rawQuery('''                   // NUEVO: query con WHERE dinámico
+    return await db.rawQuery('''                   
       SELECT * FROM notifications 
       $whereClause
       ORDER BY created_at DESC
