@@ -278,13 +278,134 @@ class EventRepository {
     return result.first['count'] as int;
   }
 
-  /// Contar total de favoritos
+/// Contar total de favoritos
   Future<int> getTotalFavorites() async {
     final db = await DatabaseHelper.database;
     final result = await db.rawQuery('SELECT COUNT(*) as count FROM eventos WHERE favorite = 1');  // CAMBIO: query en misma tabla con filtro
     return result.first['count'] as int;
   }
-  /// Limpiar toda la base de datos (solo para debug/reset)
+
+  // ========== NOTIFICACIONES ========== // NUEVO: Sección completa
+
+  /// NUEVO: Insertar notificación
+  Future<int> insertNotification({
+    required String title,
+    required String message,
+    required String type,
+    String? eventCode,                              // NUEVO: usar event_code
+    String? scheduledDatetime,                      // NUEVO: para recordatorios programados
+    int? localNotificationId,                       // NUEVO: para cancelar local notifications
+  }) async {
+    final db = await DatabaseHelper.database;
+    
+    return await db.insert('notifications', {       // NUEVO: inserción en tabla notifications
+      'title': title,
+      'message': message,
+      'type': type,
+      'event_code': eventCode,                      // NUEVO: campo event_code
+      'created_at': DateTime.now().toIso8601String(),
+      'is_read': 0,
+      'scheduled_datetime': scheduledDatetime,      // NUEVO: para scheduling
+      'local_notification_id': localNotificationId, // NUEVO: para local notifications
+    });
+  }
+
+  /// NUEVO: Obtener todas las notificaciones ordenadas por fecha
+  Future<List<Map<String, dynamic>>> getAllNotifications({
+    bool unreadOnly = false,                        // NUEVO: filtro opcional
+  }) async {
+    final db = await DatabaseHelper.database;
+    
+    String whereClause = '';                        // NUEVO: construcción dinámica de WHERE
+    List<dynamic> whereArgs = [];
+    
+    if (unreadOnly) {                              // NUEVO: filtrar solo no leídas
+      whereClause = 'WHERE is_read = ?';
+      whereArgs = [0];
+    }
+    
+    return await db.rawQuery('''                   // NUEVO: query con WHERE dinámico
+      SELECT * FROM notifications 
+      $whereClause
+      ORDER BY created_at DESC
+    ''', whereArgs);
+  }
+
+  /// NUEVO: Marcar notificación como leída
+  Future<void> markNotificationAsRead(int notificationId) async {
+    final db = await DatabaseHelper.database;
+    
+    await db.update(                               // NUEVO: update específico por ID
+      'notifications',
+      {'is_read': 1},
+      where: 'id = ?',
+      whereArgs: [notificationId],
+    );
+  }
+
+  /// NUEVO: Marcar todas las notificaciones como leídas
+  Future<void> markAllNotificationsAsRead() async {
+    final db = await DatabaseHelper.database;
+    
+    await db.update(                               // NUEVO: update masivo
+      'notifications',
+      {'is_read': 1},
+      where: 'is_read = ?',
+      whereArgs: [0],
+    );
+  }
+
+  /// NUEVO: Eliminar notificación específica
+  Future<void> deleteNotification(int notificationId) async {
+    final db = await DatabaseHelper.database;
+    
+    await db.delete(                               // NUEVO: delete por ID
+      'notifications',
+      where: 'id = ?',
+      whereArgs: [notificationId],
+    );
+  }
+
+  /// NUEVO: Limpiar todas las notificaciones
+  Future<void> clearAllNotifications() async {
+    final db = await DatabaseHelper.database;
+    await db.delete('notifications');             // NUEVO: truncate tabla notifications
+  }
+
+  /// NUEVO: Contar notificaciones no leídas (para badge)
+  Future<int> getUnreadNotificationsCount() async {
+    final db = await DatabaseHelper.database;
+    
+    final result = await db.rawQuery(             // NUEVO: count con filtro is_read
+      'SELECT COUNT(*) as count FROM notifications WHERE is_read = 0'
+    );
+    
+    return result.first['count'] as int;
+  }
+
+  /// NUEVO: Obtener recordatorios programados pendientes
+  Future<List<Map<String, dynamic>>> getPendingScheduledNotifications() async {
+    final db = await DatabaseHelper.database;
+    
+    return await db.query(                        // NUEVO: query para scheduling system
+      'notifications',
+      where: 'scheduled_datetime IS NOT NULL AND is_read = 0', // NUEVO: filtros específicos
+      orderBy: 'scheduled_datetime ASC',
+    );
+  }
+
+  /// NUEVO: Obtener notificaciones por event_code (para mantenimiento)
+  Future<List<Map<String, dynamic>>> getNotificationsByEventCode(String eventCode) async {
+    final db = await DatabaseHelper.database;
+    
+    return await db.query(                        // NUEVO: query por event_code
+      'notifications',
+      where: 'event_code = ? AND is_read = 0',   // NUEVO: filtro por código de evento
+      whereArgs: [eventCode],
+    );
+  }
+
+  /// Limpiar toda la base de datos (solo para debug/reset)  
   Future<void> clearAllData() async {
     final db = await DatabaseHelper.database;
     final batch = db.batch();

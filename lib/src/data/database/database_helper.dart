@@ -109,7 +109,39 @@ class DatabaseHelper {
     await db.execute('''
       CREATE INDEX IF NOT EXISTS idx_eventos_favorite ON eventos(favorite)
     ''');
+
+
+    // NUEVO: Tabla de notificaciones híbrida (inmediatas + programadas)
+    await db.execute('''
+      CREATE TABLE notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        type TEXT NOT NULL,
+        event_code TEXT,
+        created_at TEXT NOT NULL,
+        is_read INTEGER DEFAULT 0,
+        scheduled_datetime TEXT,
+        local_notification_id INTEGER
+      )
+    ''');
+
+    // NUEVO: Índice para consultas frecuentes de notificaciones
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(is_read)
+    ''');
+
+    // NUEVO: Índice para recordatorios programados
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_notifications_scheduled ON notifications(scheduled_datetime)
+    ''');
   }
+
+
+
+
+
+
 
   // Manejo de actualizaciones de esquema
   static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {

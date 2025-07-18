@@ -232,6 +232,8 @@ Future<bool> shouldSync() async {
               // NUEVO: Enviar notificaciones automáticas
         await _sendSyncNotifications(events.length, cleanupResults);
 
+        await _maintainNotificationSchedules();
+
         print('✅ Sincronización automática completada');
         final result = SyncResult.success(                                     // NUEVO: resultado exitoso
           eventsAdded: events.length,
@@ -279,6 +281,7 @@ Future<bool> shouldSync() async {
       await _processEvents(events);
       final cleanupResults = await _performCleanup();
       await _updateSyncTimestamp();
+      await _maintainNotificationSchedules();
 
       print('✅ Sincronización FORZADA completada');
       final result = SyncResult.success(        
@@ -337,15 +340,103 @@ Future<bool> shouldSync() async {
         print('📱 Notificaciones de sync enviadas: $newEventsCount eventos');
       }
       
-    } catch (e) {
+} catch (e) {
       print('⚠️ Error enviando notificaciones de sync: $e');
       // NUEVO: No fallar la sincronización por errores de notificaciones
     }
   }
 
+  // NUEVO: Mantenimiento automático de recordatorios programados
+  Future<void> _maintainNotificationSchedules() async {
+    try {
+      print('🔔 Manteniendo recordatorios programados...');
+      
+      // NUEVO: Obtener todos los recordatorios pendientes
+      final pendingNotifications = await _eventRepository.getPendingScheduledNotifications();
+      
+      int updated = 0;                              // NUEVO: contador de actualizaciones
+      int removed = 0;                              // NUEVO: contador de removidos
+      
+      for (final notification in pendingNotifications) {
+        final eventCode = notification['event_code'] as String?;
+        
+        if (eventCode == null) continue;            // NUEVO: skip si no tiene event_code
+        
+        // NUEVO: Buscar evento actual por code en tabla eventos
+        final db = await DatabaseHelper.database;
+        final eventResults = await db.query(       // NUEVO: query por code
+          'eventos',
+          where: 'code = ?',
+          whereArgs: [eventCode],
+          limit: 1,
+        );
+        
+        if (eventResults.isEmpty) {                // NUEVO: evento ya no existe
+          // NUEVO: Cancelar recordatorio huérfano
+          await _eventRepository.deleteNotification(notification['id'] as int);
+          removed++;
+          print('🗑️ Recordatorio cancelado: evento $eventCode ya no existe');
+          continue;
+        }
+        
+        final event = eventResults.first;
+        final currentEventDate = event['date'] as String;
+        final notificationScheduled = notification['scheduled_datetime'] as String?;
+        
+        if (notificationScheduled != null) {       // NUEVO: verificar si fecha cambió
+          // NUEVO: Recalcular scheduled_datetime basado en nueva fecha del evento
+          final newScheduledTime = _calculateScheduledTime(
+            currentEventDate, 
+            notification['type'] as String
+          );
+          
+          if (newScheduledTime != notificationScheduled) { // NUEVO: fecha cambió
+            // NUEVO: Actualizar scheduled_datetime en la base de datos
+            await db.update(                       // NUEVO: update directo en db
+              'notifications',
+              {'scheduled_datetime': newScheduledTime},
+              where: 'id = ?',
+              whereArgs: [notification['id']],
+            );
+            updated++;
+            print('📅 Recordatorio actualizado: $eventCode nueva fecha $newScheduledTime');
+          }
+        }
+      }
+      
+      if (updated > 0 || removed > 0) {           // NUEVO: log solo si hubo cambios
+        print('🔔 Mantenimiento completado: $updated actualizados, $removed removidos');
+      }
+      
+    } catch (e) {
+      print('⚠️ Error en mantenimiento de recordatorios: $e');
+      // NUEVO: No fallar sync por errores de mantenimiento
+    }
+  }
+
+  // NUEVO: Calcular scheduled_datetime basado en fecha de evento y tipo
+  String? _calculateScheduledTime(String eventDate, String notificationType) {
+    try {
+      final eventDateTime = DateTime.parse(eventDate); // NUEVO: parsear fecha del evento
+      
+      switch (notificationType) {                 // NUEVO: lógica por tipo de recordatorio
+        case 'event_reminder_tomorrow':           // NUEVO: recordatorio "mañana"
+          return eventDateTime.subtract(Duration(days: 1, hours: 6)).toIso8601String();
+        case 'event_reminder_today':              // NUEVO: recordatorio "hoy"
+          return DateTime(eventDateTime.year, eventDateTime.month, eventDateTime.day, 9).toIso8601String();
+        case 'event_reminder_hour':               // NUEVO: recordatorio "1 hora antes"
+          return eventDateTime.subtract(Duration(hours: 1)).toIso8601String();
+        default:
+          return null;                           // NUEVO: tipo no reconocido
+      }
+    } catch (e) {
+      print('⚠️ Error calculando scheduled_time: $e');
+      return null;                               // NUEVO: fallback seguro
+    }
+  }
+
 
 }
-
 // ========== MODELOS DE RESULTADO ==========
 
 class SyncResult {
