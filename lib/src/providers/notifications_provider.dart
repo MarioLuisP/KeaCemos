@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/repositories/event_repository.dart';
 
 class NotificationsProvider extends ChangeNotifier {
   // NUEVO: Singleton pattern
@@ -8,10 +9,14 @@ class NotificationsProvider extends ChangeNotifier {
     return _instance!;
   }
   
-  // NUEVO: Estado de notificaciones
+  // CAMBIO: Repositorio para acceso a SQLite
+  final EventRepository _eventRepository = EventRepository();
+  
+  // CAMBIO: Cache en memoria para performance de UI
   List<Map<String, dynamic>> _notifications = [];
   int _unreadCount = 0;
   bool _isLoading = false;
+  bool _cacheLoaded = false;                      // NUEVO: flag para lazy loading
 
   // NUEVO: Getters públicos
   List<Map<String, dynamic>> get notifications => _notifications;
@@ -63,60 +68,123 @@ class NotificationsProvider extends ChangeNotifier {
     _updateUnreadCount();
   }
 
-  /// NUEVO: Actualizar contador de no leídas
-  void _updateUnreadCount() {
-    _unreadCount = _notifications.where((n) => !n['isRead']).length;
-    notifyListeners();
+/// CAMBIO: Actualizar contador con fuente de verdad en SQLite
+  Future<void> _updateUnreadCount() async {
+    try {
+      // NUEVO: Obtener count desde SQLite como fuente de verdad
+      _unreadCount = await _eventRepository.getUnreadNotificationsCount();
+      
+      // NUEVO: También sincronizar cache en memoria por consistencia
+      final cacheUnread = _notifications.where((n) => !n['isRead']).length;
+      if (cacheUnread != _unreadCount && _cacheLoaded) { // NUEVO: detectar inconsistencias
+        print('⚠️ Inconsistencia cache/SQLite: cache=$cacheUnread, db=$_unreadCount');
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      // NUEVO: Fallback a cache en memoria si SQLite falla
+      _unreadCount = _notifications.where((n) => !n['isRead']).length;
+      notifyListeners();
+      print('❌ Error obteniendo unread count, usando cache: $e');
+    }
   }
 
-  /// NUEVO: Marcar notificación como leída
-  void markAsRead(String notificationId) {
-    final index = _notifications.indexWhere((n) => n['id'] == notificationId);
-    if (index != -1) {
-      _notifications[index]['isRead'] = true;
+/// CAMBIO: Marcar notificación como leída con persistencia
+  Future<void> markAsRead(dynamic notificationId) async { // CAMBIO: dynamic para int/String
+    try {
+      final id = notificationId is String ? int.parse(notificationId) : notificationId as int; // NUEVO: conversión
+      
+      // NUEVO: Actualizar en SQLite
+      await _eventRepository.markNotificationAsRead(id);
+      
+      // CAMBIO: Actualizar cache en memoria
+      final index = _notifications.indexWhere((n) => n['id'] == id); // CAMBIO: comparar como int
+      if (index != -1) {
+        _notifications[index]['isRead'] = true;
+        _updateUnreadCount();
+      }
+    } catch (e) {
+      print('❌ Error marcando como leída: $e');    // NUEVO: error handling
+    }
+  }
+/// CAMBIO: Marcar todas como leídas con persistencia
+  Future<void> markAllAsRead() async {
+    try {
+      // NUEVO: Actualizar todas en SQLite
+      await _eventRepository.markAllNotificationsAsRead();
+      
+      // CAMBIO: Actualizar cache en memoria
+      for (var notification in _notifications) {
+        notification['isRead'] = true;
+      }
       _updateUnreadCount();
+    } catch (e) {
+      print('❌ Error marcando todas como leídas: $e'); // NUEVO: error handling
     }
   }
 
-  /// NUEVO: Marcar todas como leídas
-  void markAllAsRead() {
-    for (var notification in _notifications) {
-      notification['isRead'] = true;
+/// CAMBIO: Eliminar notificación con persistencia
+  Future<void> removeNotification(dynamic notificationId) async { // CAMBIO: dynamic para int/String
+    try {
+      final id = notificationId is String ? int.parse(notificationId) : notificationId as int; // NUEVO: conversión
+      
+      // NUEVO: Eliminar de SQLite
+      await _eventRepository.deleteNotification(id);
+      
+      // CAMBIO: Eliminar de cache en memoria
+      _notifications.removeWhere((n) => n['id'] == id); // CAMBIO: comparar como int
+      _updateUnreadCount();
+    } catch (e) {
+      print('❌ Error eliminando notificación: $e');   // NUEVO: error handling
     }
-    _updateUnreadCount();
   }
-
-  /// NUEVO: Eliminar notificación
-  void removeNotification(String notificationId) {
-    _notifications.removeWhere((n) => n['id'] == notificationId);
-    _updateUnreadCount();
+/// CAMBIO: Limpiar todas las notificaciones con persistencia
+  Future<void> clearAllNotifications() async {
+    try {
+      // NUEVO: Limpiar SQLite
+      await _eventRepository.clearAllNotifications();
+      
+      // CAMBIO: Limpiar cache en memoria
+      _notifications.clear();
+      await _updateUnreadCount();                  // CAMBIO: await necesario
+    } catch (e) {
+      print('❌ Error limpiando notificaciones: $e'); // NUEVO: error handling
+    }
   }
-
-  /// NUEVO: Limpiar todas las notificaciones
-  void clearAllNotifications() {
-    _notifications.clear();
-    _updateUnreadCount();
-  }
-
-  /// NUEVO: Agregar nueva notificación (para cuando llegue desde Firebase)
-  void addNotification({
+/// CAMBIO: Agregar nueva notificación con persistencia SQLite
+  Future<void> addNotification({
     required String title,
     required String message,
     required String type,
     String? icon,
-  }) {
-    final notification = {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'title': title,
-      'message': message,
-      'timestamp': DateTime.now(),
-      'isRead': false,
-      'type': type,
-      'icon': icon ?? '🔔',
-    };
+    String? eventCode,                              // NUEVO: para recordatorios de eventos
+  }) async {
+    try {
+      // NUEVO: Insertar en SQLite
+      final notificationId = await _eventRepository.insertNotification(
+        title: title,
+        message: message,
+        type: type,
+        eventCode: eventCode,                       // NUEVO: campo event_code
+      );
+      
+      // CAMBIO: Crear objeto para cache con ID de SQLite
+      final notification = {
+        'id': notificationId,                       // CAMBIO: usar ID de SQLite
+        'title': title,
+        'message': message,
+        'timestamp': DateTime.now(),
+        'isRead': false,
+        'type': type,
+        'icon': icon ?? '🔔',
+        'event_code': eventCode,                    // NUEVO: incluir event_code
+      };
 
-    _notifications.insert(0, notification); // NUEVO: Insertar al principio
-    _updateUnreadCount();
+      _notifications.insert(0, notification);      // MANTENER: cache en memoria
+      _updateUnreadCount();
+    } catch (e) {
+      print('❌ Error agregando notificación: $e'); // NUEVO: error handling
+    }
   }
 
   /// NUEVO: Simular llegada de nueva notificación (para desarrollo)
@@ -183,29 +251,63 @@ class NotificationsProvider extends ChangeNotifier {
     }
   }
 
-  /// NUEVO: Cargar notificaciones desde Firebase (placeholder)
+/// CAMBIO: Cargar notificaciones desde SQLite
   Future<void> loadNotifications() async {
+    if (_cacheLoaded) return;                       // NUEVO: evitar cargas múltiples
+    
     _isLoading = true;
     notifyListeners();
 
     try {
-      // NUEVO: Aquí irá la lógica para cargar desde Firebase
-      // Por ahora, simular delay de red
-      await Future.delayed(const Duration(milliseconds: 500));
+      // CAMBIO: Cargar desde SQLite en vez de Firebase
+      final dbNotifications = await _eventRepository.getAllNotifications();
       
-      // NUEVO: En producción, reemplazar con llamada a Firebase
-      // final notifications = await FirebaseService.getNotifications();
-      // _notifications = notifications;
+      // CAMBIO: Convertir formato SQLite a formato cache
+      _notifications = dbNotifications.map((dbNotif) => {
+        'id': dbNotif['id'],
+        'title': dbNotif['title'],
+        'message': dbNotif['message'],
+        'timestamp': DateTime.parse(dbNotif['created_at']), // CAMBIO: parsear timestamp
+        'isRead': (dbNotif['is_read'] as int) == 1,          // CAMBIO: convertir int a bool
+        'type': dbNotif['type'],
+        'icon': _getIconForType(dbNotif['type']),            // NUEVO: derivar icon del tipo
+        'event_code': dbNotif['event_code'],                 // NUEVO: incluir event_code
+      }).toList();
       
-      print('✅ Notificaciones cargadas: ${_notifications.length}');
+      _cacheLoaded = true;                          // NUEVO: marcar cache como cargado
+      _updateUnreadCount();
+      
+      print('✅ Notificaciones cargadas desde SQLite: ${_notifications.length}');
     } catch (e) {
-      print('❌ Error cargando notificaciones: $e');
+      print('❌ Error cargando notificaciones desde SQLite: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
-
+/// NUEVO: Derivar icon del tipo de notificación
+  String _getIconForType(String type) {
+    switch (type) {                                 // NUEVO: mapeo tipo → icon
+      case 'sync':
+      case 'new_events':
+        return '🎭';
+      case 'sync_up_to_date':
+      case 'sync_no_new_data':
+        return '✅';
+      case 'favorite_added':
+        return '❤️';
+      case 'favorite_removed':
+        return '💔';
+      case 'event_reminder':
+        return '⏰';
+      case 'sync_error':
+        return '⚠️';
+      case 'maintenance':
+        return '🧹';
+      default:
+        return '🔔';                               // NUEVO: fallback
+    }
+  }
   /// NUEVO: Enviar notificación push (placeholder)
   Future<void> sendPushNotification(String title, String body) async {
     // NUEVO: Aquí irá la lógica para enviar push notifications
