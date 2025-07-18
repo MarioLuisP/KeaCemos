@@ -149,7 +149,7 @@ class NotificationsProvider extends ChangeNotifier {
       
       // CAMBIO: Crear objeto para cache con ID de SQLite
       final notification = {
-        'id': notificationId,                       // CAMBIO: usar ID de SQLite
+        'id': notificationId.toString(),                       // CAMBIO: usar ID de SQLite
         'title': title,
         'message': message,
         'timestamp': DateTime.now(),
@@ -243,7 +243,7 @@ class NotificationsProvider extends ChangeNotifier {
       
       // CAMBIO: Convertir formato SQLite a formato cache
       _notifications = dbNotifications.map((dbNotif) => {
-        'id': dbNotif['id'],
+        'id': dbNotif['id'].toString(),
         'title': dbNotif['title'],
         'message': dbNotif['message'],
         'timestamp': DateTime.parse(dbNotif['created_at']), // CAMBIO: parsear timestamp
