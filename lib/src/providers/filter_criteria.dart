@@ -64,10 +64,20 @@ class FilterCriteria {
           selectedDate == other.selectedDate;
 
   @override
-  int get hashCode => 
-      query.hashCode ^ 
-      selectedCategories.hashCode ^ 
-      selectedDate.hashCode;
+  int get hashCode {
+    int categoriesHash = 0;
+    if (selectedCategories.isNotEmpty) {
+      categoriesHash = selectedCategories
+          .map((category) => category.hashCode)
+          .reduce((a, b) => a ^ b);
+    }
+    
+    return Object.hash(
+      query,
+      categoriesHash, 
+      selectedDate,
+    );
+  }
       
   @override
   String toString() {

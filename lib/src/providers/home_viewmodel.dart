@@ -33,6 +33,7 @@ class HomeViewModel with ChangeNotifier {
   // Eventos procesados (cache)
   List<Map<String, dynamic>> _processedEvents = [];
   Map<String, List<Map<String, dynamic>>> _groupedEvents = {};
+  int? _lastCriteriaHash;
   // NUEVO: Cache de datos convertidos a DateTime para optimización
   Map<DateTime, List<Map<String, dynamic>>> _groupedEventsDateTime = {}; 
   List<DateTime> _sortedDatesDateTime = []; // NUEVO: Cache DateTime
@@ -116,6 +117,16 @@ class HomeViewModel with ChangeNotifier {
 void _processEvents() {
   print('⚙️ Procesando eventos con filtros: ${_filterCriteria.toString()}');
   
+  // NUEVO: Hash de criterios para detectar cambios reales
+  final criteriaHash = _filterCriteria.hashCode;
+  
+  // NUEVO: Si criterios no cambiaron, no procesar nada
+  if (_lastCriteriaHash == criteriaHash && _processedEvents.isNotEmpty) {
+    print('⏭️ Criterios idénticos, usando resultados cacheados');
+    return; // NUEVO: Salir sin hacer nada
+  }
+  
+  // NUEVO: Solo procesar si realmente cambió algo
   if (_allEvents.isEmpty) {
     print('📭 No hay eventos para procesar');
     _processedEvents = [];
@@ -129,10 +140,13 @@ void _processEvents() {
     
     print('✅ Procesados: ${_processedEvents.length} eventos, ${_groupedEvents.keys.length} fechas');
   }
-  // NUEVO: Invalidar cache DateTime cuando se procesan eventos
-  _dateTimeCacheValid = false; // NUEVO: Cache debe actualizarse
-  _flatItemsCacheValid = false; // NUEVO: Invalidar cache flatItems también
-  // ASEGURAR que siempre notifique
+  
+  // NUEVO: Actualizar hash y cache
+  _lastCriteriaHash = criteriaHash; // NUEVO: Guardar hash actual
+  _dateTimeCacheValid = false;
+  _flatItemsCacheValid = false;
+  
+  print('🔄 Datos procesados, invalidando cache y notificando'); // NUEVO: Debug
   notifyListeners();
 }
   // ============ MÉTODOS DE FILTRADO ============

@@ -141,9 +141,10 @@ class _HomePageState extends State<HomePage>
 
     return Consumer2<HomeViewModel, PreferencesProvider>(
       builder: (context, viewModel, prefs, _) {
-        // Aplicar filtros solo si han cambiado
-        _applyFiltersIfNeeded(prefs.activeFilterCategories);
-
+        // CAMBIO: Solo aplicar filtros si ya está inicializado
+        if (_isInitialized) {
+          _applyFiltersIfNeeded(prefs.activeFilterCategories);
+        }
         return _buildContent(viewModel, prefs);
       },
     );

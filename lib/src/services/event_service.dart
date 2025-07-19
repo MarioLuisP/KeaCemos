@@ -11,7 +11,7 @@ class EventService {
   // ✅ MIGRADO: Obtener eventos para una fecha específica
   Future<List<Map<String, dynamic>>> getEventsForDay(DateTime day) async {
     try {
-      await _syncService.syncOnAppStart();
+      //await _syncService.syncOnAppStart();
       final dateString = DateFormat('yyyy-MM-dd').format(day);
       return await _repository.getEventsByDate(dateString);
     } catch (e) {
@@ -28,7 +28,7 @@ class EventService {
   // ✅ YA MIGRADO: Obtener todos los eventos
   Future<List<Map<String, dynamic>>> getAllEvents() async {
     try {
-      await _syncService.syncOnAppStart();
+      //await _syncService.syncOnAppStart();
       return await _repository.getAllEvents();
     } catch (e) {
       print('⚠️ Error obteniendo eventos, usando fallback: $e');
@@ -39,7 +39,7 @@ class EventService {
   // ✅ MIGRADO: Filtrar por categoría
   Future<List<Map<String, dynamic>>> getEventsByCategory(String category) async {
     try {
-      await _syncService.syncOnAppStart();
+      //await _syncService.syncOnAppStart();
       return await _repository.getEventsByCategory(category);
     } catch (e) {
       print('⚠️ Error obteniendo eventos por categoría, usando fallback: $e');
@@ -58,7 +58,7 @@ class EventService {
   // ✅ MIGRADO: Buscar por palabra clave
   Future<List<Map<String, dynamic>>> searchEvents(String keyword) async {
     try {
-      await _syncService.syncOnAppStart();
+      //await _syncService.syncOnAppStart();
       return await _repository.searchEvents(keyword);
     } catch (e) {
       print('⚠️ Error buscando eventos, usando fallback: $e');
@@ -79,7 +79,7 @@ class EventService {
   // ✅ YA MIGRADO: Métodos de favoritos
   Future<List<Map<String, dynamic>>> getFavorites() async {
     try {
-      await _syncService.syncOnAppStart();
+      //await _syncService.syncOnAppStart();
       return await _repository.getAllFavorites();
     } catch (e) {
       print('⚠️ Error obteniendo favoritos, usando fallback: $e');
